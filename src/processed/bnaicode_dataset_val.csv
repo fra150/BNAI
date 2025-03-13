@@ -1,0 +1,1956 @@
+problem,question_code,solution,solution_code,tags,type,url,metadata
+"`urllib.parse.quote` is not consistent about `encoding` and `errors` defaults
+
+# Documentation
+
+https://docs.python.org/3/library/urllib.parse.html#urllib.parse.quote reads:
+
+> encoding=None, errors=None
+
+At the same time it reads: 
+
+> _encoding_ defaults to `'utf-8'`. _errors_ defaults to `'strict'`
+
+At least, it is confusing indeed. If it is not a bug, it should be explained, I think.
+
+---
+
+Off-topic: and thank you for Python:)
+
+
+<!-- gh-linked-prs -->
+### Linked PRs
+* gh-130598
+<!-- /gh-linked-prs -->
+",[],"> It is partially correct:
+> 
+> [cpython/Lib/urllib/parse.py](https://github.com/python/cpython/blob/43a2a372ba071c4ebb1071240da2b852c29d77fb/Lib/urllib/parse.py#L875)
+> 
+> Line 875 in [43a2a37](/python/cpython/commit/43a2a372ba071c4ebb1071240da2b852c29d77fb)
+> 
+>  def quote(string, safe='/', encoding=None, errors=None): 
+> However:
+> 
+> [cpython/Lib/urllib/parse.py](https://github.com/python/cpython/blob/43a2a372ba071c4ebb1071240da2b852c29d77fb/Lib/urllib/parse.py#L917-L920)
+> 
+> Lines 917 to 920 in [43a2a37](/python/cpython/commit/43a2a372ba071c4ebb1071240da2b852c29d77fb)
+> 
+>  if encoding is None: 
+>      encoding = 'utf-8' 
+>  if errors is None: 
+>      errors = 'strict' 
+> This should be updated like it is for unquote:
+> 
+> [cpython/Lib/urllib/parse.py](https://github.com/python/cpython/blob/43a2a372ba071c4ebb1071240da2b852c29d77fb/Lib/urllib/parse.py#L692)
+> 
+> Line 692 in [43a2a37](/python/cpython/commit/43a2a372ba071c4ebb1071240da2b852c29d77fb)
+> 
+>  def unquote(string, encoding='utf-8', errors='replace'): 
+> I'm not sure why it was done this way in 2008 in [52dbbb9](https://github.com/python/cpython/commit/52dbbb906804f36067ecbc8c89a00cdab545bdb2) by Guido
+> 
+> I'll fix it
+
+In the code, `encoding` and `errors` parameters default to `None`, but inside the function body, if the input is a string and these parameters are `None`, they're set to `utf-8` and `strict` but in the documentation directly states that encoding defaults to `utf-8` and `errors` defaults to `strict`, which doesn't match the function signature but does match the actual behavior.
+
+I think the function signature uses `None` as a sentinel value to determine whether the caller explicitly provided these parameters, particularly when handling bytes input. The actual default behavior for string inputs should be indeed `utf-8` for encoding and `strict` for errors.
+
+So I think we can add something like this in the `urllib.parse.quote` documentation
+
+""The parameters default to `None` in the signature, but for string inputs, `encoding` effectively defaults to `utf-8` and errors to `strict` and it should not be specified for string.""",[],['python'],github,https://github.com/python/cpython/issues/130578,{'repo': 'python/cpython'}
+"Allow CPython test to handle TLS libraries lacking FFDHE ciphersuites
+
+# Feature or enhancement
+
+### Proposal:
+
+Some cryptography TLS libraries, such as [AWS-LC](https://github.com/search?q=repo%3Aaws%2Faws-lc+path%3Assl%2F+%28%28%22DHE%22+OR+%22dhe%22%29+AND+NOT+%28%22ECDHE%22+OR+%22ecdhe%22%29%29&type=code) and [BoringSSL](https://github.com/search?q=repo%3Agoogle%2Fboringssl+path%3Assl%2F+%28%28%22DHE%22+OR+%22dhe%22%29+AND+NOT+%28%22ECDHE%22+OR+%22ecdhe%22%29%29&type=code), lack support for ""finite field"" ephemeral Diffie-Hellman (FFDHE) TLS ciphersuites. This causes failure `test_ssl.ThreadedTests.test_dh_params` when CPython is build against such libraries, as that test case assumes ciphersuite support of FFDHE. This issue proposes modifying `test_dh_params` to skip itself if the underlying TLS library does not support FFDHE.
+
+### Has this already been discussed elsewhere?
+
+I have already discussed this feature proposal on Discourse
+
+### Links to previous discussion of this feature:
+
+This issue is very similar to a series of other test modifications discussed in
+
+https://discuss.python.org/t/support-building-ssl-and-hashlib-modules-against-aws-lc/44505/13
+
+<!-- gh-linked-prs -->
+### Linked PRs
+* gh-131051
+<!-- /gh-linked-prs -->
+",[],cc @picnixz as a cryptography expert.,[],['python'],github,https://github.com/python/cpython/issues/131050,{'repo': 'python/cpython'}
+"Bytecode compilation output depends on order of files compiled
+
+# Bug report
+
+### Bug description:
+
+This is minimal reproduction of this downstream bug report: https://github.com/astral-sh/uv/issues/10619
+
+The output of `compileall.compile_file` depends on the order in which the files are compiled. This means compilation is non-deterministic if builds are distributed over a process pool.
+
+This becomes a problem when building docker images, where you usually bytecode compile ahead of time for faster startup, and where the hash of the image depends on all files in the image, including the `.pyc` files.
+
+Specifically, the output of 
+
+```python
+a = {""foo"", 2, 3}
+
+def f():
+    b = {""foo"", 2, 3}
+```
+
+is different if we previously compiled another file with 
+
+```python
+import foo
+```
+
+Reproducer script:
+
+```shell
+#!/bin/bash
+
+set -e
+
+script=$(cat << EOF
+import compileall
+import sys
+
+for path in sys.argv[1:]:
+    compileall.compile_file(path)
+EOF
+)
+
+cat << EOF > a.py
+import foo
+EOF
+
+cat << EOF > b.py
+a = {""foo"", 2, 3}
+
+def f():
+    b = {""foo"", 2, 3}
+EOF
+
+# Both files
+rm -rf __pycache__
+python3.14 -c ""$script"" a.py b.py
+sha256sum __pycache__/b.cpython-314.pyc
+
+# For debugging
+cp __pycache__/b.cpython-314.pyc b1.cpython-314.pyc
+
+# Single file only
+rm -rf __pycache__
+python3.14 -c ""$script"" b.py
+sha256sum __pycache__/b.cpython-314.pyc
+
+# For debugging
+cp __pycache__/b.cpython-314.pyc b2.cpython-314.pyc
+
+```
+
+This is caused be different refcounts in the marshalled files:
+
+```python
+import marshal
+import sys
+
+with open(""b1.cpython-313.pyc"", ""rb"") as f:
+  f.read(16)  # Skip header
+  pyc1 = marshal.load(f)
+
+with open(""b2.cpython-313.pyc"", ""rb"") as f:
+  f.read(16)  # Skip header
+  pyc2 = marshal.load(f)
+
+print(sys.getrefcount(pyc1.co_consts[0]))
+print(sys.getrefcount(pyc2.co_consts[0]))
+```
+
+This prints `2` and `3`.
+
+The original report is from 3.13, i've reproduced it with 3.14.0a4. It happens at least on linux and windows.
+
+
+### CPython versions tested on:
+
+3.14
+
+### Operating systems tested on:
+
+Linux","['a = {""foo"", 2, 3}\n\ndef f():\n    b = {""foo"", 2, 3}', 'import foo', '#!/bin/bash\n\nset -e\n\nscript=$(cat << EOF\nimport compileall\nimport sys\n\nfor path in sys.argv[1:]:\n    compileall.compile_file(path)\nEOF\n)\n\ncat << EOF > a.py\nimport foo\nEOF\n\ncat << EOF > b.py\na = {""foo"", 2, 3}\n\ndef f():\n    b = {""foo"", 2, 3}\nEOF\n\n# Both files\nrm -rf __pycache__\npython3.14 -c ""$script"" a.py b.py\nsha256sum __pycache__/b.cpython-314.pyc\n\n# For debugging\ncp __pycache__/b.cpython-314.pyc b1.cpython-314.pyc\n\n# Single file only\nrm -rf __pycache__\npython3.14 -c ""$script"" b.py\nsha256sum __pycache__/b.cpython-314.pyc\n\n# For debugging\ncp __pycache__/b.cpython-314.pyc b2.cpython-314.pyc', 'import marshal\nimport sys\n\nwith open(""b1.cpython-313.pyc"", ""rb"") as f:\n  f.read(16)  # Skip header\n  pyc1 = marshal.load(f)\n\nwith open(""b2.cpython-313.pyc"", ""rb"") as f:\n  f.read(16)  # Skip header\n  pyc2 = marshal.load(f)\n\nprint(sys.getrefcount(pyc1.co_consts[0]))\nprint(sys.getrefcount(pyc2.co_consts[0]))']","Yes, bytecode compilation is non-deterministic. See also this issue: https://github.com/python/cpython/issues/78274#issuecomment-2007066102
+
+A PR to make it deterministic *without sacrificing performance* would be welcome. You can also use an external tool to post-process the pyc.",[],['python'],github,https://github.com/python/cpython/issues/129724,{'repo': 'python/cpython'}
+"TemporaryFile gets closed somehow after text I/O but only when passed through function
+
+# Bug report
+
+### Bug description:
+
+#### Issue
+
+I cannot explain this difference in behavior. I have reduced this code to what I believe are the minimal elements necessary to demonstrate the issue. Notably, this is not reproducible without using `TextIOWrapper`, but that gets me no closer to an explanation. 
+
+First, no function call:
+
+```python
+import io
+import tempfile
+
+with tempfile.TemporaryFile() as out_file:   
+    out_writer = io.TextIOWrapper(out_file)
+    out_writer.write(""hello,world"")
+    out_writer.flush()
+    out_file.seek(0)
+    print(out_file.read())
+```
+
+Result:
+
+```
+b'hello,world'
+```
+
+Next, a function call is introduced, but otherwise the program should behave identically:
+
+```python
+import io
+import tempfile
+
+def handle_file(out_file):
+    out_writer = io.TextIOWrapper(out_file)
+    out_writer.write(""hello,world"")
+    out_writer.flush()
+
+with tempfile.TemporaryFile() as out_file:
+    handle_file(out_file)
+    out_file.seek(0)
+    print(out_file.read())
+```
+
+Result:
+
+```
+Traceback (most recent call last):
+  File ""/Users/.../tempfile_close_test.py"", line 11, in <module>
+    out_file.seek(0)
+ValueError: seek of closed file
+```
+
+Yet, the file was not closed anywhere, and the code is functionally identical.
+
+#### Environment
+
+Tested with macOS Sequoia 15.3.1 (Darwin 24.3.0) on Apple Silicon (M4 MacBook Pro)
+
+Reproduced with all of these Python versions:
+
+- 3.9.6 (system interpreter at /usr/bin/python3)
+- 3.10.16 (from homebrew)
+- 3.12.9 (from homebrew)
+- 3.13.2 (from homebrew)
+
+### CPython versions tested on:
+
+3.13
+
+### Operating systems tested on:
+
+macOS","['import io\nimport tempfile\n\nwith tempfile.TemporaryFile() as out_file:   \n    out_writer = io.TextIOWrapper(out_file)\n    out_writer.write(""hello,world"")\n    out_writer.flush()\n    out_file.seek(0)\n    print(out_file.read())', ""b'hello,world'"", 'import io\nimport tempfile\n\ndef handle_file(out_file):\n    out_writer = io.TextIOWrapper(out_file)\n    out_writer.write(""hello,world"")\n    out_writer.flush()\n\nwith tempfile.TemporaryFile() as out_file:\n    handle_file(out_file)\n    out_file.seek(0)\n    print(out_file.read())', 'Traceback (most recent call last):\n  File ""/Users/.../tempfile_close_test.py"", line 11, in <module>\n    out_file.seek(0)\nValueError: seek of closed file']","Probably TextIOWrapper has `__del__` method implemented which calls `.close()`, and it is being triggered by GC while returning from function.",[],['python'],github,https://github.com/python/cpython/issues/130965,{'repo': 'python/cpython'}
+"Use colors in tab-completion in PyREPL
+
+The current tab-completer is somewhat basic. There's a pyrepl-based library called [fancycompleter](https://pypi.org/project/fancycompleter/) that allows for context-aware colorful tab completions. Much more useful and looks better.
+
+![Image](https://github.com/user-attachments/assets/8082668e-afb7-40c3-9f13-1112268edf72)
+
+<!-- gh-linked-prs -->
+### Linked PRs
+* gh-130473
+<!-- /gh-linked-prs -->
+",[],"I actually have a question about the overall color-related features - how many colors can we use at this point, and how should we use them? If I remember correctly, it took a while to land on this magenda color for some stuff, and we are planning to add much more colors for completion? How much we need to think about for color-blindness or different terminal backgrounds to use new colors? I always have this question because pdb could really use some colors, but it doesn't seem like we have a consensus about how we can use them.",[],['python'],github,https://github.com/python/cpython/issues/130472,{'repo': 'python/cpython'}
+"Need to keep traceback alive in WITH_EXCEPT_START
+
+# Bug report
+
+### Bug description:
+
+Currently in `WITH_EXCEPT_START` the interpreter loop gets the traceback from the exception object and then immediately decref's it before calling the `__exit__` function. But the `__exit__` function may not incref the traceback (if it's not an interpretedPython function) and could cause the traceback to be replaced on the exception, leading it holding onto a freed traceback.
+
+### CPython versions tested on:
+
+CPython main branch, 3.12
+
+### Operating systems tested on:
+
+Linux
+
+<!-- gh-linked-prs -->
+### Linked PRs
+* gh-130562
+* gh-130626
+<!-- /gh-linked-prs -->
+",[],"This introduced a refleak, see #130626 for @Fidget-Spinner's fix",[],['python'],github,https://github.com/python/cpython/issues/130595,{'repo': 'python/cpython'}
+"asyncio: Re-reverse deprecation of set_event_loop?
+
+# Feature or enhancement
+
+### Proposal:
+
+The asyncio policy system is deprecated in python 3.14 (#127949). As implemented, this includes the `asyncio.set_event_loop()` function. However, in 2022,  [it was decided](https://github.com/python/cpython/pull/98440#issuecomment-1334030286) that `set_event_loop` and `get_event_loop` (just the thread-local storage, not the broader policy system) were serving a useful and separate purpose and should be kept around. I [relied on this decision](https://github.com/tornadoweb/tornado/issues/3216) in Tornado to adapt to various changes while staying on interfaces that I thought would be safe from deprecation. 
+
+I would like to briefly bring this up for reconsideration since this is a reversal of a decision from just a few years ago and it appears to have been lumped in with the rest of the policy system without consideration on its own. 
+
+If the decision to deprecate this function stands, I'll be able to adapt in Tornado, but it will be inconvenient: I think I'll have to use asyncio.Runner which was introduced in 3.11, while I'm still supporting 3.9 and 3.10 for another couple of years. 
+
+## Background
+
+Here's the history as I remember it. In Python 3.10, the policy system was deprecated and slated for removal in 3.12. When the 3.12 alphas were released with the policy methods removed, we found that there were code paths that relied on the deprecated methods without emitting suitable warnings, leading to surprise breakages. This caused everything to be reset (in 3.10.9 and 3.11.1, which is why those specific versions are [cited in the docs](https://docs.python.org/3.10/library/asyncio-policy.html)). Deprecation notices were removed, but the understanding at the time was that this was just resetting the clock and policies would still be going away, just a few years later. 
+
+Separately, there was a debate about the set_event_loop function, although I can't find the right thread now. (https://github.com/python/cpython/issues/83710#issuecomment-1093855418 and https://github.com/python/cpython/pull/98440#issuecomment-1334030286 are related, but I can't find where the actual conclusion was reached). I think Jupyter was another project where `set_event_loop` turned out to be important?
+
+### Has this already been discussed elsewhere?
+
+This is a minor feature, which does not need previous discussion elsewhere
+
+### Links to previous discussion of this feature:
+
+_No response_",[],"In previous versions `asyncio.set_event_loop` was a shorthand used to perform two things:
+- set the current loop (may not be running!) in the policy's thread local state
+- attach the current child watcher to the provided loop
+
+In current Python 3.14, the child watchers have been removed entirely and policy is deprecated as such `asyncio.set_event_loop` is just a deprecated alias for policy's `set_event_loop`  hence is deprecated.
+
+FWIW, unlike `asyncio.get_event_loop` which in future would become alias to `asyncio.get_running_loop`, `asyncio.set_event_loop` is a highly misleading function because when policies will be removed, there will be no concept of *current but not running event loop* hence it was deprecated together with policies. ",[],['python'],github,https://github.com/python/cpython/issues/130322,{'repo': 'python/cpython'}
+"Incorrect `__qualname__` in slotted dataclasses in `__init_subclass__`
+
+# Bug report
+
+### Bug description:
+
+In the following:
+
+```python
+import dataclasses
+
+@dataclasses.dataclass(slots=True)
+class Base:
+    def __init_subclass__(cls) -> None:
+        print(cls.__qualname__)
+
+
+class Container:
+    @dataclasses.dataclass(slots=True)
+    class Dataclass(Base):
+        pass
+```
+
+I get:
+```
+Container.Dataclass
+Dataclass
+```
+
+(I can handle the double-call, but the second call having incorrect `__qualname__` is just really annoying 😂 )
+
+---
+
+To clarify the annoyance, the real world use case looks something like:
+```
+@dataclasses.dataclass(slots=True)
+class Base:
+    def __init_subclass__(cls) -> None:
+        if ""__slots__"" not in cls.__dict__:
+            return  # We're the unslotted class, wait until we're the slotted ""real"" one
+        
+        ... # Some code here relying on `__qualname__`
+```
+
+### CPython versions tested on:
+
+3.11
+
+### Operating systems tested on:
+
+macOS
+
+<!-- gh-linked-prs -->
+### Linked PRs
+* gh-129916
+<!-- /gh-linked-prs -->
+","['import dataclasses\n\n@dataclasses.dataclass(slots=True)\nclass Base:\n    def __init_subclass__(cls) -> None:\n        print(cls.__qualname__)\n\n\nclass Container:\n    @dataclasses.dataclass(slots=True)\n    class Dataclass(Base):\n        pass', 'Container.Dataclass\nDataclass', '@dataclasses.dataclass(slots=True)\nclass Base:\n    def __init_subclass__(cls) -> None:\n        if ""__slots__"" not in cls.__dict__:\n            return  # We\'re the unslotted class, wait until we\'re the slotted ""real"" one\n        \n        ... # Some code here relying on `__qualname__`']","(Note I tested on 3.11, because thats all I have available, but am reasonably certain the bug exists on 3.13/`main`)
+
+It looks like the issue is here: https://github.com/python/cpython/blob/91d954411272a07a5431326711a8a5bdf4e2c323/Lib/dataclasses.py#L1302
+
+with the proper fix looking something like:
+```python
+    # And finally create the class.
+    qualname = getattr(cls, '__qualname__', None)
+    if qualname is not None:
+        cls_dict[""__qualname__""] = qualname
+    newcls = type(cls)(cls.__name__, cls.__bases__, cls_dict)
+```
+
+I'll get working on a branch ASAP","['# And finally create the class.\n    qualname = getattr(cls, \'__qualname__\', None)\n    if qualname is not None:\n        cls_dict[""__qualname__""] = qualname\n    newcls = type(cls)(cls.__name__, cls.__bases__, cls_dict)']",['python'],github,https://github.com/python/cpython/issues/129915,{'repo': 'python/cpython'}
+"Customize UUIDv7 generation for database partitioning
+
+# Feature or enhancement
+
+### Proposal:
+
+Support for UUIDv7 via `uuid7()` has just landed in `main`: https://github.com/python/cpython/issues/89083
+
+One use-case for UUIDv7 is using it as PK in databases.  Since it is time based, it can also be used as partition key (e.g., to use one partion for each day).  In order to calculate the partition range, you need calculate the ""minimal"" UUID for a given date (i.e., `2025-04-05 00:00:00` and use all zeros for the random bits => `0196033f-4400-7000-8000-000000000000`).
+
+I'm totally fine with `uuid.uuid7()` not taking any arguments, but it would be cool if the building blocks for generating a UUIDv7 based on custom `unix_ts_ms`, `counter`, and `tail` could be exposed as well.
+
+```python
+def min_uuid7(date: datetime.datetime | None) -> UUID:
+    # This is just for convenience and could be left out:
+    if date is None:
+        today = datetime.date.today()
+        date = datetime.datetime(
+            today.year, today.month, today.day, tzinfo=datetime.UTC
+        )
+
+    # Provide a custom timestamp and a custom counter and tail
+    timestamp_ms = int(date.timestamp() * 1_000)
+    counter, tail = 0, 0
+
+    # The remainder is the same as in uuid7():
+    unix_ts_ms = timestamp_ms & 0xFFFF_FFFF_FFFF
+    counter_msbs = counter >> 30
+    # keep 12 counter's MSBs and clear variant bits
+    counter_hi = counter_msbs & 0x0FFF
+    # keep 30 counter's LSBs and clear version bits
+    counter_lo = counter & 0x3FFF_FFFF
+    # ensure that the tail is always a 32-bit integer (by construction,
+    # it is already the case, but future interfaces may allow the user
+    # to specify the random tail)
+    tail &= 0xFFFF_FFFF
+    
+    int_uuid_7 = unix_ts_ms << 80
+    int_uuid_7 |= counter_hi << 64
+    int_uuid_7 |= counter_lo << 32
+    int_uuid_7 |= tail
+    # by construction, the variant and version bits are already cleared
+    int_uuid_7 |= _RFC_4122_VERSION_7_FLAGS
+    return UUID(int=int_uuid_7)
+```
+```python
+>>> min_uuid7(datetime.datetime(2025, 4, 5, tzinfo=datetime.UTC))
+UUID('0196033f-4400-7000-8000-000000000000')
+```
+
+Another useful addition might be a helper that recovers the original datetime/timestamp from a UUIDv7. I understand that this is additional code that might be slightly out of context, but such functions - like` uuid7()` - would probably not need to be changed, but are not trivial to implement for ""normal users"".
+
+These functions could look like this:
+
+```python
+def uuid_to_timestamp_ms(uuid: UUID) -> int:
+    uuid_flags = uuid.int & _RFC_4122_VERSION_7_FLAGS
+    if uuid_flags != _RFC_4122_VERSION_7_FLAGS:
+        raise ValueError(f""{uuid} is not a v7 UUID."")
+    return int.from_bytes(uuid.bytes[:6])
+
+
+def uuid_to_datetime(uuid: UUID) -> datetime.datetime:
+    ms_since_epoch = uuid_to_timestamp_ms(uuid)
+    return datetime.datetime.fromtimestamp(ms_since_epoch / 1_000, tz=datetime.UTC)
+```
+```python
+>>> d = datetime.datetime(2025, 4, 5, tzinfo=datetime.UTC)
+>>> u = min_uuid7(d)
+>>> assert uuid_to_datetime(u) == d
+```
+
+### Has this already been discussed elsewhere?
+
+This is a minor feature, which does not need previous discussion elsewhere
+
+### Links to previous discussion of this feature:
+
+_No response_","[""def min_uuid7(date: datetime.datetime | None) -> UUID:\n    # This is just for convenience and could be left out:\n    if date is None:\n        today = datetime.date.today()\n        date = datetime.datetime(\n            today.year, today.month, today.day, tzinfo=datetime.UTC\n        )\n\n    # Provide a custom timestamp and a custom counter and tail\n    timestamp_ms = int(date.timestamp() * 1_000)\n    counter, tail = 0, 0\n\n    # The remainder is the same as in uuid7():\n    unix_ts_ms = timestamp_ms & 0xFFFF_FFFF_FFFF\n    counter_msbs = counter >> 30\n    # keep 12 counter's MSBs and clear variant bits\n    counter_hi = counter_msbs & 0x0FFF\n    # keep 30 counter's LSBs and clear version bits\n    counter_lo = counter & 0x3FFF_FFFF\n    # ensure that the tail is always a 32-bit integer (by construction,\n    # it is already the case, but future interfaces may allow the user\n    # to specify the random tail)\n    tail &= 0xFFFF_FFFF\n    \n    int_uuid_7 = unix_ts_ms << 80\n    int_uuid_7 |= counter_hi << 64\n    int_uuid_7 |= counter_lo << 32\n    int_uuid_7 |= tail\n    # by construction, the variant and version bits are already cleared\n    int_uuid_7 |= _RFC_4122_VERSION_7_FLAGS\n    return UUID(int=int_uuid_7)"", "">>> min_uuid7(datetime.datetime(2025, 4, 5, tzinfo=datetime.UTC))\nUUID('0196033f-4400-7000-8000-000000000000')"", 'def uuid_to_timestamp_ms(uuid: UUID) -> int:\n    uuid_flags = uuid.int & _RFC_4122_VERSION_7_FLAGS\n    if uuid_flags != _RFC_4122_VERSION_7_FLAGS:\n        raise ValueError(f""{uuid} is not a v7 UUID."")\n    return int.from_bytes(uuid.bytes[:6])\n\n\ndef uuid_to_datetime(uuid: UUID) -> datetime.datetime:\n    ms_since_epoch = uuid_to_timestamp_ms(uuid)\n    return datetime.datetime.fromtimestamp(ms_since_epoch / 1_000, tz=datetime.UTC)', '>>> d = datetime.datetime(2025, 4, 5, tzinfo=datetime.UTC)\n>>> u = min_uuid7(d)\n>>> assert uuid_to_datetime(u) == d']","> Another useful addition might be a helper that recovers the original datetime/timestamp from a UUIDv7
+
+For this one, I plan to somehow make it work under https://github.com/python/cpython/issues/120878. I don't know how to make it work properly though because the notion of `time_lo/time_mid/time_hi` is different for UUIDv1/v6 and UUIDv7 (the first two have 60-bit timestamp, UUIDv7 has 48-bit timestamp).",[],['python'],github,https://github.com/python/cpython/issues/130843,{'repo': 'python/cpython'}
+"pip does not automatically update to latest version in Python 3.13.2
+
+# Crash report
+
+### What happened?
+
+# Issue Report: pip does not automatically update to latest version in Python 3.13.2
+
+## Description
+When installing Python 3.13.2 from python.org and using pip to install new libraries, pip does not automatically update to the latest version (25.0.1). Instead, it notifies the user that a new version is available, but does not update itself.
+
+## Steps to Reproduce
+1. Download and install Python 3.13.2 from python.org.
+2. Open a command prompt or terminal.
+3. Run `pip install <library_name>` to install a new library.
+4. Observe that pip does not automatically update to the latest version.
+
+## Expected Behavior
+pip should automatically update to the latest version when installing new libraries or running `pip install` commands.
+
+## Actual Behavior
+pip notifies the user that a new version is available, but does not update itself. The user must manually update pip using:
+```
+python.exe -m pip install --upgrade pip
+```
+
+## Environment
+- Python version: 3.13.2
+- pip version: `<insert initial pip version>`
+- Operating System: `[insert OS name and version]`
+
+## Possible Solution
+Consider enabling automatic updates for pip in future versions of Python, or providing a more prominent notification to users to update pip manually.
+
+## Example Use Case
+To reproduce the issue, simply install Python 3.13.2 and run:
+```
+pip install requests
+````
+pip will notify you that a new version is available, but will not update itself.
+
+
+### CPython versions tested on:
+
+3.13, 3.14, 3.12
+
+### Operating systems tested on:
+
+Windows
+
+### Output from running 'python -VV' on the command line:
+
+_No response_","['python.exe -m pip install --upgrade pip', 'pip install requests']","`pip` is externally managed so I don't think we need to update to the latest `pip`. We have a bundled `pip` for minimal usage I think, but otherwise I don't know if `pip` is meant to actually update itself to the latest version automatically.
+
+Note that ""pip notifies the user that a new version is available, but does not update itself"" is the expected behaviour. IIRC, it also says ""please update with [...]"" so it lets the user decide whether it should update or not.
+
+cc @erlend-aasland ",[],['python'],github,https://github.com/python/cpython/issues/130720,{'repo': 'python/cpython'}
+"Document how to use the various enumeration classes in the `enum` module/ library as types for arguments in `argparse`
+
+# Documentation
+
+Please document how to use the various enumeration classes in the `enum` module/ library as types for arguments in `argparse`.
+
+I have tried `StrEnum` and `IntEnum`.
+
+`StrEnum` is straight forward, despite that the choices given when providing the derived `StrEnum` class as an argument to choices gives always the lower case choices.
+
+However, when giving a `IntEnum` derived class as choices, it show the integer values, which is usually not what people want.
+I have used something like `[enum_member.name for enum_member in MyIntEnumClass]`, which then gives the names.
+However, as most people probably like me want to have the enum class member as the value in the namespace, I gave `lambda name: MyIntEnumClass[name]` for `type` for the conversion.
+The argument parser seems to first apply `type` conversion and then check whether this is in the `choices`, which then obviously raises an exception, because the member of the enumeration class is not in the choices, because they are of type `str`.
+I guess there is no way to solve this without breaking something existing, but at least it should be documented, including a recommended best practice.",[],"Personally, I would drop the `type` conversion and just work with strings. Then apply the enum conversion downstream after a successful parse.  
+
+```
+class I(IntEnum):
+    one = 1
+    two = 2
+
+p = ArgumentParser()
+p.add_argument('-x', choices=[enum_member.name for enum_member in I])
+args = p.parse_args(['-x=two'])
+args.x = I[args.x]
+print(args)
+```
+
+ISTM the argparse module caters to the common cases that predated the enum module. Outside of those cases, it isn't very flexible, so it's often easier to just add downstream code to further adapt the data to fit the needs of the application logic.
+
+
+","[""class I(IntEnum):\n    one = 1\n    two = 2\n\np = ArgumentParser()\np.add_argument('-x', choices=[enum_member.name for enum_member in I])\nargs = p.parse_args(['-x=two'])\nargs.x = I[args.x]\nprint(args)""]",['python'],github,https://github.com/python/cpython/issues/130219,{'repo': 'python/cpython'}
+"`test_shutdown_default_executor_timeout` asyncio test is flaky
+
+# Bug report
+
+Seen in https://github.com/python/cpython/actions/runs/13606907022/job/38039459160?pr=130732
+
+```
+FAIL: test_shutdown_default_executor_timeout (test.test_asyncio.test_base_events.BaseEventLoopTests.test_shutdown_default_executor_timeout)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File ""D:\a\cpython\cpython\Lib\test\test_asyncio\test_base_events.py"", line 246, in test_shutdown_default_executor_timeout
+    with self.assertWarnsRegex(RuntimeWarning,
+         ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+                               ""The executor did not finishing joining""):
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: RuntimeWarning not triggered
+```
+
+<!-- gh-linked-prs -->
+### Linked PRs
+* gh-130800
+* gh-130825
+* gh-130826
+<!-- /gh-linked-prs -->
+","['FAIL: test_shutdown_default_executor_timeout (test.test_asyncio.test_base_events.BaseEventLoopTests.test_shutdown_default_executor_timeout)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File ""D:\\a\\cpython\\cpython\\Lib\\test\\test_asyncio\\test_base_events.py"", line 246, in test_shutdown_default_executor_timeout\n    with self.assertWarnsRegex(RuntimeWarning,\n         ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^\n                               ""The executor did not finishing joining""):\n                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: RuntimeWarning not triggered']",I wrote PR https://github.com/python/cpython/pull/130800 to fix the test.,[],['python'],github,https://github.com/python/cpython/issues/130736,{'repo': 'python/cpython'}
+"docs: fix deprecated or broken examples in urllib.request documentation.
+
+# Documentation
+
+While working on the issue #130132 , I encountered with some examples and I can see the W3C document is outdated with some examples of `urllib.request.urlopen()` in Example of `urllib.request`
+
+These are following things I find which is outdated.
+
+- https://www.w3.org/International/O-charset
+- output content of `urllib.request.urlopen('http://www.python.org/')`
+
+Also there are other which also need to be fixed:
+
+ref. https://docs.python.org/3/library/urllib.request.html#examples
+
+There are many example in `urllib.request` documentation that need to be updated as they no longer works as expected.
+
+> In the following example, we are sending a data-stream to the stdin of a CGI and reading the data it returns to us. Note that this example will only work when the Python installation supports SSL.
+
+> Use of Basic HTTP Authentication:
+
+<!-- gh-linked-prs -->
+### Linked PRs
+* gh-130284
+<!-- /gh-linked-prs -->
+",[],"I need small suggestion here, as https://www.w3.org/International/O-charset is deprecated by W3C, and it added these two suggestions in the page
+
+> You may want to try, instead, one of the following pages:
+> [Handling character encodings in HTML and CSS (tutorial)](https://www.w3.org/International/tutorials/tutorial-char-enc/)
+> [Declaring character encodings in HTML](https://www.w3.org/International/questions/qa-html-encoding-declarations)
+
+I've added https://www.w3.org/International/questions/qa-html-encoding-declarations this one but we can add something other instead of this like
+
+- https://www.w3.org/International/questions/qa-what-is-encoding
+- https://www.w3.org/International/getting-started/characters
+
+I would love to know the thought's of the fellow dev's",[],['python'],github,https://github.com/python/cpython/issues/130283,{'repo': 'python/cpython'}
+"Pygettext: allow extracting constant f-strings
+
+# Feature or enhancement
+
+### Proposal:
+
+(Wasn't sure whether to categorize this as a bug or a feature, but went for latter to be safe)
+
+Pygettext currently disallows all f-strings, even those which don't contain any formatted values such as `f'foo'`.
+I propose to allow pygettext to extract constant f-strings. Ideally, your linter would warn you about such f-strings,
+but there is no harm in allowing them.
+
+As a precedent, both xgettext and [babel](
+https://github.com/python-babel/babel/blob/05960657895d7dbb2e1ab47cb8e004f9c6953457/babel/messages/extract.py#L650-L652) allow constant f-strings (though in the case of xgettext it might be accidental since
+xgettext also extracts non-constant f-strings).
+
+In short, I propose that this is extracted:
+```python
+_(f'foo')
+```
+while this remains disallowed:
+```python
+_(f'foo {x}')
+```
+
+
+
+### Has this already been discussed elsewhere?
+
+This is a minor feature, which does not need previous discussion elsewhere
+
+### Links to previous discussion of this feature:
+
+_No response_
+
+<!-- gh-linked-prs -->
+### Linked PRs
+* gh-130156
+<!-- /gh-linked-prs -->
+","[""_(f'foo')"", ""_(f'foo {x}')""]","Because otherwise I will look at that issue again thinking that there is a missing label. Ideally I should always add that label to all issues that I've been looking at but that would be an overkill (generally, the presence of interpreter-core/stdlib/extension-modules labels is sufficient to indicate that I read the issue and that the labels are fine), but when we don't have a tools directory label, I'm left with the `triaged` label as an indication (ideally GH should show the project it belongs to)",[],['python'],github,https://github.com/python/cpython/issues/130154,{'repo': 'python/cpython'}
+"`test_list.ListTest.test_no_memory` triggers `_Py_Dealloc` assertion
+
+Seen in https://github.com/python/cpython/actions/runs/13641172744/job/38131193209
+
+```
+======================================================================
+FAIL: test_no_memory (test.test_list.ListTest.test_no_memory)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File ""/home/runner/work/cpython/cpython-ro-srcdir/Lib/test/test_list.py"", line 328, in test_no_memory
+    self.assertIn(""MemoryError"", err.decode(""utf-8""))
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'MemoryError' not found in 'python: ../cpython-ro-srcdir/Objects/object.c:2990: _Py_Dealloc: Assertion `tstate->current_frame == NULL || tstate->current_frame->stackpointer != NULL\' failed.\nFatal Python error: Aborted\n\nCurrent thread 0x00007faf0c6f3740 (most recent call first):\n  File ""<string>"", line 7 in <module>\n\nExtension modules: _testcapi (total: 1)\n'
+
+----------------------------------------------------------------------
+```
+
+https://github.com/python/cpython/blob/3a7f17c7e2f72a836a019c316818c446a0c71d75/Objects/object.c#L2980-L2991
+
+cc @markshannon ","['======================================================================\nFAIL: test_no_memory (test.test_list.ListTest.test_no_memory)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File ""/home/runner/work/cpython/cpython-ro-srcdir/Lib/test/test_list.py"", line 328, in test_no_memory\n    self.assertIn(""MemoryError"", err.decode(""utf-8""))\n    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: \'MemoryError\' not found in \'python: ../cpython-ro-srcdir/Objects/object.c:2990: _Py_Dealloc: Assertion `tstate->current_frame == NULL || tstate->current_frame->stackpointer != NULL\\\' failed.\\nFatal Python error: Aborted\\n\\nCurrent thread 0x00007faf0c6f3740 (most recent call first):\\n  File ""<string>"", line 7 in <module>\\n\\nExtension modules: _testcapi (total: 1)\\n\'\n\n----------------------------------------------------------------------']","Ugh, sorry, looked at the wrong job while trying to track down flaky tests.",[],['python'],github,https://github.com/python/cpython/issues/130813,{'repo': 'python/cpython'}
+"Check if generated files are up to date fails because generate_sbom.py tries to fetch wrong URL
+
+# Bug report
+
+### Bug description:
+Fail examples:
+
+https://github.com/python/cpython/actions/runs/13638516783/job/38122954008
+
+https://github.com/python/cpython/actions/runs/13638516783/job/38122954008?pr=130691#step:10:663
+
+
+https://github.com/python/cpython/blob/3a7f17c7e2f72a836a019c316818c446a0c71d75/Tools/build/generate_sbom.py#L366
+
+https://github.com/python/cpython/blob/3a7f17c7e2f72a836a019c316818c446a0c71d75/Tools/build/generate_sbom.py#L175-L178
+",[],"```
+http.client.RemoteDisconnected: Remote end closed connection without response
+```
+This looks like a temporary network error?
+
+I restarted the job and it passed this time:
+
+https://github.com/python/cpython/actions/runs/13638516783/job/38125989013
+
+",['http.client.RemoteDisconnected: Remote end closed connection without response'],['python'],github,https://github.com/python/cpython/issues/130807,{'repo': 'python/cpython'}
+"data race in update_one_slot in typeobject.c
+
+While running the asyncio tests locally on forever mode on current main, tsan produces warning about data race in update_one_slot.
+
+```console
+WARNING: ThreadSanitizer: data race (pid=3650)
+  Write of size 8 at 0x7f8be0a55fb0 by thread T34:
+    #0 update_one_slot Objects/typeobject.c:11170 (python+0x25eed5) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #1 update_slots_callback Objects/typeobject.c:11183 (python+0x25efcc) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #2 update_subclasses Objects/typeobject.c:11362 (python+0x2524b9) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #3 update_slot Objects/typeobject.c:11221 (python+0x252714) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #4 type_update_dict Objects/typeobject.c:5976 (python+0x252881) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #5 type_setattro Objects/typeobject.c:6050 (python+0x25e52c) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #6 PyObject_SetAttr Objects/object.c:1444 (python+0x202626) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #7 _PyEval_EvalFrameDefault Python/generated_cases.c.h:10641 (python+0x36b2dd) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #8 _PyEval_EvalFrame Include/internal/pycore_ceval.h:116 (python+0x372744) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #9 _PyEval_Vector Python/ceval.c:1838 (python+0x3729ca) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #10 _PyFunction_Vectorcall Objects/call.c:413 (python+0x170cee) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #11 _PyObject_VectorcallTstate Include/internal/pycore_call.h:167 (python+0x175493) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #12 method_vectorcall Objects/classobject.c:72 (python+0x1757b3) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #13 _PyVectorcall_Call Objects/call.c:273 (python+0x1730fd) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #14 _PyObject_Call Objects/call.c:348 (python+0x173528) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #15 PyObject_Call Objects/call.c:373 (python+0x17358c) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #16 thread_run Modules/_threadmodule.c:351 (python+0x4e41ae) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #17 pythread_wrapper Python/thread_pthread.h:242 (python+0x43aa76) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+
+  Previous write of size 8 at 0x7f8be0a55fb0 by main thread:
+    #0 _Py_slot_tp_getattr_hook Objects/typeobject.c:10125 (python+0x25e726) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #1 PyObject_GetAttr Objects/object.c:1290 (python+0x202aef) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #2 _PyEval_EvalFrameDefault Python/generated_cases.c.h:7722 (python+0x35d481) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #3 _PyEval_EvalFrame Include/internal/pycore_ceval.h:116 (python+0x372744) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #4 _PyEval_Vector Python/ceval.c:1838 (python+0x3729ca) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #5 _PyFunction_Vectorcall Objects/call.c:413 (python+0x170cee) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #6 _PyObject_VectorcallTstate Include/internal/pycore_call.h:167 (python+0x175493) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #7 method_vectorcall Objects/classobject.c:94 (python+0x175671) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #8 _PyVectorcall_Call Objects/call.c:273 (python+0x1730fd) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #9 _PyObject_Call Objects/call.c:348 (python+0x173528) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #10 PyObject_Call Objects/call.c:373 (python+0x17358c) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #11 _PyEval_EvalFrameDefault Python/generated_cases.c.h:2424 (python+0x343c2e) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #12 _PyEval_EvalFrame Include/internal/pycore_ceval.h:116 (python+0x372744) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #13 _PyEval_Vector Python/ceval.c:1838 (python+0x3729ca) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #14 _PyFunction_Vectorcall Objects/call.c:413 (python+0x170cee) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #15 _PyObject_VectorcallDictTstate Objects/call.c:135 (python+0x172d30) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #16 _PyObject_Call_Prepend Objects/call.c:504 (python+0x173005) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #17 slot_tp_call Objects/typeobject.c:10058 (python+0x25acb2) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #18 _PyObject_MakeTpCall Objects/call.c:242 (python+0x170f44) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #19 _PyObject_VectorcallTstate Include/internal/pycore_call.h:165 (python+0x1711d5) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #20 PyObject_Vectorcall Objects/call.c:327 (python+0x17128d) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #21 _PyEval_EvalFrameDefault Python/generated_cases.c.h:3837 (python+0x34afe6) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #22 _PyEval_EvalFrame Include/internal/pycore_ceval.h:116 (python+0x372744) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #23 _PyEval_Vector Python/ceval.c:1838 (python+0x3729ca) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #24 _PyFunction_Vectorcall Objects/call.c:413 (python+0x170cee) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #25 _PyObject_VectorcallTstate Include/internal/pycore_call.h:167 (python+0x175493) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #26 method_vectorcall Objects/classobject.c:94 (python+0x175671) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #27 _PyVectorcall_Call Objects/call.c:273 (python+0x1730fd) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #28 _PyObject_Call Objects/call.c:348 (python+0x173528) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #29 PyObject_Call Objects/call.c:373 (python+0x17358c) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #30 _PyEval_EvalFrameDefault Python/generated_cases.c.h:2424 (python+0x343c2e) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #31 _PyEval_EvalFrame Include/internal/pycore_ceval.h:116 (python+0x372744) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #32 _PyEval_Vector Python/ceval.c:1838 (python+0x3729ca) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #33 _PyFunction_Vectorcall Objects/call.c:413 (python+0x170cee) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #34 _PyObject_VectorcallDictTstate Objects/call.c:135 (python+0x172d30) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #35 _PyObject_Call_Prepend Objects/call.c:504 (python+0x173005) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #36 slot_tp_call Objects/typeobject.c:10058 (python+0x25acb2) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #37 _PyObject_MakeTpCall Objects/call.c:242 (python+0x170f44) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #38 _PyObject_VectorcallTstate Include/internal/pycore_call.h:165 (python+0x1711d5) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #39 PyObject_Vectorcall Objects/call.c:327 (python+0x17128d) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #40 _PyEval_EvalFrameDefault Python/generated_cases.c.h:3837 (python+0x34afe6) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #41 _PyEval_EvalFrame Include/internal/pycore_ceval.h:116 (python+0x372744) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #42 _PyEval_Vector Python/ceval.c:1838 (python+0x3729ca) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #43 _PyFunction_Vectorcall Objects/call.c:413 (python+0x170cee) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #44 _PyObject_VectorcallTstate Include/internal/pycore_call.h:167 (python+0x175493) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #45 method_vectorcall Objects/classobject.c:94 (python+0x175671) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #46 _PyVectorcall_Call Objects/call.c:273 (python+0x1730fd) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #47 _PyObject_Call Objects/call.c:348 (python+0x173528) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #48 PyObject_Call Objects/call.c:373 (python+0x17358c) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #49 _PyEval_EvalFrameDefault Python/generated_cases.c.h:2424 (python+0x343c2e) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #50 _PyEval_EvalFrame Include/internal/pycore_ceval.h:116 (python+0x372744) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #51 _PyEval_Vector Python/ceval.c:1838 (python+0x3729ca) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #52 _PyFunction_Vectorcall Objects/call.c:413 (python+0x170cee) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #53 _PyObject_VectorcallDictTstate Objects/call.c:135 (python+0x172d30) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #54 _PyObject_Call_Prepend Objects/call.c:504 (python+0x173005) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #55 slot_tp_call Objects/typeobject.c:10058 (python+0x25acb2) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #56 _PyObject_MakeTpCall Objects/call.c:242 (python+0x170f44) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #57 _PyObject_VectorcallTstate Include/internal/pycore_call.h:165 (python+0x1711d5) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #58 PyObject_Vectorcall Objects/call.c:327 (python+0x17128d) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #59 _PyEval_EvalFrameDefault Python/generated_cases.c.h:1375 (python+0x33ee3f) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #60 _PyEval_EvalFrame Include/internal/pycore_ceval.h:116 (python+0x372744) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #61 _PyEval_Vector Python/ceval.c:1838 (python+0x3729ca) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #62 PyEval_EvalCode Python/ceval.c:766 (python+0x372b3f) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #63 builtin_exec_impl Python/bltinmodule.c:1165 (python+0x32b0b2) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #64 builtin_exec Python/clinic/bltinmodule.c.h:560 (python+0x32b1fe) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #65 cfunction_vectorcall_FASTCALL_KEYWORDS Objects/methodobject.c:452 (python+0x1f7208) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #66 _PyObject_VectorcallTstate Include/internal/pycore_call.h:167 (python+0x171144) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #67 PyObject_Vectorcall Objects/call.c:327 (python+0x17128d) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #68 _PyEval_EvalFrameDefault Python/generated_cases.c.h:1375 (python+0x33ee3f) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #69 _PyEval_EvalFrame Include/internal/pycore_ceval.h:116 (python+0x372744) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #70 _PyEval_Vector Python/ceval.c:1838 (python+0x3729ca) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #71 _PyFunction_Vectorcall Objects/call.c:413 (python+0x170cee) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #72 _PyVectorcall_Call Objects/call.c:273 (python+0x1730fd) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #73 _PyObject_Call Objects/call.c:348 (python+0x173528) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #74 PyObject_Call Objects/call.c:373 (python+0x17358c) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #75 pymain_run_module Modules/main.c:337 (python+0x456176) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #76 pymain_run_python Modules/main.c:673 (python+0x45731d) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #77 Py_RunMain Modules/main.c:760 (python+0x4576de) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #78 pymain_main Modules/main.c:790 (python+0x457795) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #79 Py_BytesMain Modules/main.c:814 (python+0x4578f4) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #80 main Programs/python.c:15 (python+0x85b3b) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+
+
+
+  Thread T34 'Thread-34 (writ' (tid=4140, running) created by main thread at:
+    #0 pthread_create ../../../../src/libsanitizer/tsan/tsan_interceptors_posix.cpp:1022 (libtsan.so.2+0x5ac1a) (BuildId: 38097064631f7912bd33117a9c83d08b42e15571)
+    #1 do_start_joinable_thread Python/thread_pthread.h:289 (python+0x43aec7) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #2 PyThread_start_joinable_thread Python/thread_pthread.h:313 (python+0x43b0bd) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #3 ThreadHandle_start Modules/_threadmodule.c:436 (python+0x4e3b43) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #4 do_start_new_thread Modules/_threadmodule.c:1820 (python+0x4e3d4c) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #5 thread_PyThread_start_joinable_thread Modules/_threadmodule.c:1943 (python+0x4e3fba) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #6 cfunction_call Objects/methodobject.c:551 (python+0x1f80e9) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #7 _PyObject_MakeTpCall Objects/call.c:242 (python+0x170f44) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #8 _PyObject_VectorcallTstate Include/internal/pycore_call.h:165 (python+0x1711d5) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #9 PyObject_Vectorcall Objects/call.c:327 (python+0x17128d) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #10 _PyEval_EvalFrameDefault Python/generated_cases.c.h:3012 (python+0x346d28) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #11 _PyEval_EvalFrame Include/internal/pycore_ceval.h:116 (python+0x372744) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #12 _PyEval_Vector Python/ceval.c:1838 (python+0x3729ca) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #13 _PyFunction_Vectorcall Objects/call.c:413 (python+0x170cee) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #14 _PyObject_VectorcallTstate Include/internal/pycore_call.h:167 (python+0x175493) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #15 method_vectorcall Objects/classobject.c:94 (python+0x175671) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #16 _PyVectorcall_Call Objects/call.c:273 (python+0x1730fd) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #17 _PyObject_Call Objects/call.c:348 (python+0x173528) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #18 PyObject_Call Objects/call.c:373 (python+0x17358c) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #19 _PyEval_EvalFrameDefault Python/generated_cases.c.h:2424 (python+0x343c2e) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #20 _PyEval_EvalFrame Include/internal/pycore_ceval.h:116 (python+0x372744) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #21 _PyEval_Vector Python/ceval.c:1838 (python+0x3729ca) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #22 _PyFunction_Vectorcall Objects/call.c:413 (python+0x170cee) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #23 _PyObject_VectorcallDictTstate Objects/call.c:135 (python+0x172d30) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #24 _PyObject_Call_Prepend Objects/call.c:504 (python+0x173005) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #25 slot_tp_call Objects/typeobject.c:10058 (python+0x25acb2) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #26 _PyObject_MakeTpCall Objects/call.c:242 (python+0x170f44) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #27 _PyObject_VectorcallTstate Include/internal/pycore_call.h:165 (python+0x1711d5) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #28 PyObject_Vectorcall Objects/call.c:327 (python+0x17128d) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #29 _PyEval_EvalFrameDefault Python/generated_cases.c.h:3837 (python+0x34afe6) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #30 _PyEval_EvalFrame Include/internal/pycore_ceval.h:116 (python+0x372744) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #31 _PyEval_Vector Python/ceval.c:1838 (python+0x3729ca) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #32 _PyFunction_Vectorcall Objects/call.c:413 (python+0x170cee) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #33 _PyObject_VectorcallTstate Include/internal/pycore_call.h:167 (python+0x175493) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #34 method_vectorcall Objects/classobject.c:94 (python+0x175671) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #35 _PyVectorcall_Call Objects/call.c:273 (python+0x1730fd) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #36 _PyObject_Call Objects/call.c:348 (python+0x173528) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #37 PyObject_Call Objects/call.c:373 (python+0x17358c) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #38 _PyEval_EvalFrameDefault Python/generated_cases.c.h:2424 (python+0x343c2e) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #39 _PyEval_EvalFrame Include/internal/pycore_ceval.h:116 (python+0x372744) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #40 _PyEval_Vector Python/ceval.c:1838 (python+0x3729ca) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #41 _PyFunction_Vectorcall Objects/call.c:413 (python+0x170cee) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #42 _PyObject_VectorcallDictTstate Objects/call.c:135 (python+0x172d30) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #43 _PyObject_Call_Prepend Objects/call.c:504 (python+0x173005) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #44 slot_tp_call Objects/typeobject.c:10058 (python+0x25acb2) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #45 _PyObject_MakeTpCall Objects/call.c:242 (python+0x170f44) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #46 _PyObject_VectorcallTstate Include/internal/pycore_call.h:165 (python+0x1711d5) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #47 PyObject_Vectorcall Objects/call.c:327 (python+0x17128d) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #48 _PyEval_EvalFrameDefault Python/generated_cases.c.h:3837 (python+0x34afe6) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #49 _PyEval_EvalFrame Include/internal/pycore_ceval.h:116 (python+0x372744) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #50 _PyEval_Vector Python/ceval.c:1838 (python+0x3729ca) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #51 _PyFunction_Vectorcall Objects/call.c:413 (python+0x170cee) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #52 _PyObject_VectorcallTstate Include/internal/pycore_call.h:167 (python+0x175493) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #53 method_vectorcall Objects/classobject.c:94 (python+0x175671) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #54 _PyVectorcall_Call Objects/call.c:273 (python+0x1730fd) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #55 _PyObject_Call Objects/call.c:348 (python+0x173528) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #56 PyObject_Call Objects/call.c:373 (python+0x17358c) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #57 _PyEval_EvalFrameDefault Python/generated_cases.c.h:2424 (python+0x343c2e) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #58 _PyEval_EvalFrame Include/internal/pycore_ceval.h:116 (python+0x372744) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #59 _PyEval_Vector Python/ceval.c:1838 (python+0x3729ca) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #60 _PyFunction_Vectorcall Objects/call.c:413 (python+0x170cee) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #61 _PyObject_VectorcallDictTstate Objects/call.c:135 (python+0x172d30) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #62 _PyObject_Call_Prepend Objects/call.c:504 (python+0x173005) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #63 slot_tp_call Objects/typeobject.c:10058 (python+0x25acb2) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #64 _PyObject_MakeTpCall Objects/call.c:242 (python+0x170f44) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #65 _PyObject_VectorcallTstate Include/internal/pycore_call.h:165 (python+0x1711d5) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #66 PyObject_Vectorcall Objects/call.c:327 (python+0x17128d) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #67 _PyEval_EvalFrameDefault Python/generated_cases.c.h:1375 (python+0x33ee3f) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #68 _PyEval_EvalFrame Include/internal/pycore_ceval.h:116 (python+0x372744) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #69 _PyEval_Vector Python/ceval.c:1838 (python+0x3729ca) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #70 PyEval_EvalCode Python/ceval.c:766 (python+0x372b3f) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #71 builtin_exec_impl Python/bltinmodule.c:1165 (python+0x32b0b2) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #72 builtin_exec Python/clinic/bltinmodule.c.h:560 (python+0x32b1fe) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #73 cfunction_vectorcall_FASTCALL_KEYWORDS Objects/methodobject.c:452 (python+0x1f7208) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #74 _PyObject_VectorcallTstate Include/internal/pycore_call.h:167 (python+0x171144) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #75 PyObject_Vectorcall Objects/call.c:327 (python+0x17128d) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #76 _PyEval_EvalFrameDefault Python/generated_cases.c.h:1375 (python+0x33ee3f) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #77 _PyEval_EvalFrame Include/internal/pycore_ceval.h:116 (python+0x372744) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #78 _PyEval_Vector Python/ceval.c:1838 (python+0x3729ca) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #79 _PyFunction_Vectorcall Objects/call.c:413 (python+0x170cee) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #80 _PyVectorcall_Call Objects/call.c:273 (python+0x1730fd) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #81 _PyObject_Call Objects/call.c:348 (python+0x173528) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #82 PyObject_Call Objects/call.c:373 (python+0x17358c) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #83 pymain_run_module Modules/main.c:337 (python+0x456176) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #84 pymain_run_python Modules/main.c:673 (python+0x45731d) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #85 Py_RunMain Modules/main.c:760 (python+0x4576de) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #86 pymain_main Modules/main.c:790 (python+0x457795) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #87 Py_BytesMain Modules/main.c:814 (python+0x4578f4) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+    #88 main Programs/python.c:15 (python+0x85b3b) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)
+
+SUMMARY: ThreadSanitizer: data race Objects/typeobject.c:11170 in update_one_slot
+```","[""WARNING: ThreadSanitizer: data race (pid=3650)\n  Write of size 8 at 0x7f8be0a55fb0 by thread T34:\n    #0 update_one_slot Objects/typeobject.c:11170 (python+0x25eed5) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #1 update_slots_callback Objects/typeobject.c:11183 (python+0x25efcc) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #2 update_subclasses Objects/typeobject.c:11362 (python+0x2524b9) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #3 update_slot Objects/typeobject.c:11221 (python+0x252714) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #4 type_update_dict Objects/typeobject.c:5976 (python+0x252881) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #5 type_setattro Objects/typeobject.c:6050 (python+0x25e52c) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #6 PyObject_SetAttr Objects/object.c:1444 (python+0x202626) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #7 _PyEval_EvalFrameDefault Python/generated_cases.c.h:10641 (python+0x36b2dd) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #8 _PyEval_EvalFrame Include/internal/pycore_ceval.h:116 (python+0x372744) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #9 _PyEval_Vector Python/ceval.c:1838 (python+0x3729ca) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #10 _PyFunction_Vectorcall Objects/call.c:413 (python+0x170cee) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #11 _PyObject_VectorcallTstate Include/internal/pycore_call.h:167 (python+0x175493) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #12 method_vectorcall Objects/classobject.c:72 (python+0x1757b3) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #13 _PyVectorcall_Call Objects/call.c:273 (python+0x1730fd) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #14 _PyObject_Call Objects/call.c:348 (python+0x173528) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #15 PyObject_Call Objects/call.c:373 (python+0x17358c) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #16 thread_run Modules/_threadmodule.c:351 (python+0x4e41ae) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #17 pythread_wrapper Python/thread_pthread.h:242 (python+0x43aa76) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n\n  Previous write of size 8 at 0x7f8be0a55fb0 by main thread:\n    #0 _Py_slot_tp_getattr_hook Objects/typeobject.c:10125 (python+0x25e726) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #1 PyObject_GetAttr Objects/object.c:1290 (python+0x202aef) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #2 _PyEval_EvalFrameDefault Python/generated_cases.c.h:7722 (python+0x35d481) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #3 _PyEval_EvalFrame Include/internal/pycore_ceval.h:116 (python+0x372744) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #4 _PyEval_Vector Python/ceval.c:1838 (python+0x3729ca) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #5 _PyFunction_Vectorcall Objects/call.c:413 (python+0x170cee) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #6 _PyObject_VectorcallTstate Include/internal/pycore_call.h:167 (python+0x175493) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #7 method_vectorcall Objects/classobject.c:94 (python+0x175671) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #8 _PyVectorcall_Call Objects/call.c:273 (python+0x1730fd) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #9 _PyObject_Call Objects/call.c:348 (python+0x173528) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #10 PyObject_Call Objects/call.c:373 (python+0x17358c) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #11 _PyEval_EvalFrameDefault Python/generated_cases.c.h:2424 (python+0x343c2e) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #12 _PyEval_EvalFrame Include/internal/pycore_ceval.h:116 (python+0x372744) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #13 _PyEval_Vector Python/ceval.c:1838 (python+0x3729ca) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #14 _PyFunction_Vectorcall Objects/call.c:413 (python+0x170cee) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #15 _PyObject_VectorcallDictTstate Objects/call.c:135 (python+0x172d30) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #16 _PyObject_Call_Prepend Objects/call.c:504 (python+0x173005) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #17 slot_tp_call Objects/typeobject.c:10058 (python+0x25acb2) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #18 _PyObject_MakeTpCall Objects/call.c:242 (python+0x170f44) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #19 _PyObject_VectorcallTstate Include/internal/pycore_call.h:165 (python+0x1711d5) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #20 PyObject_Vectorcall Objects/call.c:327 (python+0x17128d) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #21 _PyEval_EvalFrameDefault Python/generated_cases.c.h:3837 (python+0x34afe6) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #22 _PyEval_EvalFrame Include/internal/pycore_ceval.h:116 (python+0x372744) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #23 _PyEval_Vector Python/ceval.c:1838 (python+0x3729ca) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #24 _PyFunction_Vectorcall Objects/call.c:413 (python+0x170cee) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #25 _PyObject_VectorcallTstate Include/internal/pycore_call.h:167 (python+0x175493) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #26 method_vectorcall Objects/classobject.c:94 (python+0x175671) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #27 _PyVectorcall_Call Objects/call.c:273 (python+0x1730fd) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #28 _PyObject_Call Objects/call.c:348 (python+0x173528) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #29 PyObject_Call Objects/call.c:373 (python+0x17358c) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #30 _PyEval_EvalFrameDefault Python/generated_cases.c.h:2424 (python+0x343c2e) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #31 _PyEval_EvalFrame Include/internal/pycore_ceval.h:116 (python+0x372744) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #32 _PyEval_Vector Python/ceval.c:1838 (python+0x3729ca) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #33 _PyFunction_Vectorcall Objects/call.c:413 (python+0x170cee) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #34 _PyObject_VectorcallDictTstate Objects/call.c:135 (python+0x172d30) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #35 _PyObject_Call_Prepend Objects/call.c:504 (python+0x173005) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #36 slot_tp_call Objects/typeobject.c:10058 (python+0x25acb2) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #37 _PyObject_MakeTpCall Objects/call.c:242 (python+0x170f44) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #38 _PyObject_VectorcallTstate Include/internal/pycore_call.h:165 (python+0x1711d5) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #39 PyObject_Vectorcall Objects/call.c:327 (python+0x17128d) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #40 _PyEval_EvalFrameDefault Python/generated_cases.c.h:3837 (python+0x34afe6) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #41 _PyEval_EvalFrame Include/internal/pycore_ceval.h:116 (python+0x372744) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #42 _PyEval_Vector Python/ceval.c:1838 (python+0x3729ca) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #43 _PyFunction_Vectorcall Objects/call.c:413 (python+0x170cee) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #44 _PyObject_VectorcallTstate Include/internal/pycore_call.h:167 (python+0x175493) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #45 method_vectorcall Objects/classobject.c:94 (python+0x175671) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #46 _PyVectorcall_Call Objects/call.c:273 (python+0x1730fd) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #47 _PyObject_Call Objects/call.c:348 (python+0x173528) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #48 PyObject_Call Objects/call.c:373 (python+0x17358c) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #49 _PyEval_EvalFrameDefault Python/generated_cases.c.h:2424 (python+0x343c2e) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #50 _PyEval_EvalFrame Include/internal/pycore_ceval.h:116 (python+0x372744) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #51 _PyEval_Vector Python/ceval.c:1838 (python+0x3729ca) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #52 _PyFunction_Vectorcall Objects/call.c:413 (python+0x170cee) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #53 _PyObject_VectorcallDictTstate Objects/call.c:135 (python+0x172d30) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #54 _PyObject_Call_Prepend Objects/call.c:504 (python+0x173005) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #55 slot_tp_call Objects/typeobject.c:10058 (python+0x25acb2) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #56 _PyObject_MakeTpCall Objects/call.c:242 (python+0x170f44) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #57 _PyObject_VectorcallTstate Include/internal/pycore_call.h:165 (python+0x1711d5) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #58 PyObject_Vectorcall Objects/call.c:327 (python+0x17128d) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #59 _PyEval_EvalFrameDefault Python/generated_cases.c.h:1375 (python+0x33ee3f) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #60 _PyEval_EvalFrame Include/internal/pycore_ceval.h:116 (python+0x372744) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #61 _PyEval_Vector Python/ceval.c:1838 (python+0x3729ca) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #62 PyEval_EvalCode Python/ceval.c:766 (python+0x372b3f) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #63 builtin_exec_impl Python/bltinmodule.c:1165 (python+0x32b0b2) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #64 builtin_exec Python/clinic/bltinmodule.c.h:560 (python+0x32b1fe) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #65 cfunction_vectorcall_FASTCALL_KEYWORDS Objects/methodobject.c:452 (python+0x1f7208) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #66 _PyObject_VectorcallTstate Include/internal/pycore_call.h:167 (python+0x171144) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #67 PyObject_Vectorcall Objects/call.c:327 (python+0x17128d) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #68 _PyEval_EvalFrameDefault Python/generated_cases.c.h:1375 (python+0x33ee3f) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #69 _PyEval_EvalFrame Include/internal/pycore_ceval.h:116 (python+0x372744) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #70 _PyEval_Vector Python/ceval.c:1838 (python+0x3729ca) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #71 _PyFunction_Vectorcall Objects/call.c:413 (python+0x170cee) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #72 _PyVectorcall_Call Objects/call.c:273 (python+0x1730fd) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #73 _PyObject_Call Objects/call.c:348 (python+0x173528) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #74 PyObject_Call Objects/call.c:373 (python+0x17358c) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #75 pymain_run_module Modules/main.c:337 (python+0x456176) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #76 pymain_run_python Modules/main.c:673 (python+0x45731d) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #77 Py_RunMain Modules/main.c:760 (python+0x4576de) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #78 pymain_main Modules/main.c:790 (python+0x457795) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #79 Py_BytesMain Modules/main.c:814 (python+0x4578f4) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #80 main Programs/python.c:15 (python+0x85b3b) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n\n\n\n  Thread T34 'Thread-34 (writ' (tid=4140, running) created by main thread at:\n    #0 pthread_create ../../../../src/libsanitizer/tsan/tsan_interceptors_posix.cpp:1022 (libtsan.so.2+0x5ac1a) (BuildId: 38097064631f7912bd33117a9c83d08b42e15571)\n    #1 do_start_joinable_thread Python/thread_pthread.h:289 (python+0x43aec7) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #2 PyThread_start_joinable_thread Python/thread_pthread.h:313 (python+0x43b0bd) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #3 ThreadHandle_start Modules/_threadmodule.c:436 (python+0x4e3b43) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #4 do_start_new_thread Modules/_threadmodule.c:1820 (python+0x4e3d4c) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #5 thread_PyThread_start_joinable_thread Modules/_threadmodule.c:1943 (python+0x4e3fba) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #6 cfunction_call Objects/methodobject.c:551 (python+0x1f80e9) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #7 _PyObject_MakeTpCall Objects/call.c:242 (python+0x170f44) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #8 _PyObject_VectorcallTstate Include/internal/pycore_call.h:165 (python+0x1711d5) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #9 PyObject_Vectorcall Objects/call.c:327 (python+0x17128d) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #10 _PyEval_EvalFrameDefault Python/generated_cases.c.h:3012 (python+0x346d28) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #11 _PyEval_EvalFrame Include/internal/pycore_ceval.h:116 (python+0x372744) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #12 _PyEval_Vector Python/ceval.c:1838 (python+0x3729ca) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #13 _PyFunction_Vectorcall Objects/call.c:413 (python+0x170cee) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #14 _PyObject_VectorcallTstate Include/internal/pycore_call.h:167 (python+0x175493) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #15 method_vectorcall Objects/classobject.c:94 (python+0x175671) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #16 _PyVectorcall_Call Objects/call.c:273 (python+0x1730fd) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #17 _PyObject_Call Objects/call.c:348 (python+0x173528) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #18 PyObject_Call Objects/call.c:373 (python+0x17358c) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #19 _PyEval_EvalFrameDefault Python/generated_cases.c.h:2424 (python+0x343c2e) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #20 _PyEval_EvalFrame Include/internal/pycore_ceval.h:116 (python+0x372744) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #21 _PyEval_Vector Python/ceval.c:1838 (python+0x3729ca) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #22 _PyFunction_Vectorcall Objects/call.c:413 (python+0x170cee) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #23 _PyObject_VectorcallDictTstate Objects/call.c:135 (python+0x172d30) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #24 _PyObject_Call_Prepend Objects/call.c:504 (python+0x173005) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #25 slot_tp_call Objects/typeobject.c:10058 (python+0x25acb2) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #26 _PyObject_MakeTpCall Objects/call.c:242 (python+0x170f44) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #27 _PyObject_VectorcallTstate Include/internal/pycore_call.h:165 (python+0x1711d5) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #28 PyObject_Vectorcall Objects/call.c:327 (python+0x17128d) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #29 _PyEval_EvalFrameDefault Python/generated_cases.c.h:3837 (python+0x34afe6) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #30 _PyEval_EvalFrame Include/internal/pycore_ceval.h:116 (python+0x372744) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #31 _PyEval_Vector Python/ceval.c:1838 (python+0x3729ca) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #32 _PyFunction_Vectorcall Objects/call.c:413 (python+0x170cee) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #33 _PyObject_VectorcallTstate Include/internal/pycore_call.h:167 (python+0x175493) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #34 method_vectorcall Objects/classobject.c:94 (python+0x175671) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #35 _PyVectorcall_Call Objects/call.c:273 (python+0x1730fd) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #36 _PyObject_Call Objects/call.c:348 (python+0x173528) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #37 PyObject_Call Objects/call.c:373 (python+0x17358c) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #38 _PyEval_EvalFrameDefault Python/generated_cases.c.h:2424 (python+0x343c2e) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #39 _PyEval_EvalFrame Include/internal/pycore_ceval.h:116 (python+0x372744) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #40 _PyEval_Vector Python/ceval.c:1838 (python+0x3729ca) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #41 _PyFunction_Vectorcall Objects/call.c:413 (python+0x170cee) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #42 _PyObject_VectorcallDictTstate Objects/call.c:135 (python+0x172d30) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #43 _PyObject_Call_Prepend Objects/call.c:504 (python+0x173005) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #44 slot_tp_call Objects/typeobject.c:10058 (python+0x25acb2) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #45 _PyObject_MakeTpCall Objects/call.c:242 (python+0x170f44) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #46 _PyObject_VectorcallTstate Include/internal/pycore_call.h:165 (python+0x1711d5) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #47 PyObject_Vectorcall Objects/call.c:327 (python+0x17128d) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #48 _PyEval_EvalFrameDefault Python/generated_cases.c.h:3837 (python+0x34afe6) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #49 _PyEval_EvalFrame Include/internal/pycore_ceval.h:116 (python+0x372744) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #50 _PyEval_Vector Python/ceval.c:1838 (python+0x3729ca) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #51 _PyFunction_Vectorcall Objects/call.c:413 (python+0x170cee) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #52 _PyObject_VectorcallTstate Include/internal/pycore_call.h:167 (python+0x175493) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #53 method_vectorcall Objects/classobject.c:94 (python+0x175671) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #54 _PyVectorcall_Call Objects/call.c:273 (python+0x1730fd) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #55 _PyObject_Call Objects/call.c:348 (python+0x173528) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #56 PyObject_Call Objects/call.c:373 (python+0x17358c) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #57 _PyEval_EvalFrameDefault Python/generated_cases.c.h:2424 (python+0x343c2e) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #58 _PyEval_EvalFrame Include/internal/pycore_ceval.h:116 (python+0x372744) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #59 _PyEval_Vector Python/ceval.c:1838 (python+0x3729ca) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #60 _PyFunction_Vectorcall Objects/call.c:413 (python+0x170cee) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #61 _PyObject_VectorcallDictTstate Objects/call.c:135 (python+0x172d30) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #62 _PyObject_Call_Prepend Objects/call.c:504 (python+0x173005) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #63 slot_tp_call Objects/typeobject.c:10058 (python+0x25acb2) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #64 _PyObject_MakeTpCall Objects/call.c:242 (python+0x170f44) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #65 _PyObject_VectorcallTstate Include/internal/pycore_call.h:165 (python+0x1711d5) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #66 PyObject_Vectorcall Objects/call.c:327 (python+0x17128d) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #67 _PyEval_EvalFrameDefault Python/generated_cases.c.h:1375 (python+0x33ee3f) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #68 _PyEval_EvalFrame Include/internal/pycore_ceval.h:116 (python+0x372744) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #69 _PyEval_Vector Python/ceval.c:1838 (python+0x3729ca) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #70 PyEval_EvalCode Python/ceval.c:766 (python+0x372b3f) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #71 builtin_exec_impl Python/bltinmodule.c:1165 (python+0x32b0b2) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #72 builtin_exec Python/clinic/bltinmodule.c.h:560 (python+0x32b1fe) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #73 cfunction_vectorcall_FASTCALL_KEYWORDS Objects/methodobject.c:452 (python+0x1f7208) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #74 _PyObject_VectorcallTstate Include/internal/pycore_call.h:167 (python+0x171144) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #75 PyObject_Vectorcall Objects/call.c:327 (python+0x17128d) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #76 _PyEval_EvalFrameDefault Python/generated_cases.c.h:1375 (python+0x33ee3f) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #77 _PyEval_EvalFrame Include/internal/pycore_ceval.h:116 (python+0x372744) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #78 _PyEval_Vector Python/ceval.c:1838 (python+0x3729ca) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #79 _PyFunction_Vectorcall Objects/call.c:413 (python+0x170cee) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #80 _PyVectorcall_Call Objects/call.c:273 (python+0x1730fd) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #81 _PyObject_Call Objects/call.c:348 (python+0x173528) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #82 PyObject_Call Objects/call.c:373 (python+0x17358c) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #83 pymain_run_module Modules/main.c:337 (python+0x456176) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #84 pymain_run_python Modules/main.c:673 (python+0x45731d) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #85 Py_RunMain Modules/main.c:760 (python+0x4576de) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #86 pymain_main Modules/main.c:790 (python+0x457795) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #87 Py_BytesMain Modules/main.c:814 (python+0x4578f4) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n    #88 main Programs/python.c:15 (python+0x85b3b) (BuildId: e9c7424f4464401791549097ef8c22a121a12728)\n\nSUMMARY: ThreadSanitizer: data race Objects/typeobject.c:11170 in update_one_slot""]","Ah, the newer suppressions file contains this as suppression https://github.com/python/cpython/commit/f151d271591ec525eaf01fa7b128e575374888b9, seems my setup was using an older one. 
+
+
+",[],['python'],github,https://github.com/python/cpython/issues/131105,{'repo': 'python/cpython'}
+"Handling errors in ctypes callbacks
+
+If an error happens in the callback or in converting result of the callback, it is handled by calling `PyErr_FormatUnraisable()`. If an error happens in preparing arguments for the callback, it is handled in different way -- some message is printed to stderr and then `PyErr_Print()` is called. In one case the error is not properly handled.
+
+It is better to handle all errors in the uniform way. `PyErr_Print()` is not suitable for it because it treats SystemExit specially and has a side effect of setting sys.last_exc` and other variables.
+
+<!-- gh-linked-prs -->
+### Linked PRs
+* gh-129504
+* gh-129517
+* gh-129639
+<!-- /gh-linked-prs -->
+",[],Triage: PR merged and backported. Please re-open if there's more to do.,[],['python'],github,https://github.com/python/cpython/issues/129502,{'repo': 'python/cpython'}
+"Issues while updating binary file
+
+# Bug report
+
+### Bug description:
+
+If we write few records in the structure [NAME, DOB, CLASS,  ROLLNO] eg [‘KARAN’, ‘12/01/2016, , ‘II’, 10] in a binary file. Assume we have written 7 records. Now we want some changes (in length) in any field of any of the records and update the file, suppose record number 4 in name field. If we do it then the remaining records 5th, 6th, and 7th cannot be accessed.
+Reason- due to new size of the record which is updated, it loses the boundary of the remaining record.
+This is a built-in issue in python. 
+
+Code
+import pickle as pk
+
+def writeRec(p):
+    f=open('Data.dat','ab')
+    pk.dump(p,f)
+    f.close()
+    print('Record Written Successfully')
+
+def updateRec(x,y):
+    f=open('Data.dat','rb+')
+    try:
+        c=0
+        while(True):
+            s=f.tell()
+            r=pk.load(f)
+            if(int(r[3])==x):
+                #print(r)
+                c=1
+                r[0]=y
+                print(r)
+                f.seek(s,0)
+                pk.dump(r,f)
+    except:
+        if(c==0):
+            print('Record not found')
+        f.close()
+
+def readRec():
+    f=open('Data.dat','rb')
+    try:
+        while(True):
+            r=pk.load(f)
+            print(r)
+    except:
+        f.close()
+while(True):
+    print('Press 1 for writing')
+    print('Press 2 for update')
+    print('Press 3 for reading')
+    print('Press 4 for exit')
+    k=int(input('Enter your choice::'))
+
+    if(k==1):
+        n=input('Enter name::')
+        d=input('Enter DOB::')
+        c=input('Enter class::')
+        r=int(input('Enter roll no::'))
+        x=[n,d,c,r]
+        writeRec(x)
+    elif(k==2):
+        r=int(input('Enter roll no::'))
+        n=input('Enter Name::')
+        updateRec(r,n)
+    elif(k==3):
+        readRec()
+    elif(k==4):
+        break
+    
+
+
+
+### CPython versions tested on:
+
+3.9
+
+### Operating systems tested on:
+
+_No response_",[],This is not a bug in python. I suggest you ask for help at https://discuss.python.org/c/help/7,[],['python'],github,https://github.com/python/cpython/issues/130301,{'repo': 'python/cpython'}
+"Pasting in new REPL is slow
+
+# Bug report
+
+### Bug description:
+
+Pasting large blocks of text in the new REPL is slow.  Tested by pasting the following string (3035 characters):
+<details>
+<summary>test value</summary>
+
+```python
+""""""1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
+1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
+1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
+1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
+1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
+1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
+1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
+1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
+1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
+1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
+1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
+1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
+1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
+1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
+1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
+1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
+1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
+1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
+1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
+1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
+1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
+1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
+1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
+1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
+1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
+1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
+1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
+1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
+1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
+1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890""""""
+```
+
+</details>
+
+When using the old repl (started via `$env:PYTHON_BASIC_REPL=""true""; python` in powershell), pasting the string is near immediate.  When using the new repl (started via `python` in powershell), pasting the string takes 15 seconds.
+
+The closed issue #119517 also mentioned some pasting performance issues, though that was for Linux with significantly more characters.
+
+
+### CPython versions tested on:
+
+3.13
+
+### Operating systems tested on:
+
+Windows
+
+<!-- gh-linked-prs -->
+### Linked PRs
+* gh-130677
+<!-- /gh-linked-prs -->
+","['""""""1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890\n1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890\n1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890\n1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890\n1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890\n1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890\n1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890\n1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890\n1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890\n1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890\n1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890\n1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890\n1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890\n1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890\n1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890\n1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890\n1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890\n1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890\n1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890\n1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890\n1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890\n1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890\n1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890\n1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890\n1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890\n1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890\n1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890\n1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890\n1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890\n1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890""""""']","Possibly a windows issue, something to do with powershell? On linux (main branch build) it pastes as expected, instantly.
+
+cc windows expert @zooba ",[],['python'],github,https://github.com/python/cpython/issues/130328,{'repo': 'python/cpython'}
+"Windows: OSError: [Errno 22] Invalid argument when trying to open a file with filename length >= 256
+
+# Bug report
+
+### Bug description:
+
+Tested with:
+* Microsoft Windows 10 Pro [10.0.19045 N/A Build 19045]
+* Python version: 3.13.0rc2 (main, Sep  9 2024, 20:49:38) [MSC v.1929 64 bit (AMD64)]
+* `LongPathsEnabled` already enabled in registry
+* NTFS filesystem
+
+The problem is not about the length of the full file path (you can easily pass 500+ without any issue), but the **filename**.
+
+```python
+import sys
+import os
+
+print('Python version:', sys.version)
+
+if not os.path.exists('D:\\' + 'f' * 200):
+    os.mkdir('D:\\' + 'f' * 200)
+
+p1 = ""D:\\"" + 'f' * 200 + '\\' + 'a' * 200
+print(len(p1))
+open(p1, 'w').write('')
+
+p2 = ""D:\\"" + 'f' * 200 + '\\' + 'a' * 255
+print(len(p2))
+open(p2, 'w').write('')
+
+p3 = ""D:\\"" + 'f' * 200 + '\\' + 'a' * 256
+print(len(p3))
+open(p3, 'w').write('')
+
+```
+
+```
+>bug
+Python version: 3.13.0rc2 (main, Sep  9 2024, 20:49:38) [MSC v.1929 64 bit (AMD64)]
+404
+459
+460
+Traceback (most recent call last):
+  File ""D:\long\bug.py"", line 19, in <module>
+    open(p3, 'w').write('')
+    ~~~~^^^^^^^^^
+OSError: [Errno 22] Invalid argument: 'D:\\ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff\\aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+```
+
+As you can see, Python throws a random `OSError: [Errno 22] Invalid argument` when filename is 256-character long.
+
+I also tried to use `R'\\?\D:\'`, does not help.
+
+
+
+### CPython versions tested on:
+
+3.14
+
+### Operating systems tested on:
+
+Windows","['import sys\nimport os\n\nprint(\'Python version:\', sys.version)\n\nif not os.path.exists(\'D:\\\\\' + \'f\' * 200):\n    os.mkdir(\'D:\\\\\' + \'f\' * 200)\n\np1 = ""D:\\\\"" + \'f\' * 200 + \'\\\\\' + \'a\' * 200\nprint(len(p1))\nopen(p1, \'w\').write(\'\')\n\np2 = ""D:\\\\"" + \'f\' * 200 + \'\\\\\' + \'a\' * 255\nprint(len(p2))\nopen(p2, \'w\').write(\'\')\n\np3 = ""D:\\\\"" + \'f\' * 200 + \'\\\\\' + \'a\' * 256\nprint(len(p3))\nopen(p3, \'w\').write(\'\')', '>bug\nPython version: 3.13.0rc2 (main, Sep  9 2024, 20:49:38) [MSC v.1929 64 bit (AMD64)]\n404\n459\n460\nTraceback (most recent call last):\n  File ""D:\\long\\bug.py"", line 19, in <module>\n    open(p3, \'w\').write(\'\')\n    ~~~~^^^^^^^^^\nOSError: [Errno 22] Invalid argument: \'D:\\\\ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff\\\\aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\'']","Sorry, for some reason I totally overlooked the comment ""even with long paths enabled, Windows still has a per-segment limit"" part when reading https://github.com/python/cpython/issues/126929#issuecomment-2483684861 previously. 
+
+Will close as it's unsolvable. ",[],['python'],github,https://github.com/python/cpython/issues/130542,{'repo': 'python/cpython'}
+"Python Python 3.14.0a4 broken ""input"" function in OS GNU/Linux terminals
+
+# Bug report
+
+### Bug description:
+
+GNU/Linux 5.4.19 x86_64 GNU/Linux
+python 3.14.0a4
+`echo $TERM`
+xterm-256color
+`stty -a`
+speed 38400 baud; rows 24; columns 80; line = 0;
+intr = ^C; quit = ^\; erase = ^?; kill = ^U; eof = ^D; eol = <undef>;
+eol2 = <undef>; swtch = <undef>; start = ^Q; stop = ^S; susp = ^Z; rprnt = ^R;
+werase = ^W; lnext = ^V; discard = ^O; min = 1; time = 0;
+-parenb -parodd -cmspar cs8 -hupcl -cstopb cread -clocal -crtscts
+-ignbrk -brkint -ignpar -parmrk -inpck -istrip -inlcr -igncr icrnl ixon -ixoff
+-iuclc -ixany -imaxbel iutf8
+opost -olcuc -ocrnl onlcr -onocr -onlret -ofill -ofdel nl0 cr0 tab0 bs0 vt0 ff0
+isig icanon iexten echo echoe echok -echonl -noflsh -xcase -tostop -echoprt
+echoctl echoke -flusho -extproc
+
+----
+
+If you copy any text to the clipboard, for example, a URL from a browser, and paste it into the terminal, the paste occurs with a control sequence, which is not cut off later.
+
+`$ python program.py`
+```python
+url = input(""Enter url: "")
+
+print(""\nurl ="", url)
+print(repr(f""repr/url = {url}""))
+```
+
+![Image](https://github.com/user-attachments/assets/d7f9e5c4-380d-4c10-9b38-2ecdbd3808b2)
+If you pass the variable ""url"" further for processing, for example to the library ""requests"" an error will occur, since the variable ""url"" contains control sequence characters (detected via ""repr"").
+And secondly: ""\n"" does not work, see code and screenshot.
+
+Why, when you paste text from the clipboard into the terminal, does the control sequence get pasted too? And why isn't it cut off (if it's so important to you)?
+Do you realize how many programs you're breaking with such an ill-considered innovation?
+
+
+
+### CPython versions tested on:
+
+3.14
+
+### Operating systems tested on:
+
+Linux","['url = input(""Enter url: "")\n\nprint(""\\nurl ="", url)\nprint(repr(f""repr/url = {url}""))']","Thanks for quickly realizing your mistake.
+
+> Why, when you paste text from the clipboard into the terminal, does the control sequence get pasted too? And why isn't it cut off (if it's so important to you)?
+Do you realize how many programs you're breaking with such an ill-considered innovation?
+
+Maybe next time you could be a little more tentative in your bug report? ",[],['python'],github,https://github.com/python/cpython/issues/130074,{'repo': 'python/cpython'}
+"datetime: pure Python implementation of `fromisoformat()` handles times with trailing spaces inconsistently with the C extension
+
+# Bug report
+
+### Bug description:
+
+Discovered primarily because PyPy uses the Python version of `datetime` from the stdlib, and `django.utils.dateparse.parse_datetime()` supports wider range of values than the C version of `datetime.datetime.fromisoformat()`, and falls back to their own parser.
+
+```python
+>>> datetime.datetime.fromisoformat(""2012-04-23T10:20:30.400"")
+datetime.datetime(2012, 4, 23, 10, 20, 30, 400000)
+>>> datetime.datetime.fromisoformat(""2012-04-23T10:20:30.400 "")
+datetime.datetime(2012, 4, 23, 10, 20, 30, 40000)
+>>> datetime.datetime.fromisoformat(""2012-04-23T10:20:30.400  "")
+datetime.datetime(2012, 4, 23, 10, 20, 30, 4000)
+>>> datetime.datetime.fromisoformat(""2012-04-23T10:20:30.400   "")
+datetime.datetime(2012, 4, 23, 10, 20, 30, 400)
+>>> datetime.datetime.fromisoformat(""2012-04-23T10:20:30.400    "")
+Traceback (most recent call last):
+  File ""<python-input-9>"", line 1, in <module>
+    datetime.datetime.fromisoformat(""2012-04-23T10:20:30.400    "")
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/home/mgorny/git/cpython/Lib/_pydatetime.py"", line 1949, in fromisoformat
+    raise ValueError(
+        f'Invalid isoformat string: {date_string!r}') from None
+ValueError: Invalid isoformat string: '2012-04-23T10:20:30.400    '
+>>> datetime.datetime.fromisoformat(""2012-04-23T10:20:30.400 +02:30"")
+datetime.datetime(2012, 4, 23, 10, 20, 30, 40000, tzinfo=datetime.timezone(datetime.timedelta(seconds=9000)))
+```
+
+For comparison, the C extension rejects all variants containing spaces, causing Django to use its own parser.
+
+PyPy bug report: https://github.com/pypy/pypy/issues/5240
+
+I'm going to try preparing a patch.
+
+### CPython versions tested on:
+
+3.11, 3.13, CPython main branch
+
+### Operating systems tested on:
+
+Linux
+
+<!-- gh-linked-prs -->
+### Linked PRs
+* gh-130962
+* gh-131076
+* gh-131086
+<!-- /gh-linked-prs -->
+","['>>> datetime.datetime.fromisoformat(""2012-04-23T10:20:30.400"")\ndatetime.datetime(2012, 4, 23, 10, 20, 30, 400000)\n>>> datetime.datetime.fromisoformat(""2012-04-23T10:20:30.400 "")\ndatetime.datetime(2012, 4, 23, 10, 20, 30, 40000)\n>>> datetime.datetime.fromisoformat(""2012-04-23T10:20:30.400  "")\ndatetime.datetime(2012, 4, 23, 10, 20, 30, 4000)\n>>> datetime.datetime.fromisoformat(""2012-04-23T10:20:30.400   "")\ndatetime.datetime(2012, 4, 23, 10, 20, 30, 400)\n>>> datetime.datetime.fromisoformat(""2012-04-23T10:20:30.400    "")\nTraceback (most recent call last):\n  File ""<python-input-9>"", line 1, in <module>\n    datetime.datetime.fromisoformat(""2012-04-23T10:20:30.400    "")\n    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File ""/home/mgorny/git/cpython/Lib/_pydatetime.py"", line 1949, in fromisoformat\n    raise ValueError(\n        f\'Invalid isoformat string: {date_string!r}\') from None\nValueError: Invalid isoformat string: \'2012-04-23T10:20:30.400    \'\n>>> datetime.datetime.fromisoformat(""2012-04-23T10:20:30.400 +02:30"")\ndatetime.datetime(2012, 4, 23, 10, 20, 30, 40000, tzinfo=datetime.timezone(datetime.timedelta(seconds=9000)))']","Hmm, another difference is that when giving 6 digits of microseconds, C implementation accepts them but Python implementation does not:
+
+```py
+>>> datetime.datetime.fromisoformat(""2021-12-20T05:05:05.600000 +02:30"")
+datetime.datetime(2021, 12, 20, 5, 5, 5, 600000, tzinfo=datetime.timezone(datetime.timedelta(seconds=9000)))
+>>> _pydatetime.datetime.fromisoformat(""2021-12-20T05:05:05.600000 +02:30"")
+Traceback (most recent call last):
+  File ""<stdin>"", line 1, in <module>
+  File ""/home/mgorny/miniforge3/lib/python3.12/_pydatetime.py"", line 1874, in fromisoformat
+    raise ValueError(
+ValueError: Invalid isoformat string: '2021-12-20T05:05:05.600000 +02:30'
+```","['>>> datetime.datetime.fromisoformat(""2021-12-20T05:05:05.600000 +02:30"")\ndatetime.datetime(2021, 12, 20, 5, 5, 5, 600000, tzinfo=datetime.timezone(datetime.timedelta(seconds=9000)))\n>>> _pydatetime.datetime.fromisoformat(""2021-12-20T05:05:05.600000 +02:30"")\nTraceback (most recent call last):\n  File ""<stdin>"", line 1, in <module>\n  File ""/home/mgorny/miniforge3/lib/python3.12/_pydatetime.py"", line 1874, in fromisoformat\n    raise ValueError(\nValueError: Invalid isoformat string: \'2021-12-20T05:05:05.600000 +02:30\'']",['python'],github,https://github.com/python/cpython/issues/130959,{'repo': 'python/cpython'}
+"You should know these f-string tricks
+
+F-strings are faster than the other string formatting methods and are easier to read and use.
+Here are some tricks you may not have known.
+
+### 1. Number formatting :
+You can do various formatting with numbers.
+```
+&gt;&gt;&gt; number = 150
+
+&gt;&gt;&gt; # decimal places to n -&gt; .nf
+&gt;&gt;&gt; print(f""number: {number:.2f}"")
+number: 150.00
+
+&gt;&gt;&gt; # hex conversion
+&gt;&gt;&gt; print(f""hex: {number:#0x}"")
+hex: 0x96
+
+&gt;&gt;&gt; # binary conversion
+&gt;&gt;&gt; print(f""binary: {number:b}"")
+binary: 10010110
+
+&gt;&gt;&gt; # octal conversion
+&gt;&gt;&gt; print(f""octal: {number:o}"")
+octal: 226
+
+&gt;&gt;&gt; # scientific notation
+&gt;&gt;&gt; print(f""scientific: {number:e}"")
+scientific: 1.500000e+02
+
+&gt;&gt;&gt; # total number of characters
+&gt;&gt;&gt; print(f""Number: {number:09}"")
+Number: 000000150
+
+&gt;&gt;&gt; ratio = 1 / 2
+&gt;&gt;&gt; # percentage with 2 decimal places
+&gt;&gt;&gt; print(f""percentage = {ratio:.2%}"")
+percentage = 50.00%
+```
+### 2. Stop writing print(f”var = {var}”)
+This is the debug feature with f-strings.
+This is known as self-documenting expression released in Python 3.8 .
+
+```
+&gt;&gt;&gt; a, b = 5, 15
+&gt;&gt;&gt; print(f""a = {a}"") # Doing this ?
+a = 5
+&gt;&gt;&gt; # Do this instead.
+&gt;&gt;&gt; print(f""{a = }"")
+a = 5
+&gt;&gt;&gt; # Arithmatic operations
+&gt;&gt;&gt; print(f""{a + b = }"")
+a + b = 20
+&gt;&gt;&gt; # with formatting
+&gt;&gt;&gt; print(f""{a + b = :.2f}"")
+a + b = 20.00
+```
+### 3. Date formatting
+You can do `strftime()` formattings from f-string.
+```
+&gt;&gt;&gt; import datetime
+
+&gt;&gt;&gt; today = datetime.datetime.now()
+&gt;&gt;&gt; print(f""datetime : {today}"")
+datetime : 2023-10-27 11:05:40.282314
+
+&gt;&gt;&gt; print(f""date time: {today:%m/%d/%Y %H:%M:%S}"")
+date time: 10/27/2023 11:05:40
+
+&gt;&gt;&gt; print(f""date: {today:%m/%d/%Y}"")
+date: 10/27/2023
+
+&gt;&gt;&gt; print(f""time: {today:%H:%M:%S %p}"")
+time: 11:05:40 AM
+```
+Check [more formatting options](https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes).
+
+Part 2 - https://www.reddit.com/r/Python/s/Tzx7QQwa7A
+
+#### Thank you for reading!
+##### Comment down other tricks you know.","['&gt;&gt;&gt; number = 150\n\n&gt;&gt;&gt; # decimal places to n -&gt; .nf\n&gt;&gt;&gt; print(f""number: {number:.2f}"")\nnumber: 150.00\n\n&gt;&gt;&gt; # hex conversion\n&gt;&gt;&gt; print(f""hex: {number:#0x}"")\nhex: 0x96\n\n&gt;&gt;&gt; # binary conversion\n&gt;&gt;&gt; print(f""binary: {number:b}"")\nbinary: 10010110\n\n&gt;&gt;&gt; # octal conversion\n&gt;&gt;&gt; print(f""octal: {number:o}"")\noctal: 226\n\n&gt;&gt;&gt; # scientific notation\n&gt;&gt;&gt; print(f""scientific: {number:e}"")\nscientific: 1.500000e+02\n\n&gt;&gt;&gt; # total number of characters\n&gt;&gt;&gt; print(f""Number: {number:09}"")\nNumber: 000000150\n\n&gt;&gt;&gt; ratio = 1 / 2\n&gt;&gt;&gt; # percentage with 2 decimal places\n&gt;&gt;&gt; print(f""percentage = {ratio:.2%}"")\npercentage = 50.00%', '&gt;&gt;&gt; a, b = 5, 15\n&gt;&gt;&gt; print(f""a = {a}"") # Doing this ?\na = 5\n&gt;&gt;&gt; # Do this instead.\n&gt;&gt;&gt; print(f""{a = }"")\na = 5\n&gt;&gt;&gt; # Arithmatic operations\n&gt;&gt;&gt; print(f""{a + b = }"")\na + b = 20\n&gt;&gt;&gt; # with formatting\n&gt;&gt;&gt; print(f""{a + b = :.2f}"")\na + b = 20.00', '&gt;&gt;&gt; import datetime\n\n&gt;&gt;&gt; today = datetime.datetime.now()\n&gt;&gt;&gt; print(f""datetime : {today}"")\ndatetime : 2023-10-27 11:05:40.282314\n\n&gt;&gt;&gt; print(f""date time: {today:%m/%d/%Y %H:%M:%S}"")\ndate time: 10/27/2023 11:05:40\n\n&gt;&gt;&gt; print(f""date: {today:%m/%d/%Y}"")\ndate: 10/27/2023\n\n&gt;&gt;&gt; print(f""time: {today:%H:%M:%S %p}"")\ntime: 11:05:40 AM']",See comments on Reddit,[],['Python'],reddit,https://www.reddit.com/r/Python/comments/17hgu5o/you_should_know_these_fstring_tricks/,{'subreddit': 'Python'}
+"Summary on Azure DevOps is not sync with README.md on GitHub
+
+# Documentation
+
+For example on the Azure DevOps summary
+
+https://dev.azure.com/python/cpython
+
+![Image](https://github.com/user-attachments/assets/f3bd5d24-921c-4547-a676-a760ca45f623)
+
+
+But on GitHub https://github.com/python/cpython/
+
+![Image](https://github.com/user-attachments/assets/d46778ff-fd54-43f8-b448-2374def80e83)",[],"We control it, and yes, it's updated by hand. We still use it for release builds, as there is much better control over access to secure resources than (public) GitHub offers.
+
+This isn't worth worrying about. It's certainly not worth automation to update. If anything, we should delete the readme contents there so that people don't file issues like this. I'll do that now.",[],['python'],github,https://github.com/python/cpython/issues/130628,{'repo': 'python/cpython'}
+"Improve traceability of assertion errors in common functions
+
+# Feature request
+
+(By @picnizx)
+
+While the C API docs explicitly state that functions should usually not be called with an exception set, else some assertion errors may occur and/or the thread state may be invalid, this means that `assert(!PyErr_Occurred())` in common macros / functions such as `_PyType_LookupRef` would just crash. However, in a CI scenario, without a debugger, it's extremely hard to pinpoint the actual cause. 
+
+Related: https://github.com/python/cpython/pull/128159 would give the possibility to show the C stack trace with `-X faulthandler`.
+
+A crude idea: add `assert(!PyErr_Occurred())` inside public common C API functions to be sure that the assertion is checked as well, making debugging a bit easier.
+
+----
+
+### Toy Scenario (original request):
+
+I was working on freethread support for `pygame-ce`, and I finally need to use a python build with debug symbols, and our `atexit`-registered `quit` function was causing `SIGABRT` to be thrown. This took me a while to figure out. Here's all the code you need to run (or just run `python -c ""import pygame""` since `pygame.quit()` is `atexit`-registered).
+
+```python
+import pygame
+pygame.quit()
+```
+
+Here's the guilty block of code in our codebase:
+```c
+    funcobj = PyObject_GetAttrString(module, ""_internal_mod_quit"");
+
+    /* If we could not load _internal_mod_quit, load quit function */
+    if (!funcobj)
+        funcobj = PyObject_GetAttrString(module, ""quit"");
+
+    /* Silence errors */
+    if (PyErr_Occurred())
+        PyErr_Clear();
+```
+In [the 3.12 docs for `PyObject_GetAttrString` and `PyObject_GetAttr`](https://docs.python.org/3.12/c-api/object.html#c.PyObject_GetAttrString). there's no mention at all that there shouldn't be any exceptions set before calling this function, and it works on release versions of python, so nobody has ever questioned this structure. I'll be making a pull request on our end to clear any exceptions between the first call and second call if needed (or use `PyObject_GetOptionalAttrString` in 3.13+).
+
+The reason for this issue is that I'm not sure throwing a `SIGABRT` is the best option here.
+
+<details>
+<summary>gdb backtrace on a debug python 3.13t</summary>
+<br>
+[gdb.txt](https://github.com/user-attachments/files/18922524/gdb.txt)
+</details>
+
+
+### CPython versions tested on:
+
+3.12, 3.13, 3.14
+
+### Operating systems tested on:
+
+Linux","['import pygame\npygame.quit()', 'funcobj = PyObject_GetAttrString(module, ""_internal_mod_quit"");\n\n    /* If we could not load _internal_mod_quit, load quit function */\n    if (!funcobj)\n        funcobj = PyObject_GetAttrString(module, ""quit"");\n\n    /* Silence errors */\n    if (PyErr_Occurred())\n        PyErr_Clear();']","> Rather than assert(!PyErr_Occurred()), it could be interesting to add a _Py_SanityCheck() for debugging. Something like this?
+
+Yes, I thought of something like this that can be hidden behind an `#ifndef NDEBUG` and that would be a no-op macro otherwise. I don't know how long that task would be but it could definitely help users targetting where the exact failures happen. I mean, if you can use a debugger, it's fine, but if you cannot (and not ""don't know""), then it's pretty hard to debug CI.
+
+EDIT: we likely need a macro otherwise, the location will also fail I think. Because the `__FILE__` and `__LINE__` would point to where the assertion failed, so if it failed in a function called, it wouldn't help.",[],['python'],github,https://github.com/python/cpython/issues/130454,{'repo': 'python/cpython'}
+"test_math.test_fma_zero_result() fails with the musl C library
+
+# Bug report
+
+### Bug description:
+
+1. While installing Python 3.13 version in docker:dind endingup without installation, getting the issue like as mentioned below
+
+	```
+	675.0 0:00:26 load avg: 0.94 [18/44] test_fstring
+	675.0 /Python-3.13.2/Lib/test/test_fstring.py:1655: SyntaxWarning: invalid escape sequence '\N'
+	675.0   self.assertEqual(f'{b""\N{OX}""=}', 'b""\\N{OX}""=b\'\\\\N{OX}\'')
+	691.8 0:00:43 load avg: 0.96 [19/44] test_functools
+	692.5 0:00:44 load avg: 0.96 [20/44] test_generators
+	692.9 0:00:44 load avg: 0.96 [21/44] test_hashlib
+	693.7 0:00:45 load avg: 0.96 [22/44] test_heapq
+	694.4 0:00:46 load avg: 0.96 [23/44] test_int
+	695.2 0:00:47 load avg: 0.96 [24/44] test_itertools
+	699.8 0:00:51 load avg: 0.96 [25/44] test_json
+	704.2 0:00:56 load avg: 0.96 [26/44] test_long
+	706.7 0:00:58 load avg: 0.97 [27/44] test_lzma
+	706.8 0:00:58 load avg: 0.97 [28/44] test_math -- test_lzma skipped
+	709.6 test test_math failed
+	709.6 0:01:01 load avg: 0.97 [29/44] test_memoryview -- test_math failed (1 failure)
+	710.1 0:01:01 load avg: 0.97 [30/44] test_operator
+	710.3 0:01:02 load avg: 0.97 [31/44] test_ordered_dict
+	711.5 0:01:03 load avg: 0.97 [32/44] test_patma
+	711.7 0:01:03 load avg: 0.97 [33/44] test_pickle
+	718.3 0:01:10 load avg: 0.97 [34/44] test_pprint
+	718.6 0:01:10 load avg: 0.97 [35/44] test_re
+	719.7 test test_re failed
+	719.7 0:01:11 load avg: 0.98 [36/44] test_set -- test_re failed (2 failures)
+	724.7 0:01:16 load avg: 0.98 [37/44] test_sqlite3
+	725.6 0:01:17 load avg: 0.98 [38/44] test_statistics
+	733.0 0:01:24 load avg: 0.98 [39/44] test_str
+	735.1 0:01:26 load avg: 0.98 [40/44] test_struct
+	735.8 0:01:27 load avg: 0.98 [41/44] test_tabnanny
+	736.3 0:01:28 load avg: 0.98 [42/44] test_time
+	739.5 0:01:31 load avg: 0.98 [43/44] test_xml_etree
+	740.2 0:01:32 load avg: 0.98 [44/44] test_xml_etree_c
+	741.3
+	741.3 Total duration: 1 min 33 sec
+	741.3 Total tests: run=9,178 failures=3 skipped=203
+	741.3 Total test files: run=44/44 failed=2 skipped=2
+	741.3 Result: FAILURE
+	741.3 make: *** [Makefile:886: profile-run-stamp] Error 2
+	```
+
+2. Which is happening in only docker:dind, when I am trying in centos, ubuntu able to install.
+3. And one more with the Python 3.12.9 version able to install in in docker:dind and logs are 
+
+	```
+	#15 578.8 0:00:21 load avg: 1.50 [18/44] test_fstring
+	#15 578.8 /Python-3.12.9/Lib/test/test_fstring.py:1769: SyntaxWarning: invalid escape sequence '\N'
+	#15 578.8   self.assertEqual(f'{b""\N{OX}""=}', 'b""\\N{OX}""=b\'\\\\N{OX}\'')
+	#15 593.3 0:00:35 load avg: 1.39 [19/44] test_functools
+	#15 593.8 0:00:36 load avg: 1.36 [20/44] test_generators
+	#15 594.1 0:00:36 load avg: 1.36 [21/44] test_hashlib
+	#15 594.8 0:00:37 load avg: 1.36 [22/44] test_heapq
+	#15 595.3 0:00:37 load avg: 1.36 [23/44] test_int
+	#15 595.7 0:00:38 load avg: 1.36 [24/44] test_itertools
+	#15 599.2 0:00:41 load avg: 1.33 [25/44] test_json
+	#15 629.5 0:01:11 load avg: 1.20 [26/44] test_long -- test_json passed in 30.3 sec
+	#15 631.7 0:01:13 load avg: 1.20 [27/44] test_lzma
+	#15 631.8 0:01:14 load avg: 1.20 [28/44] test_math -- test_lzma skipped
+	#15 633.8 0:01:16 load avg: 1.20 [29/44] test_memoryview
+	#15 634.4 0:01:16 load avg: 1.18 [30/44] test_operator
+	#15 634.5 0:01:16 load avg: 1.18 [31/44] test_ordered_dict
+	#15 635.5 0:01:17 load avg: 1.18 [32/44] test_patma
+	#15 635.8 0:01:18 load avg: 1.18 [33/44] test_pickle
+	#15 641.0 0:01:23 load avg: 1.17 [34/44] test_pprint
+	#15 641.3 0:01:23 load avg: 1.17 [35/44] test_re
+	#15 642.1 test test_re failed
+	#15 642.1 0:01:24 load avg: 1.17 [36/44] test_set -- test_re failed (2 failures)
+	#15 646.1 0:01:28 load avg: 1.15 [37/44] test_sqlite3
+	#15 646.9 0:01:29 load avg: 1.15 [38/44] test_statistics
+	#15 648.3 0:01:30 load avg: 1.15 [39/44] test_struct
+	#15 648.9 0:01:31 load avg: 1.22 [40/44] test_tabnanny
+	#15 649.4 0:01:31 load avg: 1.22 [41/44] test_time
+	#15 652.5 0:01:34 load avg: 1.22 [42/44] test_unicode
+	#15 654.5 0:01:36 load avg: 1.20 [43/44] test_xml_etree
+	#15 655.0 0:01:37 load avg: 1.20 [44/44] test_xml_etree_c
+	#15 655.9 
+	#15 655.9 Total duration: 1 min 38 sec
+	#15 655.9 Total tests: run=8,930 failures=2 skipped=192
+	#15 655.9 Total test files: run=44/44 failed=1 skipped=2
+	#15 655.9 Result: FAILURE
+	#15 656.0 true
+	#15 656.0 # Remove profile generation binary since we are done with it.
+	#15 656.0 make clean-retain-profile
+	#15 656.1 make[1]: Entering directory '/Python-3.12.9'
+	#15 656.1 find . -depth -name '__pycache__' -exec rm -rf {} ';'
+	#15 656.2 find . -name '*.py[co]' -exec rm -f {} ';'
+	#15 656.2 find . -name '*.[oa]' -exec rm -f {} ';'
+	#15 656.5 find . -name '*.s[ol]' -exec rm -f {} ';'
+	#15 656.6 find . -name '*.so.[0-9]*.[0-9]*' -exec rm -f {} ';'
+	#15 656.7 find . -name '*.lto' -exec rm -f {} ';'
+	#15 656.7 find . -name '*.wasm' -exec rm -f {} ';'
+	#15 656.7 find . -name '*.lst' -exec rm -f {} ';'
+	#15 656.8 find build -name 'fficonfig.h' -exec rm -f {} ';' || true
+	#15 656.8 find build -name '*.py' -exec rm -f {} ';' || true
+	#15 656.8 find build -name '*.py[co]' -exec rm -f {} ';' || true
+	#15 656.8 rm -f pybuilddir.txt
+	#15 656.8 rm -f Lib/lib2to3/*Grammar*.pickle
+	```
+
+4. So what could be the issue ?. 
+5. I am using following Dockerfile code to install Python
+
+	```
+	# Use the official Docker DinD image as the base image
+	ARG PYTHON_VERSION=3.13.2
+	FROM docker:dind
+
+	# Install necessary packages and dependencies
+	RUN apk add --no-cache \
+		build-base \
+		bzip2-dev \
+		ncurses-dev \
+		gdbm-dev \
+		xz-dev \
+		tk-dev \
+		util-linux-dev \
+		readline-dev \
+		zlib-dev \
+		openssl-dev \
+		libffi-dev \
+		wget
+
+	RUN wget https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz \
+		&& tar xvf Python-${PYTHON_VERSION}.tgz \
+		&& cd Python-${PYTHON_VERSION} \
+		&& ./configure --enable-optimizations \
+		&& make altinstall \
+		&& pip3.13 install --upgrade pip
+	```
+
+
+### CPython versions tested on:
+
+3.13
+
+### Operating systems tested on:
+
+Linux
+
+<!-- gh-linked-prs -->
+### Linked PRs
+* gh-131071
+* gh-131134
+<!-- /gh-linked-prs -->
+","['675.0 0:00:26 load avg: 0.94 [18/44] test_fstring\n\t675.0 /Python-3.13.2/Lib/test/test_fstring.py:1655: SyntaxWarning: invalid escape sequence \'\\N\'\n\t675.0   self.assertEqual(f\'{b""\\N{OX}""=}\', \'b""\\\\N{OX}""=b\\\'\\\\\\\\N{OX}\\\'\')\n\t691.8 0:00:43 load avg: 0.96 [19/44] test_functools\n\t692.5 0:00:44 load avg: 0.96 [20/44] test_generators\n\t692.9 0:00:44 load avg: 0.96 [21/44] test_hashlib\n\t693.7 0:00:45 load avg: 0.96 [22/44] test_heapq\n\t694.4 0:00:46 load avg: 0.96 [23/44] test_int\n\t695.2 0:00:47 load avg: 0.96 [24/44] test_itertools\n\t699.8 0:00:51 load avg: 0.96 [25/44] test_json\n\t704.2 0:00:56 load avg: 0.96 [26/44] test_long\n\t706.7 0:00:58 load avg: 0.97 [27/44] test_lzma\n\t706.8 0:00:58 load avg: 0.97 [28/44] test_math -- test_lzma skipped\n\t709.6 test test_math failed\n\t709.6 0:01:01 load avg: 0.97 [29/44] test_memoryview -- test_math failed (1 failure)\n\t710.1 0:01:01 load avg: 0.97 [30/44] test_operator\n\t710.3 0:01:02 load avg: 0.97 [31/44] test_ordered_dict\n\t711.5 0:01:03 load avg: 0.97 [32/44] test_patma\n\t711.7 0:01:03 load avg: 0.97 [33/44] test_pickle\n\t718.3 0:01:10 load avg: 0.97 [34/44] test_pprint\n\t718.6 0:01:10 load avg: 0.97 [35/44] test_re\n\t719.7 test test_re failed\n\t719.7 0:01:11 load avg: 0.98 [36/44] test_set -- test_re failed (2 failures)\n\t724.7 0:01:16 load avg: 0.98 [37/44] test_sqlite3\n\t725.6 0:01:17 load avg: 0.98 [38/44] test_statistics\n\t733.0 0:01:24 load avg: 0.98 [39/44] test_str\n\t735.1 0:01:26 load avg: 0.98 [40/44] test_struct\n\t735.8 0:01:27 load avg: 0.98 [41/44] test_tabnanny\n\t736.3 0:01:28 load avg: 0.98 [42/44] test_time\n\t739.5 0:01:31 load avg: 0.98 [43/44] test_xml_etree\n\t740.2 0:01:32 load avg: 0.98 [44/44] test_xml_etree_c\n\t741.3\n\t741.3 Total duration: 1 min 33 sec\n\t741.3 Total tests: run=9,178 failures=3 skipped=203\n\t741.3 Total test files: run=44/44 failed=2 skipped=2\n\t741.3 Result: FAILURE\n\t741.3 make: *** [Makefile:886: profile-run-stamp] Error 2', '#15 578.8 0:00:21 load avg: 1.50 [18/44] test_fstring\n\t#15 578.8 /Python-3.12.9/Lib/test/test_fstring.py:1769: SyntaxWarning: invalid escape sequence \'\\N\'\n\t#15 578.8   self.assertEqual(f\'{b""\\N{OX}""=}\', \'b""\\\\N{OX}""=b\\\'\\\\\\\\N{OX}\\\'\')\n\t#15 593.3 0:00:35 load avg: 1.39 [19/44] test_functools\n\t#15 593.8 0:00:36 load avg: 1.36 [20/44] test_generators\n\t#15 594.1 0:00:36 load avg: 1.36 [21/44] test_hashlib\n\t#15 594.8 0:00:37 load avg: 1.36 [22/44] test_heapq\n\t#15 595.3 0:00:37 load avg: 1.36 [23/44] test_int\n\t#15 595.7 0:00:38 load avg: 1.36 [24/44] test_itertools\n\t#15 599.2 0:00:41 load avg: 1.33 [25/44] test_json\n\t#15 629.5 0:01:11 load avg: 1.20 [26/44] test_long -- test_json passed in 30.3 sec\n\t#15 631.7 0:01:13 load avg: 1.20 [27/44] test_lzma\n\t#15 631.8 0:01:14 load avg: 1.20 [28/44] test_math -- test_lzma skipped\n\t#15 633.8 0:01:16 load avg: 1.20 [29/44] test_memoryview\n\t#15 634.4 0:01:16 load avg: 1.18 [30/44] test_operator\n\t#15 634.5 0:01:16 load avg: 1.18 [31/44] test_ordered_dict\n\t#15 635.5 0:01:17 load avg: 1.18 [32/44] test_patma\n\t#15 635.8 0:01:18 load avg: 1.18 [33/44] test_pickle\n\t#15 641.0 0:01:23 load avg: 1.17 [34/44] test_pprint\n\t#15 641.3 0:01:23 load avg: 1.17 [35/44] test_re\n\t#15 642.1 test test_re failed\n\t#15 642.1 0:01:24 load avg: 1.17 [36/44] test_set -- test_re failed (2 failures)\n\t#15 646.1 0:01:28 load avg: 1.15 [37/44] test_sqlite3\n\t#15 646.9 0:01:29 load avg: 1.15 [38/44] test_statistics\n\t#15 648.3 0:01:30 load avg: 1.15 [39/44] test_struct\n\t#15 648.9 0:01:31 load avg: 1.22 [40/44] test_tabnanny\n\t#15 649.4 0:01:31 load avg: 1.22 [41/44] test_time\n\t#15 652.5 0:01:34 load avg: 1.22 [42/44] test_unicode\n\t#15 654.5 0:01:36 load avg: 1.20 [43/44] test_xml_etree\n\t#15 655.0 0:01:37 load avg: 1.20 [44/44] test_xml_etree_c\n\t#15 655.9 \n\t#15 655.9 Total duration: 1 min 38 sec\n\t#15 655.9 Total tests: run=8,930 failures=2 skipped=192\n\t#15 655.9 Total test files: run=44/44 failed=1 skipped=2\n\t#15 655.9 Result: FAILURE\n\t#15 656.0 true\n\t#15 656.0 # Remove profile generation binary since we are done with it.\n\t#15 656.0 make clean-retain-profile\n\t#15 656.1 make[1]: Entering directory \'/Python-3.12.9\'\n\t#15 656.1 find . -depth -name \'__pycache__\' -exec rm -rf {} \';\'\n\t#15 656.2 find . -name \'*.py[co]\' -exec rm -f {} \';\'\n\t#15 656.2 find . -name \'*.[oa]\' -exec rm -f {} \';\'\n\t#15 656.5 find . -name \'*.s[ol]\' -exec rm -f {} \';\'\n\t#15 656.6 find . -name \'*.so.[0-9]*.[0-9]*\' -exec rm -f {} \';\'\n\t#15 656.7 find . -name \'*.lto\' -exec rm -f {} \';\'\n\t#15 656.7 find . -name \'*.wasm\' -exec rm -f {} \';\'\n\t#15 656.7 find . -name \'*.lst\' -exec rm -f {} \';\'\n\t#15 656.8 find build -name \'fficonfig.h\' -exec rm -f {} \';\' || true\n\t#15 656.8 find build -name \'*.py\' -exec rm -f {} \';\' || true\n\t#15 656.8 find build -name \'*.py[co]\' -exec rm -f {} \';\' || true\n\t#15 656.8 rm -f pybuilddir.txt\n\t#15 656.8 rm -f Lib/lib2to3/*Grammar*.pickle', '# Use the official Docker DinD image as the base image\n\tARG PYTHON_VERSION=3.13.2\n\tFROM docker:dind\n\n\t# Install necessary packages and dependencies\n\tRUN apk add --no-cache \\\n\t\tbuild-base \\\n\t\tbzip2-dev \\\n\t\tncurses-dev \\\n\t\tgdbm-dev \\\n\t\txz-dev \\\n\t\ttk-dev \\\n\t\tutil-linux-dev \\\n\t\treadline-dev \\\n\t\tzlib-dev \\\n\t\topenssl-dev \\\n\t\tlibffi-dev \\\n\t\twget\n\n\tRUN wget https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz \\\n\t\t&& tar xvf Python-${PYTHON_VERSION}.tgz \\\n\t\t&& cd Python-${PYTHON_VERSION} \\\n\t\t&& ./configure --enable-optimizations \\\n\t\t&& make altinstall \\\n\t\t&& pip3.13 install --upgrade pip']",Can you try to re-run test_math in verbose mode? Something like: `./python -m test test_math -v` in the directory where you built Python.,[],['python'],github,https://github.com/python/cpython/issues/131032,{'repo': 'python/cpython'}
+"In 3.13.* if custom asyncio task factory is set and no task name is provided to asyncio.create_task, task name provided by task factory is overwritten to ""None"".
+
+# Bug report
+
+### Bug description:
+
+Code below illustrate a behavior change in 3.13 which I believe is a bug, which ""Task-2"" the task name becomes ""None"" while calling asyncio.current_task().get_name()
+
+```python
+import asyncio
+
+def task_factory(loop, *args, **kwargs):
+    new_task = asyncio.Task(*args, **kwargs)
+    name = new_task.get_name()
+    # Python 3.9 to 3.13 prints name='Task-2'
+    # 'Task-3' and 'Task-4' is also printed because loop is shutting down, which is not in the scope of (possible) bug
+    print(f""{name=}"")
+    return new_task
+
+async def print_task_name():
+    current_task = asyncio.current_task()
+    name = current_task.get_name()
+    # Python 3.13 prints name='None' (but why does it print 'Task-2' before it's returned from task_factory() ?)
+    # Python 3.9 to 3.12 prints name='Task-2'
+    print(f""{name=}"")
+
+async def main():
+    loop = asyncio.get_running_loop()
+    loop.set_task_factory(task_factory)
+    new_task = asyncio.create_task(print_task_name())
+    await new_task
+
+asyncio.run(main())
+```
+The source of bug/behavior change is that https://github.com/python/cpython/blob/v3.13.2/Lib/asyncio/base_events.py#L478 a set_name() is called unconditionally and version before 3.13 (e.g. https://github.com/python/cpython/blob/v3.12.9/Lib/asyncio/tasks.py#L70 ) setting task name to None does nothing which avoided the issue with custom task factory setting it's own task name.
+
+If using a task factory, the task name can't be generated by task factory because it gets rewritten to name provided by asyncio.create_task(), which I think most people doesn't provide one.
+
+Suggestion: check if name parameter is None before overwriting task name in create_task(), otherwise keep task name generated by task factory, and probably pass ""name"" parameter to task factory.
+
+### CPython versions tested on:
+
+3.13
+
+### Operating systems tested on:
+
+Linux","['import asyncio\n\ndef task_factory(loop, *args, **kwargs):\n    new_task = asyncio.Task(*args, **kwargs)\n    name = new_task.get_name()\n    # Python 3.9 to 3.13 prints name=\'Task-2\'\n    # \'Task-3\' and \'Task-4\' is also printed because loop is shutting down, which is not in the scope of (possible) bug\n    print(f""{name=}"")\n    return new_task\n\nasync def print_task_name():\n    current_task = asyncio.current_task()\n    name = current_task.get_name()\n    # Python 3.13 prints name=\'None\' (but why does it print \'Task-2\' before it\'s returned from task_factory() ?)\n    # Python 3.9 to 3.12 prints name=\'Task-2\'\n    print(f""{name=}"")\n\nasync def main():\n    loop = asyncio.get_running_loop()\n    loop.set_task_factory(task_factory)\n    new_task = asyncio.create_task(print_task_name())\n    await new_task\n\nasyncio.run(main())']","Agree, loop.create_task() should call set_name() only if the name is not None.
+The bug exists in 3.13 only, the main branch has a different code and it should work fine.",[],['python'],github,https://github.com/python/cpython/issues/130033,{'repo': 'python/cpython'}
+"pow() docs shouldn't require numeric arguments
+
+Currently, the second paragraph of [docs](https://docs.python.org/3.13/library/functions.html#pow) starts with ""The arguments must have numeric types.""  That seems to be too restrictive and many third-party packages already break this rule.  E.g. SymPy support arbitrary symbolic expressions:
+```
+In [1]: pow(x, y)
+Out[1]: 
+ y
+x 
+
+In [2]: pow(x, y, z)
+Out[2]: 
+ y      
+x  mod z
+```
+Diofant also uses both forms for polynomial arithmetic:
+```
+In [1]: R, x = ring('x', QQ)
+
+In [2]: pow(x + 1, 7, 2*x**2 - 1)
+Out[2]: 239/8*x + 169/8
+
+In [3]: ((x + 1)**7) % (2*x**2 - 1)
+Out[3]: 239/8*x + 169/8
+
+In [4]: (x + 1)**2
+Out[4]: x**2 + 2*x + 1
+
+In [5]: pow(x + 1, 2)
+Out[5]: x**2 + 2*x + 1
+```
+
+I suggest to drop this requirement.  In fact, first paragraph already mention equivalents for two-arg and three-arg versions of the pow().  We can rephrase it like this: ""Return base to the power exp, an equivalent to `base**exp`; if mod is present, return base to the power exp, modulo mod, an equivalent to `(base**exp) % mod` (but computed more efficiently).""
+
+The third paragraph also might instead specify requirements for the mod in case of *integer* base and exponent, not just for builtin int's.","['In [1]: pow(x, y)\nOut[1]: \n y\nx \n\nIn [2]: pow(x, y, z)\nOut[2]: \n y      \nx  mod z', ""In [1]: R, x = ring('x', QQ)\n\nIn [2]: pow(x + 1, 7, 2*x**2 - 1)\nOut[2]: 239/8*x + 169/8\n\nIn [3]: ((x + 1)**7) % (2*x**2 - 1)\nOut[3]: 239/8*x + 169/8\n\nIn [4]: (x + 1)**2\nOut[4]: x**2 + 2*x + 1\n\nIn [5]: pow(x + 1, 2)\nOut[5]: x**2 + 2*x + 1""]",Perhaps say that this is how `pow()` behaves for built-in numeric types. Other types can implement other behaviour with `__pow__` .,[],['python'],github,https://github.com/python/cpython/issues/130102,{'repo': 'python/cpython'}
+"Update bundled pip to 25.0.1
+
+# Feature
+
+### Description:
+
+A new version of pip was recently released, but `ensurepip` still [uses](https://github.com/python/cpython/blob/3.13/Lib/ensurepip/__init__.py#L13C1-L13C24) an older version. As a result, when creating a new virtual environment, `ensurepip` installs an outdated version of pip, leading to a warning whenever pip is used.  
+
+For example:  
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+pip install python-dotenv
+```
+
+Produces the following output:  
+
+```
+Collecting python-dotenv
+  Using cached python_dotenv-1.0.1-py3-none-any.whl.metadata (23 kB)
+Using cached python_dotenv-1.0.1-py3-none-any.whl (19 kB)
+Installing collected packages: python-dotenv
+Successfully installed python-dotenv-1.0.1
+
+[notice] A new release of pip is available: 24.3.1 -> 25.0
+[notice] To update, run: pip install --upgrade pip
+```
+
+This results in an unnecessary warning about an outdated pip version.
+
+### CPython versions tested on:
+
+3.12
+
+### Operating systems tested on:
+
+Linux
+
+<!-- gh-linked-prs -->
+### Linked PRs
+* gh-129909
+* gh-129946
+* gh-129947
+<!-- /gh-linked-prs -->
+","['python3 -m venv venv\nsource venv/bin/activate\npip install python-dotenv', 'Collecting python-dotenv\n  Using cached python_dotenv-1.0.1-py3-none-any.whl.metadata (23 kB)\nUsing cached python_dotenv-1.0.1-py3-none-any.whl (19 kB)\nInstalling collected packages: python-dotenv\nSuccessfully installed python-dotenv-1.0.1\n\n[notice] A new release of pip is available: 24.3.1 -> 25.0\n[notice] To update, run: pip install --upgrade pip']","> This results in an unnecessary warning about an outdated pip version.
+
+Tip: you can run `python3 -m venv --upgrade-deps` to upgrade pip during venv creation, or `pip install python-dotenv --disable-pip-version-check` (or `export PIP_DISABLE_PIP_VERSION_CHECK=1`) to disable the warning.",[],['python'],github,https://github.com/python/cpython/issues/129583,{'repo': 'python/cpython'}
+"Align with GNU Tar when a file name is too long
+
+# Bug report
+
+### Bug description:
+
+Recently I found `tarfile` may generate a file slightly different with the one made by GNU Tar (https://www.gnu.org/software/tar/), especially when a path name is longer than 100 bytes.
+
+Here's the test code:
+
+```python
+# py-tar.py
+import tarfile, io
+memory_file = io.BytesIO()
+tar_obj = tarfile.open(name=None, mode=""w"", fileobj=memory_file, format=tarfile.GNU_FORMAT)
+tar_info = tarfile.TarInfo(""abcdef"" * 20)
+tar_info.type = tarfile.DIRTYPE
+tar_info.mode = 0o755
+tar_info.mtime = 1609459200  # UTC 2021-01-01
+tar_info.uid = 1000
+tar_info.gid = 1000
+tar_info.uname = ""ubuntu""
+tar_info.gname = ""ubuntu""
+tar_obj.addfile(tar_info, None)
+tar_obj.close()
+memory_file.seek(0)
+binary_data = memory_file.read()
+# import binascii
+# hex_data = binascii.hexlify(binary_data)
+# sep = 16
+# for i in range(0, len(hex_data), sep * 2):
+#     part = hex_data[i:i + sep * 2]
+#     print(*(part[i:i+2].decode() for i in range(0, len(part), 2)), binary_data[i//2:][:sep], sep="" "")
+with open(""py.tar"", ""wb"") as fp:
+    fp.write(binary_data)
+```
+
+``` bash
+mkdir -m 755 abcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdef
+tar cf gnu.tar --sort=name --owner=ubuntu:1000 --group=ubuntu:1000 --mtime='UTC 2021-01-01' abcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdef/
+python ./py-tar.py
+```
+
+As a result, when comparing the generated `py.tar` and `gnu.tar`, we may get such a difference:
+
+![Image](https://github.com/user-attachments/assets/4a4536bd-04b2-4bcd-b3eb-98b2cb57e96c)
+
+So I wonder will python might align such a detail on `tarfile.GNU_FORMAT` with the one of GNU tar?
+
+BTW, here's my environment (I'm on Ubuntu 24.04), and I find the `main` branch of CPython has a similar `Lib/tarfile.py` and should have a same behavior difference:
+```
+$ LANG=C tar --version
+tar (GNU tar) 1.35
+Copyright (C) 2023 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+
+Written by John Gilmore and Jay Fenlason.
+$ LANG=C python --version
+Python 3.12.3
+```
+
+
+### CPython versions tested on:
+
+3.12
+
+### Operating systems tested on:
+
+Linux
+
+<!-- gh-linked-prs -->
+### Linked PRs
+* gh-130820
+<!-- /gh-linked-prs -->
+","['# py-tar.py\nimport tarfile, io\nmemory_file = io.BytesIO()\ntar_obj = tarfile.open(name=None, mode=""w"", fileobj=memory_file, format=tarfile.GNU_FORMAT)\ntar_info = tarfile.TarInfo(""abcdef"" * 20)\ntar_info.type = tarfile.DIRTYPE\ntar_info.mode = 0o755\ntar_info.mtime = 1609459200  # UTC 2021-01-01\ntar_info.uid = 1000\ntar_info.gid = 1000\ntar_info.uname = ""ubuntu""\ntar_info.gname = ""ubuntu""\ntar_obj.addfile(tar_info, None)\ntar_obj.close()\nmemory_file.seek(0)\nbinary_data = memory_file.read()\n# import binascii\n# hex_data = binascii.hexlify(binary_data)\n# sep = 16\n# for i in range(0, len(hex_data), sep * 2):\n#     part = hex_data[i:i + sep * 2]\n#     print(*(part[i:i+2].decode() for i in range(0, len(part), 2)), binary_data[i//2:][:sep], sep="" "")\nwith open(""py.tar"", ""wb"") as fp:\n    fp.write(binary_data)', ""bash\nmkdir -m 755 abcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdef\ntar cf gnu.tar --sort=name --owner=ubuntu:1000 --group=ubuntu:1000 --mtime='UTC 2021-01-01' abcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdef/\npython ./py-tar.py"", '$ LANG=C tar --version\ntar (GNU tar) 1.35\nCopyright (C) 2023 Free Software Foundation, Inc.\nLicense GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.\nThis is free software: you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law.\n\nWritten by John Gilmore and Jay Fenlason.\n$ LANG=C python --version\nPython 3.12.3']","Reposting the comment from the PR:
+
+Can you motivate the choice for this? namely is there a real benefit between having an explicit user+mode rather than letting the ""defaults""? And more importantly, can you cite the relevant manpage / specs where we can find this?
+
+Note: whether this is accpeted or not, this should be treated as a feature request and not a bug IMO. As such, a What's New entry will need to be created, unless the motivation behind this change is not sufficient (in which case we would close the issue as ""not planned"")",[],['python'],github,https://github.com/python/cpython/issues/130819,{'repo': 'python/cpython'}
+"Signature.bind allows certain positional-only parameters as keywords
+
+# Bug report
+
+### Bug description:
+
+Prior to 3.13, the following code correctly raised a `TypeError` (I've tested 3.8-3.12, but see the last paragraph below):
+```python
+def fun(x, /, **kwargs):
+    pass
+
+import inspect
+sig = inspect.signature(fun)
+sig.bind(x=1)
+```
+In 3.13, the binding succeeds even though the positional-only parameter was passed as a keyword argument (of course, `fun(x=1)` fails with a `TypeError`).
+
+As far as I can tell this bug hasn't been previously reported, although issue #107831 reports `inspect.getcallargs` as having the same problem (prior to 3.13, unlike this bug).
+
+I'm guessing the bug was introduced by #103404. If I try a version of 3.12 containing that patch (rather than the older versions I had installed previously), e.g. 3.12.9, it also exhibits the bug. It's possible that fixing the case where the positional-only parameter has a default value accidentally broke this case. Mentioning @jacobtylerwalls as the author of that PR in case they would like to take a look. Thanks!
+
+### CPython versions tested on:
+
+3.13
+
+### Operating systems tested on:
+
+macOS
+
+<!-- gh-linked-prs -->
+### Linked PRs
+* gh-130192
+<!-- /gh-linked-prs -->
+","['def fun(x, /, **kwargs):\n    pass\n\nimport inspect\nsig = inspect.signature(fun)\nsig.bind(x=1)']","Thanks, bisected to #103404 and testing a fix. Affects 3.12.4+",[],['python'],github,https://github.com/python/cpython/issues/130164,{'repo': 'python/cpython'}
+"Pathlib.iterdir semantics change dramatically under Python 3.13
+
+# Bug report
+
+### Bug description:
+
+This code behaves very differently on Python 3.13 than 3.12:
+
+```python
+(p for p in pathlib.Path('does-not-exist').iterdir())
+```
+
+```shell
+ 🐚 py -3.12 -c ""import pathlib; (p for p in pathlib.Path('does-not-exist').iterdir())""
+ 🐚 py -3.13 -c ""import pathlib; (p for p in pathlib.Path('does-not-exist').iterdir())""
+Traceback (most recent call last):
+  File ""<string>"", line 1, in <module>
+    import pathlib; (p for p in pathlib.Path('does-not-exist').iterdir())
+                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File ""/opt/homebrew/Cellar/python@3.13/3.13.1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py"", line 575, in iterdir
+    with os.scandir(root_dir) as scandir_it:
+         ~~~~~~~~~~^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'does-not-exist'
+```
+
+In Python 3.12, the generator expression was evaluated lazily, not invoking `path.iterdir()` until the generator was consumed. On 3.13, at least a portion of the generator is evaluated, triggering the exception when the dir does not exist.
+
+I discovered this issue in https://github.com/jaraco/jaraco.develop/issues/26.
+
+I looked at What's New for Python 3.13, and there's only one mention of generator expressions regarding [mutation of locals in generator expressions](https://docs.python.org/3/whatsnew/3.13.html#defined-mutation-semantics-for-locals), which doesn't seem to be relevant here.
+
+That change mentions https://github.com/python/cpython/issues/74929, so maybe that change is also implicated in the change in execution order.
+
+### CPython versions tested on:
+
+3.13
+
+### Operating systems tested on:
+
+macOS","[""(p for p in pathlib.Path('does-not-exist').iterdir())"", '🐚 py -3.12 -c ""import pathlib; (p for p in pathlib.Path(\'does-not-exist\').iterdir())""\n 🐚 py -3.13 -c ""import pathlib; (p for p in pathlib.Path(\'does-not-exist\').iterdir())""\nTraceback (most recent call last):\n  File ""<string>"", line 1, in <module>\n    import pathlib; (p for p in pathlib.Path(\'does-not-exist\').iterdir())\n                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^\n  File ""/opt/homebrew/Cellar/python@3.13/3.13.1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py"", line 575, in iterdir\n    with os.scandir(root_dir) as scandir_it:\n         ~~~~~~~~~~^^^^^^^^^^\nFileNotFoundError: [Errno 2] No such file or directory: \'does-not-exist\'']","I'll get a PR up for adding it to the whatsnew, and perhaps to the `Path.iterdir()` docs
+
+I still prefer the new behaviour - it meets most users expectations better, it makes exception handling much more straightforward, and it matches how `os.scandir()` raises exceptions too.",[],['python'],github,https://github.com/python/cpython/issues/129871,{'repo': 'python/cpython'}
+"`--without-tail-call-interp` actually enables the tail-call interpreter, instead of disabling!
+
+In `configure.ac`, if the user passes `--tail-call-interp` in the negative, we set `Py_TAIL_CALL_INTERP` to `0`: https://github.com/python/cpython/blob/1feaecc2bc42cb96f2d7bdc8d7083171bdcd0929/configure.ac#L7027-L7032
+
+However, in `ceval_macros.h` and `bytecodes.c`, we check for `#ifdef Py_TAIL_CALL_INTERP` and `#if defined(Py_TAIL_CALL_INTERP)`, for instance: https://github.com/python/cpython/blob/1feaecc2bc42cb96f2d7bdc8d7083171bdcd0929/Python/ceval_macros.h#L76)
+
+Thus, defining the macro -- even with a value of `0` -- actually **enables** the feature! I think the consistent behavior (consistent with `USE_COMPUTED_GOTOS`) is probably to switch the preprocessor guards to `#if`, instead of `#ifdef`.
+
+
+<!-- gh-linked-prs -->
+### Linked PRs
+* gh-129991
+* gh-130269
+<!-- /gh-linked-prs -->
+",[],Great catch! Will fix this.,[],['python'],github,https://github.com/python/cpython/issues/129989,{'repo': 'python/cpython'}
+"`http.client` Possible Improvement: Using shutdown() Before close() in `HTTPConnection.close()`
+
+## Description
+
+While reviewing the `close` method in (https://github.com/python/cpython/blob/5e73ece95e8aa92d0695acb039ef54e2103ce66b/Lib/http/client.py#L1015-L1028 I noticed that the socket is directly closed using `close()` (line 1022), without first calling `shutdown()`.
+
+This is similar to what I previously reported in issue [#130850](https://github.com/python/cpython/blob/5e73ece95e8aa92d0695acb039ef54e2103ce66b/Lib/http/client.py#L1022), where `_close_self_pipe` in `asyncio.selector_events` also closes sockets without calling `shutdown()` first.
+
+## Code Reference
+Currently, the code is as follows:
+
+```python
+def close(self):
+    """"""Close the connection to the HTTP server.""""""
+    self.__state = _CS_IDLE
+    try:
+        sock = self.sock
+        if sock:
+            self.sock = None
+            sock.close()   # close it manually... there may be other refs
+    finally:
+        response = self.__response
+        if response:
+            self.__response = None
+            response.close()
+```
+
+## Question
+Would there be any potential downsides or benefits to adding a shutdown(socket.SHUT_RDWR) call before close() in this case?
+
+## Possible Benefits
+- Ensures that all pending data is properly discarded before closing, particularly in scenarios where data might still be buffered.
+- Prevents potential issues with lingering resources in some edge cases.
+- Aligns with best practices for socket cleanup.
+- Can help avoid RST (reset by peer) issues in some network conditions.
+
+## Possible Change
+
+```python
+def close(self):
+    """"""Close the connection to the HTTP server.""""""
+    self.__state = _CS_IDLE
+    try:
+        sock = self.sock
+        if sock:
+            self.sock = None
+            try:
+                sock.shutdown(socket.SHUT_RDWR)  # Gracefully terminate the connection
+            except OSError:
+                pass  # Ignore errors if the socket is already closed
+            sock.close()   # Close it manually... there may be other refs
+    finally:
+        response = self.__response
+        if response:
+            self.__response = None
+            response.close()
+```
+
+## Reference
+The Python socket documentation states:
+
+> ""close() releases the resource associated with a connection but does not necessarily close the connection immediately. If you want to close the connection in a timely fashion, call shutdown() before close().""
+📌 [Python socket documentation](https://docs.python.org/3/library/socket.html#socket.socket.close)
+
+Since a similar discussion is happening in [#130850](https://github.com/python/cpython/issues/130850), I wanted to bring attention to this case in http.client as well.
+
+Looking forward to your thoughts!
+
+
+<!-- gh-linked-prs -->
+### Linked PRs
+* gh-130919
+<!-- /gh-linked-prs -->
+","['def close(self):\n    """"""Close the connection to the HTTP server.""""""\n    self.__state = _CS_IDLE\n    try:\n        sock = self.sock\n        if sock:\n            self.sock = None\n            sock.close()   # close it manually... there may be other refs\n    finally:\n        response = self.__response\n        if response:\n            self.__response = None\n            response.close()', 'def close(self):\n    """"""Close the connection to the HTTP server.""""""\n    self.__state = _CS_IDLE\n    try:\n        sock = self.sock\n        if sock:\n            self.sock = None\n            try:\n                sock.shutdown(socket.SHUT_RDWR)  # Gracefully terminate the connection\n            except OSError:\n                pass  # Ignore errors if the socket is already closed\n            sock.close()   # Close it manually... there may be other refs\n    finally:\n        response = self.__response\n        if response:\n            self.__response = None\n            response.close()']","Potential Downsides:
+
+- Increased Complexity: Adding shutdown() introduces a small amount of additional complexity to the code.
+- Error Handling: If shutdown() raises an OSError, it needs to be handled properly to avoid masking other issues.
+
+Benefits:
+
+- Proper Resource Cleanup: Ensures that all pending data is properly discarded before closing, particularly in scenarios where data might still be buffered.
+- Best Practices: Aligns with best practices for socket cleanup, as recommended by the Python socket documentation.
+
+- Preventing Issues: Helps avoid potential issues with lingering resources and RST (reset by peer) errors in some network conditions.
+
+It seems sound. I'll make a pr when I can similar to #130862 ",[],['python'],github,https://github.com/python/cpython/issues/130902,{'repo': 'python/cpython'}
+"Build Tools for Visual Studio Code
+
+Installing the build tools newest version 76.0.0 is incompatible with et1-manager. I updated et1 to 8.0.0 and still have the same issue. Plus trying to install metadata Encountered error while generating package metadata. I have no version of metadata on my system. The conflict is caused by: metadata 0.2 depends on hachoir-core==1.3.3 metadata 0.1.1 depends on hachoir-core==1.3.3 metadata 0.1 depends on hachoir-core==1.3.3. All this started when trying to install spaCy, received the following error: Trying to install spacy I received the following error. How can I fix this? Installing build dependencies ... error error: subprocess-exited-with-error!. I been using Copilot to help with this but she gave up and asked me to contact Github and that is why I'm here.  Hope you can help me.",[],"I have the updated version of Python, Windows 10 have so idea on what to do next.",[],['python'],github,https://github.com/python/cpython/issues/131028,{'repo': 'python/cpython'}

@@ -1,0 +1,1288 @@
+2025-03-11 00:29:28,326 - BNAI_Network - INFO - Creating BNAI dataset...
+2025-03-11 00:29:28,327 - BNAI_Network - INFO - Loading BNAI data...
+2025-03-11 00:30:59,925 - BNAI_Network - INFO - BNAI dataset already exists.
+2025-03-11 00:30:59,925 - BNAI_Network - INFO - Loading BNAI data...
+2025-03-11 00:31:34,576 - BNAI_Network - INFO - BNAI dataset already exists.
+2025-03-11 00:31:34,576 - BNAI_Network - INFO - Loading BNAI data...
+2025-03-11 00:36:30,413 - BNAI_Network - INFO - BNAI dataset already exists.
+2025-03-11 00:36:30,413 - BNAI_Network - INFO - Loading BNAI data...
+2025-03-11 00:38:32,667 - BNAI_Network - INFO - Creazione dataset BNAI...
+2025-03-11 00:38:56,191 - BNAI_Network - INFO - Caricamento dati BNAI...
+2025-03-11 00:38:56,328 - BNAI_Network - INFO - Creating BNAI HyperNetwork model...
+2025-03-11 00:38:56,329 - BNAI_Network - INFO - Starting training...
+2025-03-11 00:40:40,515 - BNAI_Network - INFO - Creazione dataset BNAI...
+2025-03-11 00:41:03,389 - BNAI_Network - INFO - Caricamento dati BNAI...
+2025-03-11 00:41:03,510 - BNAI_Network - INFO - Creating BNAI HyperNetwork model...
+2025-03-11 00:41:03,512 - BNAI_Network - INFO - Starting training...
+2025-03-11 00:43:51,693 - BNAI_Network - INFO - Dataset BNAI già esistente.
+2025-03-11 00:43:51,694 - BNAI_Network - INFO - Caricamento dati BNAI...
+2025-03-11 00:43:51,823 - BNAI_Network - INFO - Creating BNAI HyperNetwork model...
+2025-03-11 00:45:21,131 - BNAI_Network - INFO - Dataset BNAI già esistente.
+2025-03-11 00:45:21,131 - BNAI_Network - INFO - Caricamento dati BNAI...
+2025-03-11 00:45:21,261 - BNAI_Network - INFO - Creating BNAI HyperNetwork model...
+2025-03-11 00:45:21,263 - BNAI_Network - INFO - Starting training...
+2025-03-11 00:46:55,228 - BNAI_Network - INFO - Dataset BNAI già esistente.
+2025-03-11 00:46:55,228 - BNAI_Network - INFO - Caricamento dati BNAI...
+2025-03-11 00:46:55,359 - BNAI_Network - INFO - Creating BNAI HyperNetwork model...
+2025-03-11 00:46:55,361 - BNAI_Network - INFO - Starting training...
+2025-03-11 00:46:56,123 - BNAI_Network - INFO - Epoch [1/100] - Loss: 0.0605
+2025-03-11 00:46:56,123 - BNAI_Network - INFO - Epoch [1/100] - Loss: 0.0605
+2025-03-11 00:46:56,164 - BNAI_Network - INFO - Validation Loss: 0.0333
+2025-03-11 00:46:56,164 - BNAI_Network - INFO - Validation Loss: 0.0333
+2025-03-11 00:46:56,867 - BNAI_Network - INFO - Epoch [2/100] - Loss: 0.0309
+2025-03-11 00:46:56,867 - BNAI_Network - INFO - Epoch [2/100] - Loss: 0.0309
+2025-03-11 00:46:56,906 - BNAI_Network - INFO - Validation Loss: 0.0318
+2025-03-11 00:46:56,906 - BNAI_Network - INFO - Validation Loss: 0.0318
+2025-03-11 00:46:57,478 - BNAI_Network - INFO - Epoch [3/100] - Loss: 0.0280
+2025-03-11 00:46:57,478 - BNAI_Network - INFO - Epoch [3/100] - Loss: 0.0280
+2025-03-11 00:46:57,512 - BNAI_Network - INFO - Validation Loss: 0.0364
+2025-03-11 00:46:57,512 - BNAI_Network - INFO - Validation Loss: 0.0364
+2025-03-11 00:46:58,047 - BNAI_Network - INFO - Epoch [4/100] - Loss: 0.0272
+2025-03-11 00:46:58,047 - BNAI_Network - INFO - Epoch [4/100] - Loss: 0.0272
+2025-03-11 00:46:58,121 - BNAI_Network - INFO - Validation Loss: 0.0305
+2025-03-11 00:46:58,121 - BNAI_Network - INFO - Validation Loss: 0.0305
+2025-03-11 00:46:59,008 - BNAI_Network - INFO - Epoch [5/100] - Loss: 0.0259
+2025-03-11 00:46:59,008 - BNAI_Network - INFO - Epoch [5/100] - Loss: 0.0259
+2025-03-11 00:46:59,047 - BNAI_Network - INFO - Validation Loss: 0.0329
+2025-03-11 00:46:59,047 - BNAI_Network - INFO - Validation Loss: 0.0329
+2025-03-11 00:46:59,772 - BNAI_Network - INFO - Epoch [6/100] - Loss: 0.0254
+2025-03-11 00:46:59,772 - BNAI_Network - INFO - Epoch [6/100] - Loss: 0.0254
+2025-03-11 00:46:59,801 - BNAI_Network - INFO - Validation Loss: 0.0271
+2025-03-11 00:46:59,801 - BNAI_Network - INFO - Validation Loss: 0.0271
+2025-03-11 00:47:00,351 - BNAI_Network - INFO - Epoch [7/100] - Loss: 0.0244
+2025-03-11 00:47:00,351 - BNAI_Network - INFO - Epoch [7/100] - Loss: 0.0244
+2025-03-11 00:47:00,381 - BNAI_Network - INFO - Validation Loss: 0.0285
+2025-03-11 00:47:00,381 - BNAI_Network - INFO - Validation Loss: 0.0285
+2025-03-11 00:47:01,206 - BNAI_Network - INFO - Epoch [8/100] - Loss: 0.0241
+2025-03-11 00:47:01,206 - BNAI_Network - INFO - Epoch [8/100] - Loss: 0.0241
+2025-03-11 00:47:01,243 - BNAI_Network - INFO - Validation Loss: 0.0289
+2025-03-11 00:47:01,243 - BNAI_Network - INFO - Validation Loss: 0.0289
+2025-03-11 00:47:02,147 - BNAI_Network - INFO - Epoch [9/100] - Loss: 0.0236
+2025-03-11 00:47:02,147 - BNAI_Network - INFO - Epoch [9/100] - Loss: 0.0236
+2025-03-11 00:47:02,179 - BNAI_Network - INFO - Validation Loss: 0.0270
+2025-03-11 00:47:02,179 - BNAI_Network - INFO - Validation Loss: 0.0270
+2025-03-11 00:47:02,912 - BNAI_Network - INFO - Epoch [10/100] - Loss: 0.0230
+2025-03-11 00:47:02,912 - BNAI_Network - INFO - Epoch [10/100] - Loss: 0.0230
+2025-03-11 00:47:02,942 - BNAI_Network - INFO - Validation Loss: 0.0257
+2025-03-11 00:47:02,942 - BNAI_Network - INFO - Validation Loss: 0.0257
+2025-03-11 00:47:03,906 - BNAI_Network - INFO - Epoch [11/100] - Loss: 0.0226
+2025-03-11 00:47:03,906 - BNAI_Network - INFO - Epoch [11/100] - Loss: 0.0226
+2025-03-11 00:47:03,952 - BNAI_Network - INFO - Validation Loss: 0.0306
+2025-03-11 00:47:03,952 - BNAI_Network - INFO - Validation Loss: 0.0306
+2025-03-11 00:47:04,788 - BNAI_Network - INFO - Epoch [12/100] - Loss: 0.0224
+2025-03-11 00:47:04,788 - BNAI_Network - INFO - Epoch [12/100] - Loss: 0.0224
+2025-03-11 00:47:04,819 - BNAI_Network - INFO - Validation Loss: 0.0266
+2025-03-11 00:47:04,819 - BNAI_Network - INFO - Validation Loss: 0.0266
+2025-03-11 00:47:05,342 - BNAI_Network - INFO - Epoch [13/100] - Loss: 0.0224
+2025-03-11 00:47:05,342 - BNAI_Network - INFO - Epoch [13/100] - Loss: 0.0224
+2025-03-11 00:47:05,372 - BNAI_Network - INFO - Validation Loss: 0.0266
+2025-03-11 00:47:05,372 - BNAI_Network - INFO - Validation Loss: 0.0266
+2025-03-11 00:47:06,199 - BNAI_Network - INFO - Epoch [14/100] - Loss: 0.0222
+2025-03-11 00:47:06,199 - BNAI_Network - INFO - Epoch [14/100] - Loss: 0.0222
+2025-03-11 00:47:06,253 - BNAI_Network - INFO - Validation Loss: 0.0296
+2025-03-11 00:47:06,253 - BNAI_Network - INFO - Validation Loss: 0.0296
+2025-03-11 00:47:07,224 - BNAI_Network - INFO - Epoch [15/100] - Loss: 0.0220
+2025-03-11 00:47:07,224 - BNAI_Network - INFO - Epoch [15/100] - Loss: 0.0220
+2025-03-11 00:47:07,256 - BNAI_Network - INFO - Validation Loss: 0.0233
+2025-03-11 00:47:07,256 - BNAI_Network - INFO - Validation Loss: 0.0233
+2025-03-11 00:47:07,923 - BNAI_Network - INFO - Epoch [16/100] - Loss: 0.0218
+2025-03-11 00:47:07,923 - BNAI_Network - INFO - Epoch [16/100] - Loss: 0.0218
+2025-03-11 00:47:07,954 - BNAI_Network - INFO - Validation Loss: 0.0251
+2025-03-11 00:47:07,954 - BNAI_Network - INFO - Validation Loss: 0.0251
+2025-03-11 00:47:08,903 - BNAI_Network - INFO - Epoch [17/100] - Loss: 0.0220
+2025-03-11 00:47:08,903 - BNAI_Network - INFO - Epoch [17/100] - Loss: 0.0220
+2025-03-11 00:47:08,948 - BNAI_Network - INFO - Validation Loss: 0.0304
+2025-03-11 00:47:08,948 - BNAI_Network - INFO - Validation Loss: 0.0304
+2025-03-11 00:47:09,915 - BNAI_Network - INFO - Epoch [18/100] - Loss: 0.0216
+2025-03-11 00:47:09,915 - BNAI_Network - INFO - Epoch [18/100] - Loss: 0.0216
+2025-03-11 00:47:09,945 - BNAI_Network - INFO - Validation Loss: 0.0248
+2025-03-11 00:47:09,945 - BNAI_Network - INFO - Validation Loss: 0.0248
+2025-03-11 00:47:10,485 - BNAI_Network - INFO - Epoch [19/100] - Loss: 0.0215
+2025-03-11 00:47:10,485 - BNAI_Network - INFO - Epoch [19/100] - Loss: 0.0215
+2025-03-11 00:47:10,516 - BNAI_Network - INFO - Validation Loss: 0.0280
+2025-03-11 00:47:10,516 - BNAI_Network - INFO - Validation Loss: 0.0280
+2025-03-11 00:47:11,489 - BNAI_Network - INFO - Epoch [20/100] - Loss: 0.0215
+2025-03-11 00:47:11,489 - BNAI_Network - INFO - Epoch [20/100] - Loss: 0.0215
+2025-03-11 00:47:11,530 - BNAI_Network - INFO - Validation Loss: 0.0262
+2025-03-11 00:47:11,530 - BNAI_Network - INFO - Validation Loss: 0.0262
+2025-03-11 00:47:12,490 - BNAI_Network - INFO - Epoch [21/100] - Loss: 0.0214
+2025-03-11 00:47:12,490 - BNAI_Network - INFO - Epoch [21/100] - Loss: 0.0214
+2025-03-11 00:47:12,521 - BNAI_Network - INFO - Validation Loss: 0.0256
+2025-03-11 00:47:12,521 - BNAI_Network - INFO - Validation Loss: 0.0256
+2025-03-11 00:47:13,393 - BNAI_Network - INFO - Epoch [22/100] - Loss: 0.0214
+2025-03-11 00:47:13,393 - BNAI_Network - INFO - Epoch [22/100] - Loss: 0.0214
+2025-03-11 00:47:13,475 - BNAI_Network - INFO - Validation Loss: 0.0243
+2025-03-11 00:47:13,475 - BNAI_Network - INFO - Validation Loss: 0.0243
+2025-03-11 00:47:14,429 - BNAI_Network - INFO - Epoch [23/100] - Loss: 0.0213
+2025-03-11 00:47:14,429 - BNAI_Network - INFO - Epoch [23/100] - Loss: 0.0213
+2025-03-11 00:47:14,471 - BNAI_Network - INFO - Validation Loss: 0.0284
+2025-03-11 00:47:14,471 - BNAI_Network - INFO - Validation Loss: 0.0284
+2025-03-11 00:47:15,126 - BNAI_Network - INFO - Epoch [24/100] - Loss: 0.0213
+2025-03-11 00:47:15,126 - BNAI_Network - INFO - Epoch [24/100] - Loss: 0.0213
+2025-03-11 00:47:15,163 - BNAI_Network - INFO - Validation Loss: 0.0240
+2025-03-11 00:47:15,163 - BNAI_Network - INFO - Validation Loss: 0.0240
+2025-03-11 00:47:15,897 - BNAI_Network - INFO - Epoch [25/100] - Loss: 0.0213
+2025-03-11 00:47:15,897 - BNAI_Network - INFO - Epoch [25/100] - Loss: 0.0213
+2025-03-11 00:47:15,973 - BNAI_Network - INFO - Validation Loss: 0.0271
+2025-03-11 00:47:15,973 - BNAI_Network - INFO - Validation Loss: 0.0271
+2025-03-11 00:47:16,958 - BNAI_Network - INFO - Epoch [26/100] - Loss: 0.0213
+2025-03-11 00:47:16,958 - BNAI_Network - INFO - Epoch [26/100] - Loss: 0.0213
+2025-03-11 00:47:17,000 - BNAI_Network - INFO - Validation Loss: 0.0285
+2025-03-11 00:47:17,000 - BNAI_Network - INFO - Validation Loss: 0.0285
+2025-03-11 00:47:17,730 - BNAI_Network - INFO - Epoch [27/100] - Loss: 0.0213
+2025-03-11 00:47:17,730 - BNAI_Network - INFO - Epoch [27/100] - Loss: 0.0213
+2025-03-11 00:47:17,763 - BNAI_Network - INFO - Validation Loss: 0.0284
+2025-03-11 00:47:17,763 - BNAI_Network - INFO - Validation Loss: 0.0284
+2025-03-11 00:47:18,443 - BNAI_Network - INFO - Epoch [28/100] - Loss: 0.0212
+2025-03-11 00:47:18,443 - BNAI_Network - INFO - Epoch [28/100] - Loss: 0.0212
+2025-03-11 00:47:18,520 - BNAI_Network - INFO - Validation Loss: 0.0273
+2025-03-11 00:47:18,520 - BNAI_Network - INFO - Validation Loss: 0.0273
+2025-03-11 00:47:19,495 - BNAI_Network - INFO - Epoch [29/100] - Loss: 0.0212
+2025-03-11 00:47:19,495 - BNAI_Network - INFO - Epoch [29/100] - Loss: 0.0212
+2025-03-11 00:47:19,529 - BNAI_Network - INFO - Validation Loss: 0.0282
+2025-03-11 00:47:19,529 - BNAI_Network - INFO - Validation Loss: 0.0282
+2025-03-11 00:47:20,154 - BNAI_Network - INFO - Epoch [30/100] - Loss: 0.0212
+2025-03-11 00:47:20,154 - BNAI_Network - INFO - Epoch [30/100] - Loss: 0.0212
+2025-03-11 00:47:20,184 - BNAI_Network - INFO - Validation Loss: 0.0217
+2025-03-11 00:47:20,184 - BNAI_Network - INFO - Validation Loss: 0.0217
+2025-03-11 00:47:20,714 - BNAI_Network - INFO - Epoch [31/100] - Loss: 0.0213
+2025-03-11 00:47:20,714 - BNAI_Network - INFO - Epoch [31/100] - Loss: 0.0213
+2025-03-11 00:47:20,743 - BNAI_Network - INFO - Validation Loss: 0.0261
+2025-03-11 00:47:20,743 - BNAI_Network - INFO - Validation Loss: 0.0261
+2025-03-11 00:47:21,749 - BNAI_Network - INFO - Epoch [32/100] - Loss: 0.0213
+2025-03-11 00:47:21,749 - BNAI_Network - INFO - Epoch [32/100] - Loss: 0.0213
+2025-03-11 00:47:21,795 - BNAI_Network - INFO - Validation Loss: 0.0281
+2025-03-11 00:47:21,795 - BNAI_Network - INFO - Validation Loss: 0.0281
+2025-03-11 00:47:22,536 - BNAI_Network - INFO - Epoch [33/100] - Loss: 0.0213
+2025-03-11 00:47:22,536 - BNAI_Network - INFO - Epoch [33/100] - Loss: 0.0213
+2025-03-11 00:47:22,565 - BNAI_Network - INFO - Validation Loss: 0.0271
+2025-03-11 00:47:22,565 - BNAI_Network - INFO - Validation Loss: 0.0271
+2025-03-11 00:47:23,157 - BNAI_Network - INFO - Epoch [34/100] - Loss: 0.0212
+2025-03-11 00:47:23,157 - BNAI_Network - INFO - Epoch [34/100] - Loss: 0.0212
+2025-03-11 00:47:23,190 - BNAI_Network - INFO - Validation Loss: 0.0257
+2025-03-11 00:47:23,190 - BNAI_Network - INFO - Validation Loss: 0.0257
+2025-03-11 00:47:24,198 - BNAI_Network - INFO - Epoch [35/100] - Loss: 0.0212
+2025-03-11 00:47:24,198 - BNAI_Network - INFO - Epoch [35/100] - Loss: 0.0212
+2025-03-11 00:47:24,238 - BNAI_Network - INFO - Validation Loss: 0.0260
+2025-03-11 00:47:24,238 - BNAI_Network - INFO - Validation Loss: 0.0260
+2025-03-11 00:47:25,019 - BNAI_Network - INFO - Epoch [36/100] - Loss: 0.0211
+2025-03-11 00:47:25,019 - BNAI_Network - INFO - Epoch [36/100] - Loss: 0.0211
+2025-03-11 00:47:25,048 - BNAI_Network - INFO - Validation Loss: 0.0258
+2025-03-11 00:47:25,048 - BNAI_Network - INFO - Validation Loss: 0.0258
+2025-03-11 00:47:25,579 - BNAI_Network - INFO - Epoch [37/100] - Loss: 0.0212
+2025-03-11 00:47:25,579 - BNAI_Network - INFO - Epoch [37/100] - Loss: 0.0212
+2025-03-11 00:47:25,608 - BNAI_Network - INFO - Validation Loss: 0.0288
+2025-03-11 00:47:25,608 - BNAI_Network - INFO - Validation Loss: 0.0288
+2025-03-11 00:47:26,550 - BNAI_Network - INFO - Epoch [38/100] - Loss: 0.0211
+2025-03-11 00:47:26,550 - BNAI_Network - INFO - Epoch [38/100] - Loss: 0.0211
+2025-03-11 00:47:26,596 - BNAI_Network - INFO - Validation Loss: 0.0268
+2025-03-11 00:47:26,596 - BNAI_Network - INFO - Validation Loss: 0.0268
+2025-03-11 00:47:27,475 - BNAI_Network - INFO - Epoch [39/100] - Loss: 0.0211
+2025-03-11 00:47:27,475 - BNAI_Network - INFO - Epoch [39/100] - Loss: 0.0211
+2025-03-11 00:47:27,506 - BNAI_Network - INFO - Validation Loss: 0.0270
+2025-03-11 00:47:27,506 - BNAI_Network - INFO - Validation Loss: 0.0270
+2025-03-11 00:47:28,163 - BNAI_Network - INFO - Epoch [40/100] - Loss: 0.0211
+2025-03-11 00:47:28,163 - BNAI_Network - INFO - Epoch [40/100] - Loss: 0.0211
+2025-03-11 00:47:28,200 - BNAI_Network - INFO - Validation Loss: 0.0243
+2025-03-11 00:47:28,200 - BNAI_Network - INFO - Validation Loss: 0.0243
+2025-03-11 00:47:29,291 - BNAI_Network - INFO - Epoch [41/100] - Loss: 0.0211
+2025-03-11 00:47:29,291 - BNAI_Network - INFO - Epoch [41/100] - Loss: 0.0211
+2025-03-11 00:47:29,336 - BNAI_Network - INFO - Validation Loss: 0.0297
+2025-03-11 00:47:29,336 - BNAI_Network - INFO - Validation Loss: 0.0297
+2025-03-11 00:47:30,041 - BNAI_Network - INFO - Epoch [42/100] - Loss: 0.0211
+2025-03-11 00:47:30,041 - BNAI_Network - INFO - Epoch [42/100] - Loss: 0.0211
+2025-03-11 00:47:30,070 - BNAI_Network - INFO - Validation Loss: 0.0271
+2025-03-11 00:47:30,070 - BNAI_Network - INFO - Validation Loss: 0.0271
+2025-03-11 00:47:30,598 - BNAI_Network - INFO - Epoch [43/100] - Loss: 0.0212
+2025-03-11 00:47:30,598 - BNAI_Network - INFO - Epoch [43/100] - Loss: 0.0212
+2025-03-11 00:47:30,628 - BNAI_Network - INFO - Validation Loss: 0.0293
+2025-03-11 00:47:30,628 - BNAI_Network - INFO - Validation Loss: 0.0293
+2025-03-11 00:47:31,525 - BNAI_Network - INFO - Epoch [44/100] - Loss: 0.0212
+2025-03-11 00:47:31,525 - BNAI_Network - INFO - Epoch [44/100] - Loss: 0.0212
+2025-03-11 00:47:31,573 - BNAI_Network - INFO - Validation Loss: 0.0265
+2025-03-11 00:47:31,573 - BNAI_Network - INFO - Validation Loss: 0.0265
+2025-03-11 00:47:32,487 - BNAI_Network - INFO - Epoch [45/100] - Loss: 0.0211
+2025-03-11 00:47:32,487 - BNAI_Network - INFO - Epoch [45/100] - Loss: 0.0211
+2025-03-11 00:47:32,520 - BNAI_Network - INFO - Validation Loss: 0.0294
+2025-03-11 00:47:32,520 - BNAI_Network - INFO - Validation Loss: 0.0294
+2025-03-11 00:47:33,065 - BNAI_Network - INFO - Epoch [46/100] - Loss: 0.0211
+2025-03-11 00:47:33,065 - BNAI_Network - INFO - Epoch [46/100] - Loss: 0.0211
+2025-03-11 00:47:33,095 - BNAI_Network - INFO - Validation Loss: 0.0245
+2025-03-11 00:47:33,095 - BNAI_Network - INFO - Validation Loss: 0.0245
+2025-03-11 00:47:33,952 - BNAI_Network - INFO - Epoch [47/100] - Loss: 0.0211
+2025-03-11 00:47:33,952 - BNAI_Network - INFO - Epoch [47/100] - Loss: 0.0211
+2025-03-11 00:47:33,987 - BNAI_Network - INFO - Validation Loss: 0.0260
+2025-03-11 00:47:33,987 - BNAI_Network - INFO - Validation Loss: 0.0260
+2025-03-11 00:47:35,006 - BNAI_Network - INFO - Epoch [48/100] - Loss: 0.0211
+2025-03-11 00:47:35,006 - BNAI_Network - INFO - Epoch [48/100] - Loss: 0.0211
+2025-03-11 00:47:35,036 - BNAI_Network - INFO - Validation Loss: 0.0237
+2025-03-11 00:47:35,036 - BNAI_Network - INFO - Validation Loss: 0.0237
+2025-03-11 00:47:35,567 - BNAI_Network - INFO - Epoch [49/100] - Loss: 0.0211
+2025-03-11 00:47:35,567 - BNAI_Network - INFO - Epoch [49/100] - Loss: 0.0211
+2025-03-11 00:47:35,597 - BNAI_Network - INFO - Validation Loss: 0.0256
+2025-03-11 00:47:35,597 - BNAI_Network - INFO - Validation Loss: 0.0256
+2025-03-11 00:47:36,439 - BNAI_Network - INFO - Epoch [50/100] - Loss: 0.0211
+2025-03-11 00:47:36,439 - BNAI_Network - INFO - Epoch [50/100] - Loss: 0.0211
+2025-03-11 00:47:36,485 - BNAI_Network - INFO - Validation Loss: 0.0263
+2025-03-11 00:47:36,485 - BNAI_Network - INFO - Validation Loss: 0.0263
+2025-03-11 00:47:37,433 - BNAI_Network - INFO - Epoch [51/100] - Loss: 0.0210
+2025-03-11 00:47:37,433 - BNAI_Network - INFO - Epoch [51/100] - Loss: 0.0210
+2025-03-11 00:47:37,462 - BNAI_Network - INFO - Validation Loss: 0.0278
+2025-03-11 00:47:37,462 - BNAI_Network - INFO - Validation Loss: 0.0278
+2025-03-11 00:47:38,001 - BNAI_Network - INFO - Epoch [52/100] - Loss: 0.0211
+2025-03-11 00:47:38,001 - BNAI_Network - INFO - Epoch [52/100] - Loss: 0.0211
+2025-03-11 00:47:38,032 - BNAI_Network - INFO - Validation Loss: 0.0275
+2025-03-11 00:47:38,032 - BNAI_Network - INFO - Validation Loss: 0.0275
+2025-03-11 00:47:38,843 - BNAI_Network - INFO - Epoch [53/100] - Loss: 0.0210
+2025-03-11 00:47:38,843 - BNAI_Network - INFO - Epoch [53/100] - Loss: 0.0210
+2025-03-11 00:47:38,887 - BNAI_Network - INFO - Validation Loss: 0.0259
+2025-03-11 00:47:38,887 - BNAI_Network - INFO - Validation Loss: 0.0259
+2025-03-11 00:47:39,836 - BNAI_Network - INFO - Epoch [54/100] - Loss: 0.0210
+2025-03-11 00:47:39,836 - BNAI_Network - INFO - Epoch [54/100] - Loss: 0.0210
+2025-03-11 00:47:39,866 - BNAI_Network - INFO - Validation Loss: 0.0268
+2025-03-11 00:47:39,866 - BNAI_Network - INFO - Validation Loss: 0.0268
+2025-03-11 00:47:40,402 - BNAI_Network - INFO - Epoch [55/100] - Loss: 0.0211
+2025-03-11 00:47:40,402 - BNAI_Network - INFO - Epoch [55/100] - Loss: 0.0211
+2025-03-11 00:47:40,431 - BNAI_Network - INFO - Validation Loss: 0.0278
+2025-03-11 00:47:40,431 - BNAI_Network - INFO - Validation Loss: 0.0278
+2025-03-11 00:47:41,201 - BNAI_Network - INFO - Epoch [56/100] - Loss: 0.0210
+2025-03-11 00:47:41,201 - BNAI_Network - INFO - Epoch [56/100] - Loss: 0.0210
+2025-03-11 00:47:41,233 - BNAI_Network - INFO - Validation Loss: 0.0241
+2025-03-11 00:47:41,233 - BNAI_Network - INFO - Validation Loss: 0.0241
+2025-03-11 00:47:42,195 - BNAI_Network - INFO - Epoch [57/100] - Loss: 0.0211
+2025-03-11 00:47:42,195 - BNAI_Network - INFO - Epoch [57/100] - Loss: 0.0211
+2025-03-11 00:47:42,231 - BNAI_Network - INFO - Validation Loss: 0.0269
+2025-03-11 00:47:42,231 - BNAI_Network - INFO - Validation Loss: 0.0269
+2025-03-11 00:47:42,851 - BNAI_Network - INFO - Epoch [58/100] - Loss: 0.0210
+2025-03-11 00:47:42,851 - BNAI_Network - INFO - Epoch [58/100] - Loss: 0.0210
+2025-03-11 00:47:42,885 - BNAI_Network - INFO - Validation Loss: 0.0269
+2025-03-11 00:47:42,885 - BNAI_Network - INFO - Validation Loss: 0.0269
+2025-03-11 00:47:43,717 - BNAI_Network - INFO - Epoch [59/100] - Loss: 0.0210
+2025-03-11 00:47:43,717 - BNAI_Network - INFO - Epoch [59/100] - Loss: 0.0210
+2025-03-11 00:47:43,749 - BNAI_Network - INFO - Validation Loss: 0.0241
+2025-03-11 00:47:43,749 - BNAI_Network - INFO - Validation Loss: 0.0241
+2025-03-11 00:47:44,749 - BNAI_Network - INFO - Epoch [60/100] - Loss: 0.0210
+2025-03-11 00:47:44,749 - BNAI_Network - INFO - Epoch [60/100] - Loss: 0.0210
+2025-03-11 00:47:44,785 - BNAI_Network - INFO - Validation Loss: 0.0250
+2025-03-11 00:47:44,785 - BNAI_Network - INFO - Validation Loss: 0.0250
+2025-03-11 00:47:45,680 - BNAI_Network - INFO - Epoch [61/100] - Loss: 0.0210
+2025-03-11 00:47:45,680 - BNAI_Network - INFO - Epoch [61/100] - Loss: 0.0210
+2025-03-11 00:47:45,713 - BNAI_Network - INFO - Validation Loss: 0.0279
+2025-03-11 00:47:45,713 - BNAI_Network - INFO - Validation Loss: 0.0279
+2025-03-11 00:47:46,697 - BNAI_Network - INFO - Epoch [62/100] - Loss: 0.0210
+2025-03-11 00:47:46,697 - BNAI_Network - INFO - Epoch [62/100] - Loss: 0.0210
+2025-03-11 00:47:46,739 - BNAI_Network - INFO - Validation Loss: 0.0273
+2025-03-11 00:47:46,739 - BNAI_Network - INFO - Validation Loss: 0.0273
+2025-03-11 00:47:47,775 - BNAI_Network - INFO - Epoch [63/100] - Loss: 0.0210
+2025-03-11 00:47:47,775 - BNAI_Network - INFO - Epoch [63/100] - Loss: 0.0210
+2025-03-11 00:47:47,806 - BNAI_Network - INFO - Validation Loss: 0.0263
+2025-03-11 00:47:47,806 - BNAI_Network - INFO - Validation Loss: 0.0263
+2025-03-11 00:47:48,412 - BNAI_Network - INFO - Epoch [64/100] - Loss: 0.0210
+2025-03-11 00:47:48,412 - BNAI_Network - INFO - Epoch [64/100] - Loss: 0.0210
+2025-03-11 00:47:48,445 - BNAI_Network - INFO - Validation Loss: 0.0285
+2025-03-11 00:47:48,445 - BNAI_Network - INFO - Validation Loss: 0.0285
+2025-03-11 00:47:49,587 - BNAI_Network - INFO - Epoch [65/100] - Loss: 0.0210
+2025-03-11 00:47:49,587 - BNAI_Network - INFO - Epoch [65/100] - Loss: 0.0210
+2025-03-11 00:47:49,636 - BNAI_Network - INFO - Validation Loss: 0.0257
+2025-03-11 00:47:49,636 - BNAI_Network - INFO - Validation Loss: 0.0257
+2025-03-11 00:47:50,763 - BNAI_Network - INFO - Epoch [66/100] - Loss: 0.0210
+2025-03-11 00:47:50,763 - BNAI_Network - INFO - Epoch [66/100] - Loss: 0.0210
+2025-03-11 00:47:50,796 - BNAI_Network - INFO - Validation Loss: 0.0248
+2025-03-11 00:47:50,796 - BNAI_Network - INFO - Validation Loss: 0.0248
+2025-03-11 00:47:51,790 - BNAI_Network - INFO - Epoch [67/100] - Loss: 0.0209
+2025-03-11 00:47:51,790 - BNAI_Network - INFO - Epoch [67/100] - Loss: 0.0209
+2025-03-11 00:47:51,836 - BNAI_Network - INFO - Validation Loss: 0.0242
+2025-03-11 00:47:51,836 - BNAI_Network - INFO - Validation Loss: 0.0242
+2025-03-11 00:47:52,751 - BNAI_Network - INFO - Epoch [68/100] - Loss: 0.0210
+2025-03-11 00:47:52,751 - BNAI_Network - INFO - Epoch [68/100] - Loss: 0.0210
+2025-03-11 00:47:52,781 - BNAI_Network - INFO - Validation Loss: 0.0241
+2025-03-11 00:47:52,781 - BNAI_Network - INFO - Validation Loss: 0.0241
+2025-03-11 00:47:53,407 - BNAI_Network - INFO - Epoch [69/100] - Loss: 0.0209
+2025-03-11 00:47:53,407 - BNAI_Network - INFO - Epoch [69/100] - Loss: 0.0209
+2025-03-11 00:47:53,438 - BNAI_Network - INFO - Validation Loss: 0.0283
+2025-03-11 00:47:53,438 - BNAI_Network - INFO - Validation Loss: 0.0283
+2025-03-11 00:47:54,378 - BNAI_Network - INFO - Epoch [70/100] - Loss: 0.0209
+2025-03-11 00:47:54,378 - BNAI_Network - INFO - Epoch [70/100] - Loss: 0.0209
+2025-03-11 00:47:54,426 - BNAI_Network - INFO - Validation Loss: 0.0258
+2025-03-11 00:47:54,426 - BNAI_Network - INFO - Validation Loss: 0.0258
+2025-03-11 00:47:55,553 - BNAI_Network - INFO - Epoch [71/100] - Loss: 0.0209
+2025-03-11 00:47:55,553 - BNAI_Network - INFO - Epoch [71/100] - Loss: 0.0209
+2025-03-11 00:47:55,584 - BNAI_Network - INFO - Validation Loss: 0.0284
+2025-03-11 00:47:55,584 - BNAI_Network - INFO - Validation Loss: 0.0284
+2025-03-11 00:47:56,132 - BNAI_Network - INFO - Epoch [72/100] - Loss: 0.0210
+2025-03-11 00:47:56,132 - BNAI_Network - INFO - Epoch [72/100] - Loss: 0.0210
+2025-03-11 00:47:56,165 - BNAI_Network - INFO - Validation Loss: 0.0283
+2025-03-11 00:47:56,165 - BNAI_Network - INFO - Validation Loss: 0.0283
+2025-03-11 00:47:57,496 - BNAI_Network - INFO - Epoch [73/100] - Loss: 0.0209
+2025-03-11 00:47:57,496 - BNAI_Network - INFO - Epoch [73/100] - Loss: 0.0209
+2025-03-11 00:47:57,550 - BNAI_Network - INFO - Validation Loss: 0.0235
+2025-03-11 00:47:57,550 - BNAI_Network - INFO - Validation Loss: 0.0235
+2025-03-11 00:47:58,251 - BNAI_Network - INFO - Epoch [74/100] - Loss: 0.0210
+2025-03-11 00:47:58,251 - BNAI_Network - INFO - Epoch [74/100] - Loss: 0.0210
+2025-03-11 00:47:58,283 - BNAI_Network - INFO - Validation Loss: 0.0252
+2025-03-11 00:47:58,283 - BNAI_Network - INFO - Validation Loss: 0.0252
+2025-03-11 00:47:59,100 - BNAI_Network - INFO - Epoch [75/100] - Loss: 0.0209
+2025-03-11 00:47:59,100 - BNAI_Network - INFO - Epoch [75/100] - Loss: 0.0209
+2025-03-11 00:47:59,153 - BNAI_Network - INFO - Validation Loss: 0.0250
+2025-03-11 00:47:59,153 - BNAI_Network - INFO - Validation Loss: 0.0250
+2025-03-11 00:48:00,445 - BNAI_Network - INFO - Epoch [76/100] - Loss: 0.0210
+2025-03-11 00:48:00,445 - BNAI_Network - INFO - Epoch [76/100] - Loss: 0.0210
+2025-03-11 00:48:00,475 - BNAI_Network - INFO - Validation Loss: 0.0262
+2025-03-11 00:48:00,475 - BNAI_Network - INFO - Validation Loss: 0.0262
+2025-03-11 00:48:01,041 - BNAI_Network - INFO - Epoch [77/100] - Loss: 0.0209
+2025-03-11 00:48:01,041 - BNAI_Network - INFO - Epoch [77/100] - Loss: 0.0209
+2025-03-11 00:48:01,077 - BNAI_Network - INFO - Validation Loss: 0.0262
+2025-03-11 00:48:01,077 - BNAI_Network - INFO - Validation Loss: 0.0262
+2025-03-11 00:48:02,047 - BNAI_Network - INFO - Epoch [78/100] - Loss: 0.0209
+2025-03-11 00:48:02,047 - BNAI_Network - INFO - Epoch [78/100] - Loss: 0.0209
+2025-03-11 00:48:02,112 - BNAI_Network - INFO - Validation Loss: 0.0262
+2025-03-11 00:48:02,112 - BNAI_Network - INFO - Validation Loss: 0.0262
+2025-03-11 00:48:03,281 - BNAI_Network - INFO - Epoch [79/100] - Loss: 0.0209
+2025-03-11 00:48:03,281 - BNAI_Network - INFO - Epoch [79/100] - Loss: 0.0209
+2025-03-11 00:48:03,324 - BNAI_Network - INFO - Validation Loss: 0.0274
+2025-03-11 00:48:03,324 - BNAI_Network - INFO - Validation Loss: 0.0274
+2025-03-11 00:48:04,370 - BNAI_Network - INFO - Epoch [80/100] - Loss: 0.0209
+2025-03-11 00:48:04,370 - BNAI_Network - INFO - Epoch [80/100] - Loss: 0.0209
+2025-03-11 00:48:04,418 - BNAI_Network - INFO - Validation Loss: 0.0270
+2025-03-11 00:48:04,418 - BNAI_Network - INFO - Validation Loss: 0.0270
+2025-03-11 00:48:05,781 - BNAI_Network - INFO - Epoch [81/100] - Loss: 0.0209
+2025-03-11 00:48:05,781 - BNAI_Network - INFO - Epoch [81/100] - Loss: 0.0209
+2025-03-11 00:48:05,812 - BNAI_Network - INFO - Validation Loss: 0.0255
+2025-03-11 00:48:05,812 - BNAI_Network - INFO - Validation Loss: 0.0255
+2025-03-11 00:48:06,427 - BNAI_Network - INFO - Epoch [82/100] - Loss: 0.0209
+2025-03-11 00:48:06,427 - BNAI_Network - INFO - Epoch [82/100] - Loss: 0.0209
+2025-03-11 00:48:06,458 - BNAI_Network - INFO - Validation Loss: 0.0266
+2025-03-11 00:48:06,458 - BNAI_Network - INFO - Validation Loss: 0.0266
+2025-03-11 00:48:07,506 - BNAI_Network - INFO - Epoch [83/100] - Loss: 0.0209
+2025-03-11 00:48:07,506 - BNAI_Network - INFO - Epoch [83/100] - Loss: 0.0209
+2025-03-11 00:48:07,577 - BNAI_Network - INFO - Validation Loss: 0.0246
+2025-03-11 00:48:07,577 - BNAI_Network - INFO - Validation Loss: 0.0246
+2025-03-11 00:48:08,559 - BNAI_Network - INFO - Epoch [84/100] - Loss: 0.0209
+2025-03-11 00:48:08,559 - BNAI_Network - INFO - Epoch [84/100] - Loss: 0.0209
+2025-03-11 00:48:08,590 - BNAI_Network - INFO - Validation Loss: 0.0270
+2025-03-11 00:48:08,590 - BNAI_Network - INFO - Validation Loss: 0.0270
+2025-03-11 00:48:09,197 - BNAI_Network - INFO - Epoch [85/100] - Loss: 0.0209
+2025-03-11 00:48:09,197 - BNAI_Network - INFO - Epoch [85/100] - Loss: 0.0209
+2025-03-11 00:48:09,276 - BNAI_Network - INFO - Validation Loss: 0.0273
+2025-03-11 00:48:09,276 - BNAI_Network - INFO - Validation Loss: 0.0273
+2025-03-11 00:48:10,701 - BNAI_Network - INFO - Epoch [86/100] - Loss: 0.0209
+2025-03-11 00:48:10,701 - BNAI_Network - INFO - Epoch [86/100] - Loss: 0.0209
+2025-03-11 00:48:10,752 - BNAI_Network - INFO - Validation Loss: 0.0241
+2025-03-11 00:48:10,752 - BNAI_Network - INFO - Validation Loss: 0.0241
+2025-03-11 00:48:11,387 - BNAI_Network - INFO - Epoch [87/100] - Loss: 0.0209
+2025-03-11 00:48:11,387 - BNAI_Network - INFO - Epoch [87/100] - Loss: 0.0209
+2025-03-11 00:48:11,418 - BNAI_Network - INFO - Validation Loss: 0.0276
+2025-03-11 00:48:11,418 - BNAI_Network - INFO - Validation Loss: 0.0276
+2025-03-11 00:48:12,343 - BNAI_Network - INFO - Epoch [88/100] - Loss: 0.0209
+2025-03-11 00:48:12,343 - BNAI_Network - INFO - Epoch [88/100] - Loss: 0.0209
+2025-03-11 00:48:12,397 - BNAI_Network - INFO - Validation Loss: 0.0269
+2025-03-11 00:48:12,397 - BNAI_Network - INFO - Validation Loss: 0.0269
+2025-03-11 00:48:13,579 - BNAI_Network - INFO - Epoch [89/100] - Loss: 0.0210
+2025-03-11 00:48:13,579 - BNAI_Network - INFO - Epoch [89/100] - Loss: 0.0210
+2025-03-11 00:48:13,610 - BNAI_Network - INFO - Validation Loss: 0.0249
+2025-03-11 00:48:13,610 - BNAI_Network - INFO - Validation Loss: 0.0249
+2025-03-11 00:48:14,193 - BNAI_Network - INFO - Epoch [90/100] - Loss: 0.0209
+2025-03-11 00:48:14,193 - BNAI_Network - INFO - Epoch [90/100] - Loss: 0.0209
+2025-03-11 00:48:14,223 - BNAI_Network - INFO - Validation Loss: 0.0281
+2025-03-11 00:48:14,223 - BNAI_Network - INFO - Validation Loss: 0.0281
+2025-03-11 00:48:15,340 - BNAI_Network - INFO - Epoch [91/100] - Loss: 0.0209
+2025-03-11 00:48:15,340 - BNAI_Network - INFO - Epoch [91/100] - Loss: 0.0209
+2025-03-11 00:48:15,406 - BNAI_Network - INFO - Validation Loss: 0.0280
+2025-03-11 00:48:15,406 - BNAI_Network - INFO - Validation Loss: 0.0280
+2025-03-11 00:48:16,327 - BNAI_Network - INFO - Epoch [92/100] - Loss: 0.0209
+2025-03-11 00:48:16,327 - BNAI_Network - INFO - Epoch [92/100] - Loss: 0.0209
+2025-03-11 00:48:16,356 - BNAI_Network - INFO - Validation Loss: 0.0252
+2025-03-11 00:48:16,356 - BNAI_Network - INFO - Validation Loss: 0.0252
+2025-03-11 00:48:16,943 - BNAI_Network - INFO - Epoch [93/100] - Loss: 0.0209
+2025-03-11 00:48:16,943 - BNAI_Network - INFO - Epoch [93/100] - Loss: 0.0209
+2025-03-11 00:48:16,985 - BNAI_Network - INFO - Validation Loss: 0.0257
+2025-03-11 00:48:16,985 - BNAI_Network - INFO - Validation Loss: 0.0257
+2025-03-11 00:48:18,330 - BNAI_Network - INFO - Epoch [94/100] - Loss: 0.0209
+2025-03-11 00:48:18,330 - BNAI_Network - INFO - Epoch [94/100] - Loss: 0.0209
+2025-03-11 00:48:18,375 - BNAI_Network - INFO - Validation Loss: 0.0254
+2025-03-11 00:48:18,375 - BNAI_Network - INFO - Validation Loss: 0.0254
+2025-03-11 00:48:19,141 - BNAI_Network - INFO - Epoch [95/100] - Loss: 0.0209
+2025-03-11 00:48:19,141 - BNAI_Network - INFO - Epoch [95/100] - Loss: 0.0209
+2025-03-11 00:48:19,172 - BNAI_Network - INFO - Validation Loss: 0.0254
+2025-03-11 00:48:19,172 - BNAI_Network - INFO - Validation Loss: 0.0254
+2025-03-11 00:48:20,115 - BNAI_Network - INFO - Epoch [96/100] - Loss: 0.0209
+2025-03-11 00:48:20,115 - BNAI_Network - INFO - Epoch [96/100] - Loss: 0.0209
+2025-03-11 00:48:20,180 - BNAI_Network - INFO - Validation Loss: 0.0285
+2025-03-11 00:48:20,180 - BNAI_Network - INFO - Validation Loss: 0.0285
+2025-03-11 00:48:21,264 - BNAI_Network - INFO - Epoch [97/100] - Loss: 0.0209
+2025-03-11 00:48:21,264 - BNAI_Network - INFO - Epoch [97/100] - Loss: 0.0209
+2025-03-11 00:48:21,295 - BNAI_Network - INFO - Validation Loss: 0.0255
+2025-03-11 00:48:21,295 - BNAI_Network - INFO - Validation Loss: 0.0255
+2025-03-11 00:48:21,900 - BNAI_Network - INFO - Epoch [98/100] - Loss: 0.0209
+2025-03-11 00:48:21,900 - BNAI_Network - INFO - Epoch [98/100] - Loss: 0.0209
+2025-03-11 00:48:21,931 - BNAI_Network - INFO - Validation Loss: 0.0278
+2025-03-11 00:48:21,931 - BNAI_Network - INFO - Validation Loss: 0.0278
+2025-03-11 00:48:22,788 - BNAI_Network - INFO - Epoch [99/100] - Loss: 0.0209
+2025-03-11 00:48:22,788 - BNAI_Network - INFO - Epoch [99/100] - Loss: 0.0209
+2025-03-11 00:48:22,835 - BNAI_Network - INFO - Validation Loss: 0.0256
+2025-03-11 00:48:22,835 - BNAI_Network - INFO - Validation Loss: 0.0256
+2025-03-11 00:48:23,927 - BNAI_Network - INFO - Epoch [100/100] - Loss: 0.0208
+2025-03-11 00:48:23,927 - BNAI_Network - INFO - Epoch [100/100] - Loss: 0.0208
+2025-03-11 00:48:23,960 - BNAI_Network - INFO - Validation Loss: 0.0271
+2025-03-11 00:48:23,960 - BNAI_Network - INFO - Validation Loss: 0.0271
+2025-03-11 00:48:23,964 - BNAI_Network - INFO - Experiment completed.
+2025-03-11 00:48:23,964 - BNAI_Network - INFO - Experiment completed.
+2025-03-11 01:39:34,937 - BNAI_Network - INFO - Dataset BNAI già esistente.
+2025-03-11 01:39:34,938 - BNAI_Network - INFO - Caricamento dati BNAI...
+2025-03-11 01:39:35,075 - BNAI_Network - INFO - Creating BNAI HyperNetwork model...
+2025-03-11 01:39:35,091 - BNAI_Network - INFO - Starting training...
+2025-03-11 01:39:35,644 - BNAI_Network - INFO - Epoch [1/100] - Loss: 0.0591
+2025-03-11 01:39:35,644 - BNAI_Network - INFO - Epoch [1/100] - Loss: 0.0591
+2025-03-11 01:39:35,678 - BNAI_Network - INFO - Validation Loss: 0.0339
+2025-03-11 01:39:35,678 - BNAI_Network - INFO - Validation Loss: 0.0339
+2025-03-11 01:39:36,161 - BNAI_Network - INFO - Epoch [2/100] - Loss: 0.0303
+2025-03-11 01:39:36,161 - BNAI_Network - INFO - Epoch [2/100] - Loss: 0.0303
+2025-03-11 01:39:36,194 - BNAI_Network - INFO - Validation Loss: 0.0352
+2025-03-11 01:39:36,194 - BNAI_Network - INFO - Validation Loss: 0.0352
+2025-03-11 01:39:37,088 - BNAI_Network - INFO - Epoch [3/100] - Loss: 0.0282
+2025-03-11 01:39:37,088 - BNAI_Network - INFO - Epoch [3/100] - Loss: 0.0282
+2025-03-11 01:39:37,145 - BNAI_Network - INFO - Validation Loss: 0.0321
+2025-03-11 01:39:37,145 - BNAI_Network - INFO - Validation Loss: 0.0321
+2025-03-11 01:39:38,032 - BNAI_Network - INFO - Epoch [4/100] - Loss: 0.0274
+2025-03-11 01:39:38,032 - BNAI_Network - INFO - Epoch [4/100] - Loss: 0.0274
+2025-03-11 01:39:38,073 - BNAI_Network - INFO - Validation Loss: 0.0281
+2025-03-11 01:39:38,073 - BNAI_Network - INFO - Validation Loss: 0.0281
+2025-03-11 01:39:38,658 - BNAI_Network - INFO - Epoch [5/100] - Loss: 0.0259
+2025-03-11 01:39:38,658 - BNAI_Network - INFO - Epoch [5/100] - Loss: 0.0259
+2025-03-11 01:39:38,689 - BNAI_Network - INFO - Validation Loss: 0.0314
+2025-03-11 01:39:38,689 - BNAI_Network - INFO - Validation Loss: 0.0314
+2025-03-11 01:39:39,415 - BNAI_Network - INFO - Epoch [6/100] - Loss: 0.0251
+2025-03-11 01:39:39,415 - BNAI_Network - INFO - Epoch [6/100] - Loss: 0.0251
+2025-03-11 01:39:39,480 - BNAI_Network - INFO - Validation Loss: 0.0323
+2025-03-11 01:39:39,480 - BNAI_Network - INFO - Validation Loss: 0.0323
+2025-03-11 01:39:40,337 - BNAI_Network - INFO - Epoch [7/100] - Loss: 0.0245
+2025-03-11 01:39:40,337 - BNAI_Network - INFO - Epoch [7/100] - Loss: 0.0245
+2025-03-11 01:39:40,379 - BNAI_Network - INFO - Validation Loss: 0.0356
+2025-03-11 01:39:40,379 - BNAI_Network - INFO - Validation Loss: 0.0356
+2025-03-11 01:39:41,081 - BNAI_Network - INFO - Epoch [8/100] - Loss: 0.0237
+2025-03-11 01:39:41,081 - BNAI_Network - INFO - Epoch [8/100] - Loss: 0.0237
+2025-03-11 01:39:41,110 - BNAI_Network - INFO - Validation Loss: 0.0253
+2025-03-11 01:39:41,110 - BNAI_Network - INFO - Validation Loss: 0.0253
+2025-03-11 01:39:41,625 - BNAI_Network - INFO - Epoch [9/100] - Loss: 0.0235
+2025-03-11 01:39:41,625 - BNAI_Network - INFO - Epoch [9/100] - Loss: 0.0235
+2025-03-11 01:39:41,655 - BNAI_Network - INFO - Validation Loss: 0.0311
+2025-03-11 01:39:41,655 - BNAI_Network - INFO - Validation Loss: 0.0311
+2025-03-11 01:39:42,556 - BNAI_Network - INFO - Epoch [10/100] - Loss: 0.0229
+2025-03-11 01:39:42,556 - BNAI_Network - INFO - Epoch [10/100] - Loss: 0.0229
+2025-03-11 01:39:42,612 - BNAI_Network - INFO - Validation Loss: 0.0294
+2025-03-11 01:39:42,612 - BNAI_Network - INFO - Validation Loss: 0.0294
+2025-03-11 01:39:43,519 - BNAI_Network - INFO - Epoch [11/100] - Loss: 0.0226
+2025-03-11 01:39:43,519 - BNAI_Network - INFO - Epoch [11/100] - Loss: 0.0226
+2025-03-11 01:39:43,549 - BNAI_Network - INFO - Validation Loss: 0.0283
+2025-03-11 01:39:43,549 - BNAI_Network - INFO - Validation Loss: 0.0283
+2025-03-11 01:39:44,071 - BNAI_Network - INFO - Epoch [12/100] - Loss: 0.0224
+2025-03-11 01:39:44,071 - BNAI_Network - INFO - Epoch [12/100] - Loss: 0.0224
+2025-03-11 01:39:44,101 - BNAI_Network - INFO - Validation Loss: 0.0299
+2025-03-11 01:39:44,101 - BNAI_Network - INFO - Validation Loss: 0.0299
+2025-03-11 01:39:44,875 - BNAI_Network - INFO - Epoch [13/100] - Loss: 0.0223
+2025-03-11 01:39:44,875 - BNAI_Network - INFO - Epoch [13/100] - Loss: 0.0223
+2025-03-11 01:39:44,921 - BNAI_Network - INFO - Validation Loss: 0.0289
+2025-03-11 01:39:44,921 - BNAI_Network - INFO - Validation Loss: 0.0289
+2025-03-11 01:39:45,855 - BNAI_Network - INFO - Epoch [14/100] - Loss: 0.0219
+2025-03-11 01:39:45,855 - BNAI_Network - INFO - Epoch [14/100] - Loss: 0.0219
+2025-03-11 01:39:45,892 - BNAI_Network - INFO - Validation Loss: 0.0232
+2025-03-11 01:39:45,892 - BNAI_Network - INFO - Validation Loss: 0.0232
+2025-03-11 01:39:46,527 - BNAI_Network - INFO - Epoch [15/100] - Loss: 0.0220
+2025-03-11 01:39:46,527 - BNAI_Network - INFO - Epoch [15/100] - Loss: 0.0220
+2025-03-11 01:39:46,557 - BNAI_Network - INFO - Validation Loss: 0.0273
+2025-03-11 01:39:46,557 - BNAI_Network - INFO - Validation Loss: 0.0273
+2025-03-11 01:39:47,472 - BNAI_Network - INFO - Epoch [16/100] - Loss: 0.0218
+2025-03-11 01:39:47,472 - BNAI_Network - INFO - Epoch [16/100] - Loss: 0.0218
+2025-03-11 01:39:47,505 - BNAI_Network - INFO - Validation Loss: 0.0255
+2025-03-11 01:39:47,505 - BNAI_Network - INFO - Validation Loss: 0.0255
+2025-03-11 01:39:48,473 - BNAI_Network - INFO - Epoch [17/100] - Loss: 0.0218
+2025-03-11 01:39:48,473 - BNAI_Network - INFO - Epoch [17/100] - Loss: 0.0218
+2025-03-11 01:39:48,513 - BNAI_Network - INFO - Validation Loss: 0.0251
+2025-03-11 01:39:48,513 - BNAI_Network - INFO - Validation Loss: 0.0251
+2025-03-11 01:39:49,148 - BNAI_Network - INFO - Epoch [18/100] - Loss: 0.0217
+2025-03-11 01:39:49,148 - BNAI_Network - INFO - Epoch [18/100] - Loss: 0.0217
+2025-03-11 01:39:49,179 - BNAI_Network - INFO - Validation Loss: 0.0259
+2025-03-11 01:39:49,179 - BNAI_Network - INFO - Validation Loss: 0.0259
+2025-03-11 01:39:49,767 - BNAI_Network - INFO - Epoch [19/100] - Loss: 0.0215
+2025-03-11 01:39:49,767 - BNAI_Network - INFO - Epoch [19/100] - Loss: 0.0215
+2025-03-11 01:39:49,822 - BNAI_Network - INFO - Validation Loss: 0.0270
+2025-03-11 01:39:49,822 - BNAI_Network - INFO - Validation Loss: 0.0270
+2025-03-11 01:39:50,870 - BNAI_Network - INFO - Epoch [20/100] - Loss: 0.0214
+2025-03-11 01:39:50,870 - BNAI_Network - INFO - Epoch [20/100] - Loss: 0.0214
+2025-03-11 01:39:50,912 - BNAI_Network - INFO - Validation Loss: 0.0237
+2025-03-11 01:39:50,912 - BNAI_Network - INFO - Validation Loss: 0.0237
+2025-03-11 01:39:51,686 - BNAI_Network - INFO - Epoch [21/100] - Loss: 0.0214
+2025-03-11 01:39:51,686 - BNAI_Network - INFO - Epoch [21/100] - Loss: 0.0214
+2025-03-11 01:39:51,717 - BNAI_Network - INFO - Validation Loss: 0.0278
+2025-03-11 01:39:51,717 - BNAI_Network - INFO - Validation Loss: 0.0278
+2025-03-11 01:39:52,252 - BNAI_Network - INFO - Epoch [22/100] - Loss: 0.0214
+2025-03-11 01:39:52,252 - BNAI_Network - INFO - Epoch [22/100] - Loss: 0.0214
+2025-03-11 01:39:52,281 - BNAI_Network - INFO - Validation Loss: 0.0268
+2025-03-11 01:39:52,281 - BNAI_Network - INFO - Validation Loss: 0.0268
+2025-03-11 01:39:53,179 - BNAI_Network - INFO - Epoch [23/100] - Loss: 0.0214
+2025-03-11 01:39:53,179 - BNAI_Network - INFO - Epoch [23/100] - Loss: 0.0214
+2025-03-11 01:39:53,215 - BNAI_Network - INFO - Validation Loss: 0.0286
+2025-03-11 01:39:53,215 - BNAI_Network - INFO - Validation Loss: 0.0286
+2025-03-11 01:39:54,198 - BNAI_Network - INFO - Epoch [24/100] - Loss: 0.0214
+2025-03-11 01:39:54,198 - BNAI_Network - INFO - Epoch [24/100] - Loss: 0.0214
+2025-03-11 01:39:54,229 - BNAI_Network - INFO - Validation Loss: 0.0264
+2025-03-11 01:39:54,229 - BNAI_Network - INFO - Validation Loss: 0.0264
+2025-03-11 01:39:54,756 - BNAI_Network - INFO - Epoch [25/100] - Loss: 0.0214
+2025-03-11 01:39:54,756 - BNAI_Network - INFO - Epoch [25/100] - Loss: 0.0214
+2025-03-11 01:39:54,786 - BNAI_Network - INFO - Validation Loss: 0.0279
+2025-03-11 01:39:54,786 - BNAI_Network - INFO - Validation Loss: 0.0279
+2025-03-11 01:39:55,583 - BNAI_Network - INFO - Epoch [26/100] - Loss: 0.0213
+2025-03-11 01:39:55,583 - BNAI_Network - INFO - Epoch [26/100] - Loss: 0.0213
+2025-03-11 01:39:55,617 - BNAI_Network - INFO - Validation Loss: 0.0254
+2025-03-11 01:39:55,617 - BNAI_Network - INFO - Validation Loss: 0.0254
+2025-03-11 01:39:56,567 - BNAI_Network - INFO - Epoch [27/100] - Loss: 0.0213
+2025-03-11 01:39:56,567 - BNAI_Network - INFO - Epoch [27/100] - Loss: 0.0213
+2025-03-11 01:39:56,604 - BNAI_Network - INFO - Validation Loss: 0.0258
+2025-03-11 01:39:56,604 - BNAI_Network - INFO - Validation Loss: 0.0258
+2025-03-11 01:39:57,298 - BNAI_Network - INFO - Epoch [28/100] - Loss: 0.0212
+2025-03-11 01:39:57,298 - BNAI_Network - INFO - Epoch [28/100] - Loss: 0.0212
+2025-03-11 01:39:57,329 - BNAI_Network - INFO - Validation Loss: 0.0260
+2025-03-11 01:39:57,329 - BNAI_Network - INFO - Validation Loss: 0.0260
+2025-03-11 01:39:58,215 - BNAI_Network - INFO - Epoch [29/100] - Loss: 0.0213
+2025-03-11 01:39:58,215 - BNAI_Network - INFO - Epoch [29/100] - Loss: 0.0213
+2025-03-11 01:39:58,250 - BNAI_Network - INFO - Validation Loss: 0.0261
+2025-03-11 01:39:58,250 - BNAI_Network - INFO - Validation Loss: 0.0261
+2025-03-11 01:39:59,228 - BNAI_Network - INFO - Epoch [30/100] - Loss: 0.0213
+2025-03-11 01:39:59,228 - BNAI_Network - INFO - Epoch [30/100] - Loss: 0.0213
+2025-03-11 01:39:59,267 - BNAI_Network - INFO - Validation Loss: 0.0272
+2025-03-11 01:39:59,267 - BNAI_Network - INFO - Validation Loss: 0.0272
+2025-03-11 01:39:59,904 - BNAI_Network - INFO - Epoch [31/100] - Loss: 0.0213
+2025-03-11 01:39:59,904 - BNAI_Network - INFO - Epoch [31/100] - Loss: 0.0213
+2025-03-11 01:39:59,935 - BNAI_Network - INFO - Validation Loss: 0.0258
+2025-03-11 01:39:59,935 - BNAI_Network - INFO - Validation Loss: 0.0258
+2025-03-11 01:40:00,689 - BNAI_Network - INFO - Epoch [32/100] - Loss: 0.0213
+2025-03-11 01:40:00,689 - BNAI_Network - INFO - Epoch [32/100] - Loss: 0.0213
+2025-03-11 01:40:00,773 - BNAI_Network - INFO - Validation Loss: 0.0265
+2025-03-11 01:40:00,773 - BNAI_Network - INFO - Validation Loss: 0.0265
+2025-03-11 01:40:01,760 - BNAI_Network - INFO - Epoch [33/100] - Loss: 0.0212
+2025-03-11 01:40:01,760 - BNAI_Network - INFO - Epoch [33/100] - Loss: 0.0212
+2025-03-11 01:40:01,804 - BNAI_Network - INFO - Validation Loss: 0.0254
+2025-03-11 01:40:01,804 - BNAI_Network - INFO - Validation Loss: 0.0254
+2025-03-11 01:40:02,487 - BNAI_Network - INFO - Epoch [34/100] - Loss: 0.0211
+2025-03-11 01:40:02,487 - BNAI_Network - INFO - Epoch [34/100] - Loss: 0.0211
+2025-03-11 01:40:02,517 - BNAI_Network - INFO - Validation Loss: 0.0258
+2025-03-11 01:40:02,517 - BNAI_Network - INFO - Validation Loss: 0.0258
+2025-03-11 01:40:03,061 - BNAI_Network - INFO - Epoch [35/100] - Loss: 0.0212
+2025-03-11 01:40:03,061 - BNAI_Network - INFO - Epoch [35/100] - Loss: 0.0212
+2025-03-11 01:40:03,094 - BNAI_Network - INFO - Validation Loss: 0.0266
+2025-03-11 01:40:03,094 - BNAI_Network - INFO - Validation Loss: 0.0266
+2025-03-11 01:40:04,131 - BNAI_Network - INFO - Epoch [36/100] - Loss: 0.0212
+2025-03-11 01:40:04,131 - BNAI_Network - INFO - Epoch [36/100] - Loss: 0.0212
+2025-03-11 01:40:04,173 - BNAI_Network - INFO - Validation Loss: 0.0289
+2025-03-11 01:40:04,173 - BNAI_Network - INFO - Validation Loss: 0.0289
+2025-03-11 01:40:04,995 - BNAI_Network - INFO - Epoch [37/100] - Loss: 0.0211
+2025-03-11 01:40:04,995 - BNAI_Network - INFO - Epoch [37/100] - Loss: 0.0211
+2025-03-11 01:40:05,025 - BNAI_Network - INFO - Validation Loss: 0.0263
+2025-03-11 01:40:05,025 - BNAI_Network - INFO - Validation Loss: 0.0263
+2025-03-11 01:40:05,568 - BNAI_Network - INFO - Epoch [38/100] - Loss: 0.0212
+2025-03-11 01:40:05,568 - BNAI_Network - INFO - Epoch [38/100] - Loss: 0.0212
+2025-03-11 01:40:05,599 - BNAI_Network - INFO - Validation Loss: 0.0247
+2025-03-11 01:40:05,599 - BNAI_Network - INFO - Validation Loss: 0.0247
+2025-03-11 01:40:06,481 - BNAI_Network - INFO - Epoch [39/100] - Loss: 0.0211
+2025-03-11 01:40:06,481 - BNAI_Network - INFO - Epoch [39/100] - Loss: 0.0211
+2025-03-11 01:40:06,523 - BNAI_Network - INFO - Validation Loss: 0.0230
+2025-03-11 01:40:06,523 - BNAI_Network - INFO - Validation Loss: 0.0230
+2025-03-11 01:40:07,529 - BNAI_Network - INFO - Epoch [40/100] - Loss: 0.0211
+2025-03-11 01:40:07,529 - BNAI_Network - INFO - Epoch [40/100] - Loss: 0.0211
+2025-03-11 01:40:07,564 - BNAI_Network - INFO - Validation Loss: 0.0243
+2025-03-11 01:40:07,564 - BNAI_Network - INFO - Validation Loss: 0.0243
+2025-03-11 01:40:08,224 - BNAI_Network - INFO - Epoch [41/100] - Loss: 0.0211
+2025-03-11 01:40:08,224 - BNAI_Network - INFO - Epoch [41/100] - Loss: 0.0211
+2025-03-11 01:40:08,253 - BNAI_Network - INFO - Validation Loss: 0.0244
+2025-03-11 01:40:08,253 - BNAI_Network - INFO - Validation Loss: 0.0244
+2025-03-11 01:40:09,109 - BNAI_Network - INFO - Epoch [42/100] - Loss: 0.0211
+2025-03-11 01:40:09,109 - BNAI_Network - INFO - Epoch [42/100] - Loss: 0.0211
+2025-03-11 01:40:09,142 - BNAI_Network - INFO - Validation Loss: 0.0261
+2025-03-11 01:40:09,142 - BNAI_Network - INFO - Validation Loss: 0.0261
+2025-03-11 01:40:10,152 - BNAI_Network - INFO - Epoch [43/100] - Loss: 0.0211
+2025-03-11 01:40:10,152 - BNAI_Network - INFO - Epoch [43/100] - Loss: 0.0211
+2025-03-11 01:40:10,183 - BNAI_Network - INFO - Validation Loss: 0.0256
+2025-03-11 01:40:10,183 - BNAI_Network - INFO - Validation Loss: 0.0256
+2025-03-11 01:40:10,734 - BNAI_Network - INFO - Epoch [44/100] - Loss: 0.0211
+2025-03-11 01:40:10,734 - BNAI_Network - INFO - Epoch [44/100] - Loss: 0.0211
+2025-03-11 01:40:10,767 - BNAI_Network - INFO - Validation Loss: 0.0272
+2025-03-11 01:40:10,767 - BNAI_Network - INFO - Validation Loss: 0.0272
+2025-03-11 01:40:11,607 - BNAI_Network - INFO - Epoch [45/100] - Loss: 0.0211
+2025-03-11 01:40:11,607 - BNAI_Network - INFO - Epoch [45/100] - Loss: 0.0211
+2025-03-11 01:40:11,646 - BNAI_Network - INFO - Validation Loss: 0.0243
+2025-03-11 01:40:11,646 - BNAI_Network - INFO - Validation Loss: 0.0243
+2025-03-11 01:40:12,673 - BNAI_Network - INFO - Epoch [46/100] - Loss: 0.0211
+2025-03-11 01:40:12,673 - BNAI_Network - INFO - Epoch [46/100] - Loss: 0.0211
+2025-03-11 01:40:12,724 - BNAI_Network - INFO - Validation Loss: 0.0269
+2025-03-11 01:40:12,724 - BNAI_Network - INFO - Validation Loss: 0.0269
+2025-03-11 01:40:13,287 - BNAI_Network - INFO - Epoch [47/100] - Loss: 0.0210
+2025-03-11 01:40:13,287 - BNAI_Network - INFO - Epoch [47/100] - Loss: 0.0210
+2025-03-11 01:40:13,318 - BNAI_Network - INFO - Validation Loss: 0.0248
+2025-03-11 01:40:13,318 - BNAI_Network - INFO - Validation Loss: 0.0248
+2025-03-11 01:40:14,120 - BNAI_Network - INFO - Epoch [48/100] - Loss: 0.0210
+2025-03-11 01:40:14,120 - BNAI_Network - INFO - Epoch [48/100] - Loss: 0.0210
+2025-03-11 01:40:14,168 - BNAI_Network - INFO - Validation Loss: 0.0264
+2025-03-11 01:40:14,168 - BNAI_Network - INFO - Validation Loss: 0.0264
+2025-03-11 01:40:15,143 - BNAI_Network - INFO - Epoch [49/100] - Loss: 0.0211
+2025-03-11 01:40:15,143 - BNAI_Network - INFO - Epoch [49/100] - Loss: 0.0211
+2025-03-11 01:40:15,180 - BNAI_Network - INFO - Validation Loss: 0.0272
+2025-03-11 01:40:15,180 - BNAI_Network - INFO - Validation Loss: 0.0272
+2025-03-11 01:40:15,907 - BNAI_Network - INFO - Epoch [50/100] - Loss: 0.0210
+2025-03-11 01:40:15,907 - BNAI_Network - INFO - Epoch [50/100] - Loss: 0.0210
+2025-03-11 01:40:15,941 - BNAI_Network - INFO - Validation Loss: 0.0273
+2025-03-11 01:40:15,941 - BNAI_Network - INFO - Validation Loss: 0.0273
+2025-03-11 01:40:16,613 - BNAI_Network - INFO - Epoch [51/100] - Loss: 0.0210
+2025-03-11 01:40:16,613 - BNAI_Network - INFO - Epoch [51/100] - Loss: 0.0210
+2025-03-11 01:40:16,693 - BNAI_Network - INFO - Validation Loss: 0.0281
+2025-03-11 01:40:16,693 - BNAI_Network - INFO - Validation Loss: 0.0281
+2025-03-11 01:40:17,690 - BNAI_Network - INFO - Epoch [52/100] - Loss: 0.0211
+2025-03-11 01:40:17,690 - BNAI_Network - INFO - Epoch [52/100] - Loss: 0.0211
+2025-03-11 01:40:17,739 - BNAI_Network - INFO - Validation Loss: 0.0247
+2025-03-11 01:40:17,739 - BNAI_Network - INFO - Validation Loss: 0.0247
+2025-03-11 01:40:18,500 - BNAI_Network - INFO - Epoch [53/100] - Loss: 0.0210
+2025-03-11 01:40:18,500 - BNAI_Network - INFO - Epoch [53/100] - Loss: 0.0210
+2025-03-11 01:40:18,529 - BNAI_Network - INFO - Validation Loss: 0.0253
+2025-03-11 01:40:18,529 - BNAI_Network - INFO - Validation Loss: 0.0253
+2025-03-11 01:40:19,078 - BNAI_Network - INFO - Epoch [54/100] - Loss: 0.0210
+2025-03-11 01:40:19,078 - BNAI_Network - INFO - Epoch [54/100] - Loss: 0.0210
+2025-03-11 01:40:19,111 - BNAI_Network - INFO - Validation Loss: 0.0256
+2025-03-11 01:40:19,111 - BNAI_Network - INFO - Validation Loss: 0.0256
+2025-03-11 01:40:20,290 - BNAI_Network - INFO - Epoch [55/100] - Loss: 0.0210
+2025-03-11 01:40:20,290 - BNAI_Network - INFO - Epoch [55/100] - Loss: 0.0210
+2025-03-11 01:40:20,332 - BNAI_Network - INFO - Validation Loss: 0.0269
+2025-03-11 01:40:20,332 - BNAI_Network - INFO - Validation Loss: 0.0269
+2025-03-11 01:40:21,166 - BNAI_Network - INFO - Epoch [56/100] - Loss: 0.0210
+2025-03-11 01:40:21,166 - BNAI_Network - INFO - Epoch [56/100] - Loss: 0.0210
+2025-03-11 01:40:21,198 - BNAI_Network - INFO - Validation Loss: 0.0245
+2025-03-11 01:40:21,198 - BNAI_Network - INFO - Validation Loss: 0.0245
+2025-03-11 01:40:21,755 - BNAI_Network - INFO - Epoch [57/100] - Loss: 0.0210
+2025-03-11 01:40:21,755 - BNAI_Network - INFO - Epoch [57/100] - Loss: 0.0210
+2025-03-11 01:40:21,800 - BNAI_Network - INFO - Validation Loss: 0.0260
+2025-03-11 01:40:21,800 - BNAI_Network - INFO - Validation Loss: 0.0260
+2025-03-11 01:40:22,974 - BNAI_Network - INFO - Epoch [58/100] - Loss: 0.0210
+2025-03-11 01:40:22,974 - BNAI_Network - INFO - Epoch [58/100] - Loss: 0.0210
+2025-03-11 01:40:23,021 - BNAI_Network - INFO - Validation Loss: 0.0300
+2025-03-11 01:40:23,021 - BNAI_Network - INFO - Validation Loss: 0.0300
+2025-03-11 01:40:23,918 - BNAI_Network - INFO - Epoch [59/100] - Loss: 0.0210
+2025-03-11 01:40:23,918 - BNAI_Network - INFO - Epoch [59/100] - Loss: 0.0210
+2025-03-11 01:40:23,957 - BNAI_Network - INFO - Validation Loss: 0.0288
+2025-03-11 01:40:23,957 - BNAI_Network - INFO - Validation Loss: 0.0288
+2025-03-11 01:40:25,040 - BNAI_Network - INFO - Epoch [60/100] - Loss: 0.0210
+2025-03-11 01:40:25,040 - BNAI_Network - INFO - Epoch [60/100] - Loss: 0.0210
+2025-03-11 01:40:25,076 - BNAI_Network - INFO - Validation Loss: 0.0250
+2025-03-11 01:40:25,076 - BNAI_Network - INFO - Validation Loss: 0.0250
+2025-03-11 01:40:29,393 - BNAI_Network - INFO - Epoch [61/100] - Loss: 0.0210
+2025-03-11 01:40:29,393 - BNAI_Network - INFO - Epoch [61/100] - Loss: 0.0210
+2025-03-11 01:40:29,514 - BNAI_Network - INFO - Validation Loss: 0.0252
+2025-03-11 01:40:29,514 - BNAI_Network - INFO - Validation Loss: 0.0252
+2025-03-11 01:40:33,414 - BNAI_Network - INFO - Epoch [62/100] - Loss: 0.0210
+2025-03-11 01:40:33,414 - BNAI_Network - INFO - Epoch [62/100] - Loss: 0.0210
+2025-03-11 01:40:33,538 - BNAI_Network - INFO - Validation Loss: 0.0252
+2025-03-11 01:40:33,538 - BNAI_Network - INFO - Validation Loss: 0.0252
+2025-03-11 01:40:37,837 - BNAI_Network - INFO - Epoch [63/100] - Loss: 0.0209
+2025-03-11 01:40:37,837 - BNAI_Network - INFO - Epoch [63/100] - Loss: 0.0209
+2025-03-11 01:40:38,005 - BNAI_Network - INFO - Validation Loss: 0.0267
+2025-03-11 01:40:38,005 - BNAI_Network - INFO - Validation Loss: 0.0267
+2025-03-11 01:40:42,692 - BNAI_Network - INFO - Epoch [64/100] - Loss: 0.0210
+2025-03-11 01:40:42,692 - BNAI_Network - INFO - Epoch [64/100] - Loss: 0.0210
+2025-03-11 01:40:42,815 - BNAI_Network - INFO - Validation Loss: 0.0273
+2025-03-11 01:40:42,815 - BNAI_Network - INFO - Validation Loss: 0.0273
+2025-03-11 01:40:47,226 - BNAI_Network - INFO - Epoch [65/100] - Loss: 0.0210
+2025-03-11 01:40:47,226 - BNAI_Network - INFO - Epoch [65/100] - Loss: 0.0210
+2025-03-11 01:40:47,300 - BNAI_Network - INFO - Validation Loss: 0.0259
+2025-03-11 01:40:47,300 - BNAI_Network - INFO - Validation Loss: 0.0259
+2025-03-11 01:40:48,294 - BNAI_Network - INFO - Epoch [66/100] - Loss: 0.0210
+2025-03-11 01:40:48,294 - BNAI_Network - INFO - Epoch [66/100] - Loss: 0.0210
+2025-03-11 01:40:48,337 - BNAI_Network - INFO - Validation Loss: 0.0251
+2025-03-11 01:40:48,337 - BNAI_Network - INFO - Validation Loss: 0.0251
+2025-03-11 01:40:49,308 - BNAI_Network - INFO - Epoch [67/100] - Loss: 0.0209
+2025-03-11 01:40:49,308 - BNAI_Network - INFO - Epoch [67/100] - Loss: 0.0209
+2025-03-11 01:40:49,343 - BNAI_Network - INFO - Validation Loss: 0.0265
+2025-03-11 01:40:49,343 - BNAI_Network - INFO - Validation Loss: 0.0265
+2025-03-11 01:40:50,333 - BNAI_Network - INFO - Epoch [68/100] - Loss: 0.0210
+2025-03-11 01:40:50,333 - BNAI_Network - INFO - Epoch [68/100] - Loss: 0.0210
+2025-03-11 01:40:50,374 - BNAI_Network - INFO - Validation Loss: 0.0267
+2025-03-11 01:40:50,374 - BNAI_Network - INFO - Validation Loss: 0.0267
+2025-03-11 01:40:51,349 - BNAI_Network - INFO - Epoch [69/100] - Loss: 0.0210
+2025-03-11 01:40:51,349 - BNAI_Network - INFO - Epoch [69/100] - Loss: 0.0210
+2025-03-11 01:40:51,385 - BNAI_Network - INFO - Validation Loss: 0.0246
+2025-03-11 01:40:51,385 - BNAI_Network - INFO - Validation Loss: 0.0246
+2025-03-11 01:40:52,302 - BNAI_Network - INFO - Epoch [70/100] - Loss: 0.0210
+2025-03-11 01:40:52,302 - BNAI_Network - INFO - Epoch [70/100] - Loss: 0.0210
+2025-03-11 01:40:52,338 - BNAI_Network - INFO - Validation Loss: 0.0250
+2025-03-11 01:40:52,338 - BNAI_Network - INFO - Validation Loss: 0.0250
+2025-03-11 01:40:53,362 - BNAI_Network - INFO - Epoch [71/100] - Loss: 0.0209
+2025-03-11 01:40:53,362 - BNAI_Network - INFO - Epoch [71/100] - Loss: 0.0209
+2025-03-11 01:40:53,411 - BNAI_Network - INFO - Validation Loss: 0.0264
+2025-03-11 01:40:53,411 - BNAI_Network - INFO - Validation Loss: 0.0264
+2025-03-11 01:40:54,337 - BNAI_Network - INFO - Epoch [72/100] - Loss: 0.0209
+2025-03-11 01:40:54,337 - BNAI_Network - INFO - Epoch [72/100] - Loss: 0.0209
+2025-03-11 01:40:54,378 - BNAI_Network - INFO - Validation Loss: 0.0285
+2025-03-11 01:40:54,378 - BNAI_Network - INFO - Validation Loss: 0.0285
+2025-03-11 01:40:55,030 - BNAI_Network - INFO - Epoch [73/100] - Loss: 0.0209
+2025-03-11 01:40:55,030 - BNAI_Network - INFO - Epoch [73/100] - Loss: 0.0209
+2025-03-11 01:40:55,062 - BNAI_Network - INFO - Validation Loss: 0.0291
+2025-03-11 01:40:55,062 - BNAI_Network - INFO - Validation Loss: 0.0291
+2025-03-11 01:40:55,996 - BNAI_Network - INFO - Epoch [74/100] - Loss: 0.0209
+2025-03-11 01:40:55,996 - BNAI_Network - INFO - Epoch [74/100] - Loss: 0.0209
+2025-03-11 01:40:56,055 - BNAI_Network - INFO - Validation Loss: 0.0260
+2025-03-11 01:40:56,055 - BNAI_Network - INFO - Validation Loss: 0.0260
+2025-03-11 01:40:57,195 - BNAI_Network - INFO - Epoch [75/100] - Loss: 0.0210
+2025-03-11 01:40:57,195 - BNAI_Network - INFO - Epoch [75/100] - Loss: 0.0210
+2025-03-11 01:40:57,227 - BNAI_Network - INFO - Validation Loss: 0.0278
+2025-03-11 01:40:57,227 - BNAI_Network - INFO - Validation Loss: 0.0278
+2025-03-11 01:40:58,005 - BNAI_Network - INFO - Epoch [76/100] - Loss: 0.0209
+2025-03-11 01:40:58,005 - BNAI_Network - INFO - Epoch [76/100] - Loss: 0.0209
+2025-03-11 01:40:58,038 - BNAI_Network - INFO - Validation Loss: 0.0260
+2025-03-11 01:40:58,038 - BNAI_Network - INFO - Validation Loss: 0.0260
+2025-03-11 01:40:59,099 - BNAI_Network - INFO - Epoch [77/100] - Loss: 0.0209
+2025-03-11 01:40:59,099 - BNAI_Network - INFO - Epoch [77/100] - Loss: 0.0209
+2025-03-11 01:40:59,153 - BNAI_Network - INFO - Validation Loss: 0.0250
+2025-03-11 01:40:59,153 - BNAI_Network - INFO - Validation Loss: 0.0250
+2025-03-11 01:41:00,255 - BNAI_Network - INFO - Epoch [78/100] - Loss: 0.0209
+2025-03-11 01:41:00,255 - BNAI_Network - INFO - Epoch [78/100] - Loss: 0.0209
+2025-03-11 01:41:00,290 - BNAI_Network - INFO - Validation Loss: 0.0244
+2025-03-11 01:41:00,290 - BNAI_Network - INFO - Validation Loss: 0.0244
+2025-03-11 01:41:01,394 - BNAI_Network - INFO - Epoch [79/100] - Loss: 0.0210
+2025-03-11 01:41:01,394 - BNAI_Network - INFO - Epoch [79/100] - Loss: 0.0210
+2025-03-11 01:41:01,445 - BNAI_Network - INFO - Validation Loss: 0.0259
+2025-03-11 01:41:01,445 - BNAI_Network - INFO - Validation Loss: 0.0259
+2025-03-11 01:41:02,604 - BNAI_Network - INFO - Epoch [80/100] - Loss: 0.0209
+2025-03-11 01:41:02,604 - BNAI_Network - INFO - Epoch [80/100] - Loss: 0.0209
+2025-03-11 01:41:02,670 - BNAI_Network - INFO - Validation Loss: 0.0266
+2025-03-11 01:41:02,670 - BNAI_Network - INFO - Validation Loss: 0.0266
+2025-03-11 01:41:04,171 - BNAI_Network - INFO - Epoch [81/100] - Loss: 0.0209
+2025-03-11 01:41:04,171 - BNAI_Network - INFO - Epoch [81/100] - Loss: 0.0209
+2025-03-11 01:41:04,222 - BNAI_Network - INFO - Validation Loss: 0.0281
+2025-03-11 01:41:04,222 - BNAI_Network - INFO - Validation Loss: 0.0281
+2025-03-11 01:41:05,490 - BNAI_Network - INFO - Epoch [82/100] - Loss: 0.0209
+2025-03-11 01:41:05,490 - BNAI_Network - INFO - Epoch [82/100] - Loss: 0.0209
+2025-03-11 01:41:05,551 - BNAI_Network - INFO - Validation Loss: 0.0251
+2025-03-11 01:41:05,551 - BNAI_Network - INFO - Validation Loss: 0.0251
+2025-03-11 01:41:06,374 - BNAI_Network - INFO - Epoch [83/100] - Loss: 0.0209
+2025-03-11 01:41:06,374 - BNAI_Network - INFO - Epoch [83/100] - Loss: 0.0209
+2025-03-11 01:41:06,433 - BNAI_Network - INFO - Validation Loss: 0.0273
+2025-03-11 01:41:06,433 - BNAI_Network - INFO - Validation Loss: 0.0273
+2025-03-11 01:41:07,584 - BNAI_Network - INFO - Epoch [84/100] - Loss: 0.0209
+2025-03-11 01:41:07,584 - BNAI_Network - INFO - Epoch [84/100] - Loss: 0.0209
+2025-03-11 01:41:07,670 - BNAI_Network - INFO - Validation Loss: 0.0259
+2025-03-11 01:41:07,670 - BNAI_Network - INFO - Validation Loss: 0.0259
+2025-03-11 01:41:12,496 - BNAI_Network - INFO - Epoch [85/100] - Loss: 0.0209
+2025-03-11 01:41:12,496 - BNAI_Network - INFO - Epoch [85/100] - Loss: 0.0209
+2025-03-11 01:41:13,101 - BNAI_Network - INFO - Validation Loss: 0.0279
+2025-03-11 01:41:13,101 - BNAI_Network - INFO - Validation Loss: 0.0279
+2025-03-11 01:41:17,756 - BNAI_Network - INFO - Epoch [86/100] - Loss: 0.0209
+2025-03-11 01:41:17,756 - BNAI_Network - INFO - Epoch [86/100] - Loss: 0.0209
+2025-03-11 01:41:17,881 - BNAI_Network - INFO - Validation Loss: 0.0244
+2025-03-11 01:41:17,881 - BNAI_Network - INFO - Validation Loss: 0.0244
+2025-03-11 01:41:22,878 - BNAI_Network - INFO - Epoch [87/100] - Loss: 0.0209
+2025-03-11 01:41:22,878 - BNAI_Network - INFO - Epoch [87/100] - Loss: 0.0209
+2025-03-11 01:41:23,007 - BNAI_Network - INFO - Validation Loss: 0.0258
+2025-03-11 01:41:23,007 - BNAI_Network - INFO - Validation Loss: 0.0258
+2025-03-11 01:41:27,919 - BNAI_Network - INFO - Epoch [88/100] - Loss: 0.0209
+2025-03-11 01:41:27,919 - BNAI_Network - INFO - Epoch [88/100] - Loss: 0.0209
+2025-03-11 01:41:28,132 - BNAI_Network - INFO - Validation Loss: 0.0259
+2025-03-11 01:41:28,132 - BNAI_Network - INFO - Validation Loss: 0.0259
+2025-03-11 01:41:33,144 - BNAI_Network - INFO - Epoch [89/100] - Loss: 0.0209
+2025-03-11 01:41:33,144 - BNAI_Network - INFO - Epoch [89/100] - Loss: 0.0209
+2025-03-11 01:41:33,330 - BNAI_Network - INFO - Validation Loss: 0.0239
+2025-03-11 01:41:33,330 - BNAI_Network - INFO - Validation Loss: 0.0239
+2025-03-11 01:41:38,484 - BNAI_Network - INFO - Epoch [90/100] - Loss: 0.0209
+2025-03-11 01:41:38,484 - BNAI_Network - INFO - Epoch [90/100] - Loss: 0.0209
+2025-03-11 01:41:38,670 - BNAI_Network - INFO - Validation Loss: 0.0247
+2025-03-11 01:41:38,670 - BNAI_Network - INFO - Validation Loss: 0.0247
+2025-03-11 01:41:43,864 - BNAI_Network - INFO - Epoch [91/100] - Loss: 0.0209
+2025-03-11 01:41:43,864 - BNAI_Network - INFO - Epoch [91/100] - Loss: 0.0209
+2025-03-11 01:41:43,984 - BNAI_Network - INFO - Validation Loss: 0.0258
+2025-03-11 01:41:43,984 - BNAI_Network - INFO - Validation Loss: 0.0258
+2025-03-11 01:41:48,475 - BNAI_Network - INFO - Epoch [92/100] - Loss: 0.0209
+2025-03-11 01:41:48,475 - BNAI_Network - INFO - Epoch [92/100] - Loss: 0.0209
+2025-03-11 01:41:48,621 - BNAI_Network - INFO - Validation Loss: 0.0252
+2025-03-11 01:41:48,621 - BNAI_Network - INFO - Validation Loss: 0.0252
+2025-03-11 01:41:53,708 - BNAI_Network - INFO - Epoch [93/100] - Loss: 0.0208
+2025-03-11 01:41:53,708 - BNAI_Network - INFO - Epoch [93/100] - Loss: 0.0208
+2025-03-11 01:41:53,846 - BNAI_Network - INFO - Validation Loss: 0.0257
+2025-03-11 01:41:53,846 - BNAI_Network - INFO - Validation Loss: 0.0257
+2025-03-11 01:41:59,126 - BNAI_Network - INFO - Epoch [94/100] - Loss: 0.0209
+2025-03-11 01:41:59,126 - BNAI_Network - INFO - Epoch [94/100] - Loss: 0.0209
+2025-03-11 01:41:59,320 - BNAI_Network - INFO - Validation Loss: 0.0277
+2025-03-11 01:41:59,320 - BNAI_Network - INFO - Validation Loss: 0.0277
+2025-03-11 01:42:04,634 - BNAI_Network - INFO - Epoch [95/100] - Loss: 0.0209
+2025-03-11 01:42:04,634 - BNAI_Network - INFO - Epoch [95/100] - Loss: 0.0209
+2025-03-11 01:42:04,824 - BNAI_Network - INFO - Validation Loss: 0.0276
+2025-03-11 01:42:04,824 - BNAI_Network - INFO - Validation Loss: 0.0276
+2025-03-11 01:42:06,887 - BNAI_Network - INFO - Epoch [96/100] - Loss: 0.0208
+2025-03-11 01:42:06,887 - BNAI_Network - INFO - Epoch [96/100] - Loss: 0.0208
+2025-03-11 01:42:06,920 - BNAI_Network - INFO - Validation Loss: 0.0261
+2025-03-11 01:42:06,920 - BNAI_Network - INFO - Validation Loss: 0.0261
+2025-03-11 01:42:07,566 - BNAI_Network - INFO - Epoch [97/100] - Loss: 0.0208
+2025-03-11 01:42:07,566 - BNAI_Network - INFO - Epoch [97/100] - Loss: 0.0208
+2025-03-11 01:42:07,598 - BNAI_Network - INFO - Validation Loss: 0.0247
+2025-03-11 01:42:07,598 - BNAI_Network - INFO - Validation Loss: 0.0247
+2025-03-11 01:42:08,885 - BNAI_Network - INFO - Epoch [98/100] - Loss: 0.0209
+2025-03-11 01:42:08,885 - BNAI_Network - INFO - Epoch [98/100] - Loss: 0.0209
+2025-03-11 01:42:08,952 - BNAI_Network - INFO - Validation Loss: 0.0247
+2025-03-11 01:42:08,952 - BNAI_Network - INFO - Validation Loss: 0.0247
+2025-03-11 01:42:10,108 - BNAI_Network - INFO - Epoch [99/100] - Loss: 0.0209
+2025-03-11 01:42:10,108 - BNAI_Network - INFO - Epoch [99/100] - Loss: 0.0209
+2025-03-11 01:42:10,140 - BNAI_Network - INFO - Validation Loss: 0.0256
+2025-03-11 01:42:10,140 - BNAI_Network - INFO - Validation Loss: 0.0256
+2025-03-11 01:42:11,335 - BNAI_Network - INFO - Epoch [100/100] - Loss: 0.0209
+2025-03-11 01:42:11,335 - BNAI_Network - INFO - Epoch [100/100] - Loss: 0.0209
+2025-03-11 01:42:11,399 - BNAI_Network - INFO - Validation Loss: 0.0251
+2025-03-11 01:42:11,399 - BNAI_Network - INFO - Validation Loss: 0.0251
+2025-03-11 01:42:11,405 - BNAI_Network - INFO - Experiment completed.
+2025-03-11 01:42:11,405 - BNAI_Network - INFO - Experiment completed.
+2025-03-11 02:04:41,386 - BNAI_Network - ERROR - Model not found at models/bnai_model.pth
+2025-03-11 02:09:12,533 - BNAI_Network - ERROR - Modello non trovato in models/bnai_model.pth
+2025-03-11 02:10:04,540 - BNAI_Network - ERROR - Modello non trovato in models/bnai_model.pth
+2025-03-13 00:34:27,435 - BNAI_Code1_Model - INFO - Starting BNAI Code1 Model training...
+2025-03-13 00:34:28,304 - BNAI_Code1_Model - INFO - Loading data from C:\Users\acese\Desktop\BNAI\src\processed\bnaicode_dataset_train.jsonl.gz
+2025-03-13 00:34:28,316 - BNAI_Code1_Model - INFO - Initializing BNAI Code1 Model with vocab size: 50000
+2025-03-13 00:34:28,625 - BNAI_Code1_Model - INFO - Starting training for 50 epochs
+2025-03-13 00:34:28,626 - BNAI_Network - INFO - Training BNAI Code Model on cpu for 50 epochs
+2025-03-13 00:34:56,515 - BNAI_Code1_Model - INFO - Starting BNAI Code1 Model training...
+2025-03-13 00:34:56,821 - BNAI_Code1_Model - INFO - Loading data from C:\Users\acese\Desktop\BNAI\src\processed\bnaicode_dataset_train.jsonl.gz
+2025-03-13 00:34:56,833 - BNAI_Code1_Model - INFO - Initializing BNAI Code1 Model with vocab size: 50000
+2025-03-13 00:34:57,138 - BNAI_Code1_Model - INFO - Starting training for 50 epochs
+2025-03-13 00:34:57,139 - BNAI_Network - INFO - Training BNAI Code Model on cpu for 50 epochs
+2025-03-13 00:35:34,797 - BNAI_Code1_Model - INFO - Starting BNAI Code1 Model training...
+2025-03-13 00:35:35,180 - BNAI_Code1_Model - INFO - Loading data from c:\Users\acese\Desktop\BNAI\src\processed\bnaicode_dataset_train.jsonl.gz
+2025-03-13 00:35:35,190 - BNAI_Code1_Model - INFO - Initializing BNAI Code1 Model with vocab size: 50000
+2025-03-13 00:35:35,464 - BNAI_Code1_Model - INFO - Starting training for 50 epochs
+2025-03-13 00:35:35,465 - BNAI_Network - INFO - Training BNAI Code Model on cpu for 50 epochs
+2025-03-13 00:38:27,155 - BNAI_Code1_Model - INFO - Starting BNAI Code1 Model training...
+2025-03-13 00:38:27,710 - BNAI_Code1_Model - INFO - Loading data from c:\Users\acese\Desktop\BNAI\src\processed\bnaicode_dataset_train.jsonl.gz
+2025-03-13 00:38:27,723 - BNAI_Code1_Model - INFO - Initializing BNAI Code1 Model with vocab size: 50000
+2025-03-13 00:38:28,185 - BNAI_Code1_Model - INFO - Starting training for 50 epochs
+2025-03-13 00:38:28,186 - BNAI_Network - INFO - Training BNAI Code Model on cpu for 50 epochs
+2025-03-13 00:38:43,502 - BNAI_Code1_Model - INFO - Starting BNAI Code1 Model training...
+2025-03-13 00:38:43,807 - BNAI_Code1_Model - INFO - Loading data from c:\Users\acese\Desktop\BNAI\src\processed\bnaicode_dataset_train.jsonl.gz
+2025-03-13 00:38:43,819 - BNAI_Code1_Model - INFO - Initializing BNAI Code1 Model with vocab size: 50000
+2025-03-13 00:38:44,141 - BNAI_Code1_Model - INFO - Starting training for 50 epochs
+2025-03-13 00:38:44,143 - BNAI_Network - INFO - Training BNAI Code Model on cpu for 50 epochs
+2025-03-13 00:42:28,354 - BNAI_Code1_Model - INFO - Starting BNAI Code1 Model training...
+2025-03-13 00:42:29,832 - BNAI_Code1_Model - INFO - Loading data from C:\Users\acese\Desktop\BNAI\src\processed\bnaicode_dataset_train.jsonl.gz
+2025-03-13 00:42:29,845 - BNAI_Code1_Model - INFO - Initializing BNAI Code1 Model with vocab size: 50000
+2025-03-13 00:42:30,133 - BNAI_Code1_Model - INFO - Starting training for 50 epochs
+2025-03-13 00:42:30,134 - BNAI_Network - INFO - Training BNAI Code Model on cpu for 50 epochs
+2025-03-13 00:44:00,430 - BNAI_Code1_Model - INFO - Starting BNAI Code1 Model training...
+2025-03-13 00:44:02,379 - BNAI_Code1_Model - INFO - Loading data from C:\Users\acese\Desktop\BNAI\src\processed\bnaicode_dataset_train.jsonl.gz
+2025-03-13 00:44:02,404 - BNAI_Code1_Model - INFO - Initializing BNAI Code1 Model with vocab size: 50257
+2025-03-13 00:44:02,872 - BNAI_Code1_Model - INFO - Starting training for 50 epochs
+2025-03-13 00:44:02,873 - BNAI_Network - INFO - Training BNAI Code Model on cpu for 50 epochs
+2025-03-13 00:52:15,622 - BNAI_Code1_Model - INFO - Starting BNAI Code1 Model training...
+2025-03-13 00:52:15,623 - BNAI_Code1_Model - INFO - Utilizzo dei dataset nella directory: C:\Users\acese\Desktop\BNAI\src\processed
+2025-03-13 00:52:16,047 - BNAI_Code1_Model - INFO - Loading data from C:\Users\acese\Desktop\BNAI\src\processed\bnaicode_dataset_train.jsonl.gz
+2025-03-13 00:52:16,062 - BNAI_Code1_Model - INFO - Initializing BNAI Code1 Model with vocab size: 50257
+2025-03-13 00:52:16,351 - BNAI_Code1_Model - INFO - Starting training for 50 epochs
+2025-03-13 00:52:16,352 - BNAI_Network - INFO - Training BNAI Code Model on cpu for 50 epochs
+2025-03-13 01:02:12,287 - BNAI_Code1_Model - INFO - Starting BNAI Code1 Model training...
+2025-03-13 01:02:12,288 - BNAI_Code1_Model - INFO - Utilizzo dei dataset nella directory: c:\Users\acese\Desktop\BNAI\src\processed
+2025-03-13 01:02:12,922 - BNAI_Code1_Model - INFO - Loading data from c:\Users\acese\Desktop\BNAI\src\processed\bnaicode_dataset_train.jsonl.gz
+2025-03-13 01:02:12,940 - BNAI_Code1_Model - INFO - Initializing BNAI Code1 Model with vocab size: 50257
+2025-03-13 01:02:13,275 - BNAI_Code1_Model - INFO - Starting training for 50 epochs
+2025-03-13 01:02:13,277 - BNAI_Network - INFO - Training BNAI Code Model on cpu for 50 epochs
+2025-03-13 01:23:30,787 - BNAI_Network - INFO - Starting BNAI Network training...
+2025-03-13 01:23:32,602 - BNAI_Network - INFO - Epoch [1/100] - Loss: 0.0601
+2025-03-13 01:23:32,602 - BNAI_Network - INFO - Epoch [1/100] - Loss: 0.0601
+2025-03-13 01:23:32,655 - BNAI_Network - INFO - Validation Loss: 0.0341
+2025-03-13 01:23:32,655 - BNAI_Network - INFO - Validation Loss: 0.0341
+2025-03-13 01:23:33,349 - BNAI_Network - INFO - Epoch [2/100] - Loss: 0.0310
+2025-03-13 01:23:33,349 - BNAI_Network - INFO - Epoch [2/100] - Loss: 0.0310
+2025-03-13 01:23:33,391 - BNAI_Network - INFO - Validation Loss: 0.0348
+2025-03-13 01:23:33,391 - BNAI_Network - INFO - Validation Loss: 0.0348
+2025-03-13 01:23:34,132 - BNAI_Network - INFO - Epoch [3/100] - Loss: 0.0287
+2025-03-13 01:23:34,132 - BNAI_Network - INFO - Epoch [3/100] - Loss: 0.0287
+2025-03-13 01:23:34,169 - BNAI_Network - INFO - Validation Loss: 0.0270
+2025-03-13 01:23:34,169 - BNAI_Network - INFO - Validation Loss: 0.0270
+2025-03-13 01:23:35,132 - BNAI_Network - INFO - Epoch [4/100] - Loss: 0.0266
+2025-03-13 01:23:35,132 - BNAI_Network - INFO - Epoch [4/100] - Loss: 0.0266
+2025-03-13 01:23:35,179 - BNAI_Network - INFO - Validation Loss: 0.0299
+2025-03-13 01:23:35,179 - BNAI_Network - INFO - Validation Loss: 0.0299
+2025-03-13 01:23:36,144 - BNAI_Network - INFO - Epoch [5/100] - Loss: 0.0260
+2025-03-13 01:23:36,144 - BNAI_Network - INFO - Epoch [5/100] - Loss: 0.0260
+2025-03-13 01:23:36,191 - BNAI_Network - INFO - Validation Loss: 0.0315
+2025-03-13 01:23:36,191 - BNAI_Network - INFO - Validation Loss: 0.0315
+2025-03-13 01:23:37,193 - BNAI_Network - INFO - Epoch [6/100] - Loss: 0.0250
+2025-03-13 01:23:37,193 - BNAI_Network - INFO - Epoch [6/100] - Loss: 0.0250
+2025-03-13 01:23:37,248 - BNAI_Network - INFO - Validation Loss: 0.0278
+2025-03-13 01:23:37,248 - BNAI_Network - INFO - Validation Loss: 0.0278
+2025-03-13 01:23:38,320 - BNAI_Network - INFO - Epoch [7/100] - Loss: 0.0242
+2025-03-13 01:23:38,320 - BNAI_Network - INFO - Epoch [7/100] - Loss: 0.0242
+2025-03-13 01:23:38,364 - BNAI_Network - INFO - Validation Loss: 0.0284
+2025-03-13 01:23:38,364 - BNAI_Network - INFO - Validation Loss: 0.0284
+2025-03-13 01:23:39,427 - BNAI_Network - INFO - Epoch [8/100] - Loss: 0.0236
+2025-03-13 01:23:39,427 - BNAI_Network - INFO - Epoch [8/100] - Loss: 0.0236
+2025-03-13 01:23:39,472 - BNAI_Network - INFO - Validation Loss: 0.0288
+2025-03-13 01:23:39,472 - BNAI_Network - INFO - Validation Loss: 0.0288
+2025-03-13 01:23:40,535 - BNAI_Network - INFO - Epoch [9/100] - Loss: 0.0233
+2025-03-13 01:23:40,535 - BNAI_Network - INFO - Epoch [9/100] - Loss: 0.0233
+2025-03-13 01:23:40,573 - BNAI_Network - INFO - Validation Loss: 0.0282
+2025-03-13 01:23:40,573 - BNAI_Network - INFO - Validation Loss: 0.0282
+2025-03-13 01:23:41,633 - BNAI_Network - INFO - Epoch [10/100] - Loss: 0.0229
+2025-03-13 01:23:41,633 - BNAI_Network - INFO - Epoch [10/100] - Loss: 0.0229
+2025-03-13 01:23:41,680 - BNAI_Network - INFO - Validation Loss: 0.0283
+2025-03-13 01:23:41,680 - BNAI_Network - INFO - Validation Loss: 0.0283
+2025-03-13 01:23:42,804 - BNAI_Network - INFO - Epoch [11/100] - Loss: 0.0227
+2025-03-13 01:23:42,804 - BNAI_Network - INFO - Epoch [11/100] - Loss: 0.0227
+2025-03-13 01:23:42,849 - BNAI_Network - INFO - Validation Loss: 0.0265
+2025-03-13 01:23:42,849 - BNAI_Network - INFO - Validation Loss: 0.0265
+2025-03-13 01:23:43,972 - BNAI_Network - INFO - Epoch [12/100] - Loss: 0.0223
+2025-03-13 01:23:43,972 - BNAI_Network - INFO - Epoch [12/100] - Loss: 0.0223
+2025-03-13 01:23:44,018 - BNAI_Network - INFO - Validation Loss: 0.0242
+2025-03-13 01:23:44,018 - BNAI_Network - INFO - Validation Loss: 0.0242
+2025-03-13 01:23:45,119 - BNAI_Network - INFO - Epoch [13/100] - Loss: 0.0222
+2025-03-13 01:23:45,119 - BNAI_Network - INFO - Epoch [13/100] - Loss: 0.0222
+2025-03-13 01:23:45,163 - BNAI_Network - INFO - Validation Loss: 0.0260
+2025-03-13 01:23:45,163 - BNAI_Network - INFO - Validation Loss: 0.0260
+2025-03-13 01:23:46,269 - BNAI_Network - INFO - Epoch [14/100] - Loss: 0.0220
+2025-03-13 01:23:46,269 - BNAI_Network - INFO - Epoch [14/100] - Loss: 0.0220
+2025-03-13 01:23:46,315 - BNAI_Network - INFO - Validation Loss: 0.0259
+2025-03-13 01:23:46,315 - BNAI_Network - INFO - Validation Loss: 0.0259
+2025-03-13 01:23:47,332 - BNAI_Network - INFO - Epoch [15/100] - Loss: 0.0220
+2025-03-13 01:23:47,332 - BNAI_Network - INFO - Epoch [15/100] - Loss: 0.0220
+2025-03-13 01:23:47,377 - BNAI_Network - INFO - Validation Loss: 0.0309
+2025-03-13 01:23:47,377 - BNAI_Network - INFO - Validation Loss: 0.0309
+2025-03-13 01:23:48,561 - BNAI_Network - INFO - Epoch [16/100] - Loss: 0.0217
+2025-03-13 01:23:48,561 - BNAI_Network - INFO - Epoch [16/100] - Loss: 0.0217
+2025-03-13 01:23:48,601 - BNAI_Network - INFO - Validation Loss: 0.0249
+2025-03-13 01:23:48,601 - BNAI_Network - INFO - Validation Loss: 0.0249
+2025-03-13 01:23:49,734 - BNAI_Network - INFO - Epoch [17/100] - Loss: 0.0218
+2025-03-13 01:23:49,734 - BNAI_Network - INFO - Epoch [17/100] - Loss: 0.0218
+2025-03-13 01:23:49,776 - BNAI_Network - INFO - Validation Loss: 0.0260
+2025-03-13 01:23:49,776 - BNAI_Network - INFO - Validation Loss: 0.0260
+2025-03-13 01:23:50,886 - BNAI_Network - INFO - Epoch [18/100] - Loss: 0.0216
+2025-03-13 01:23:50,886 - BNAI_Network - INFO - Epoch [18/100] - Loss: 0.0216
+2025-03-13 01:23:50,926 - BNAI_Network - INFO - Validation Loss: 0.0295
+2025-03-13 01:23:50,926 - BNAI_Network - INFO - Validation Loss: 0.0295
+2025-03-13 01:23:52,080 - BNAI_Network - INFO - Epoch [19/100] - Loss: 0.0216
+2025-03-13 01:23:52,080 - BNAI_Network - INFO - Epoch [19/100] - Loss: 0.0216
+2025-03-13 01:23:52,123 - BNAI_Network - INFO - Validation Loss: 0.0257
+2025-03-13 01:23:52,123 - BNAI_Network - INFO - Validation Loss: 0.0257
+2025-03-13 01:23:53,256 - BNAI_Network - INFO - Epoch [20/100] - Loss: 0.0215
+2025-03-13 01:23:53,256 - BNAI_Network - INFO - Epoch [20/100] - Loss: 0.0215
+2025-03-13 01:23:53,291 - BNAI_Network - INFO - Validation Loss: 0.0236
+2025-03-13 01:23:53,291 - BNAI_Network - INFO - Validation Loss: 0.0236
+2025-03-13 01:23:54,269 - BNAI_Network - INFO - Epoch [21/100] - Loss: 0.0215
+2025-03-13 01:23:54,269 - BNAI_Network - INFO - Epoch [21/100] - Loss: 0.0215
+2025-03-13 01:23:54,322 - BNAI_Network - INFO - Validation Loss: 0.0281
+2025-03-13 01:23:54,322 - BNAI_Network - INFO - Validation Loss: 0.0281
+2025-03-13 01:23:55,525 - BNAI_Network - INFO - Epoch [22/100] - Loss: 0.0214
+2025-03-13 01:23:55,525 - BNAI_Network - INFO - Epoch [22/100] - Loss: 0.0214
+2025-03-13 01:23:55,568 - BNAI_Network - INFO - Validation Loss: 0.0274
+2025-03-13 01:23:55,568 - BNAI_Network - INFO - Validation Loss: 0.0274
+2025-03-13 01:23:56,724 - BNAI_Network - INFO - Epoch [23/100] - Loss: 0.0213
+2025-03-13 01:23:56,724 - BNAI_Network - INFO - Epoch [23/100] - Loss: 0.0213
+2025-03-13 01:23:56,770 - BNAI_Network - INFO - Validation Loss: 0.0252
+2025-03-13 01:23:56,770 - BNAI_Network - INFO - Validation Loss: 0.0252
+2025-03-13 01:23:57,928 - BNAI_Network - INFO - Epoch [24/100] - Loss: 0.0214
+2025-03-13 01:23:57,928 - BNAI_Network - INFO - Epoch [24/100] - Loss: 0.0214
+2025-03-13 01:23:57,970 - BNAI_Network - INFO - Validation Loss: 0.0274
+2025-03-13 01:23:57,970 - BNAI_Network - INFO - Validation Loss: 0.0274
+2025-03-13 01:23:59,126 - BNAI_Network - INFO - Epoch [25/100] - Loss: 0.0214
+2025-03-13 01:23:59,126 - BNAI_Network - INFO - Epoch [25/100] - Loss: 0.0214
+2025-03-13 01:23:59,172 - BNAI_Network - INFO - Validation Loss: 0.0286
+2025-03-13 01:23:59,172 - BNAI_Network - INFO - Validation Loss: 0.0286
+2025-03-13 01:24:00,232 - BNAI_Network - INFO - Epoch [26/100] - Loss: 0.0212
+2025-03-13 01:24:00,232 - BNAI_Network - INFO - Epoch [26/100] - Loss: 0.0212
+2025-03-13 01:24:00,267 - BNAI_Network - INFO - Validation Loss: 0.0213
+2025-03-13 01:24:00,267 - BNAI_Network - INFO - Validation Loss: 0.0213
+2025-03-13 01:24:01,395 - BNAI_Network - INFO - Epoch [27/100] - Loss: 0.0213
+2025-03-13 01:24:01,395 - BNAI_Network - INFO - Epoch [27/100] - Loss: 0.0213
+2025-03-13 01:24:01,437 - BNAI_Network - INFO - Validation Loss: 0.0260
+2025-03-13 01:24:01,437 - BNAI_Network - INFO - Validation Loss: 0.0260
+2025-03-13 01:24:02,643 - BNAI_Network - INFO - Epoch [28/100] - Loss: 0.0212
+2025-03-13 01:24:02,643 - BNAI_Network - INFO - Epoch [28/100] - Loss: 0.0212
+2025-03-13 01:24:02,685 - BNAI_Network - INFO - Validation Loss: 0.0309
+2025-03-13 01:24:02,685 - BNAI_Network - INFO - Validation Loss: 0.0309
+2025-03-13 01:24:03,879 - BNAI_Network - INFO - Epoch [29/100] - Loss: 0.0213
+2025-03-13 01:24:03,879 - BNAI_Network - INFO - Epoch [29/100] - Loss: 0.0213
+2025-03-13 01:24:03,922 - BNAI_Network - INFO - Validation Loss: 0.0260
+2025-03-13 01:24:03,922 - BNAI_Network - INFO - Validation Loss: 0.0260
+2025-03-13 01:24:05,155 - BNAI_Network - INFO - Epoch [30/100] - Loss: 0.0212
+2025-03-13 01:24:05,155 - BNAI_Network - INFO - Epoch [30/100] - Loss: 0.0212
+2025-03-13 01:24:05,203 - BNAI_Network - INFO - Validation Loss: 0.0258
+2025-03-13 01:24:05,203 - BNAI_Network - INFO - Validation Loss: 0.0258
+2025-03-13 01:24:06,336 - BNAI_Network - INFO - Epoch [31/100] - Loss: 0.0212
+2025-03-13 01:24:06,336 - BNAI_Network - INFO - Epoch [31/100] - Loss: 0.0212
+2025-03-13 01:24:06,370 - BNAI_Network - INFO - Validation Loss: 0.0260
+2025-03-13 01:24:06,370 - BNAI_Network - INFO - Validation Loss: 0.0260
+2025-03-13 01:24:07,169 - BNAI_Network - INFO - Epoch [32/100] - Loss: 0.0212
+2025-03-13 01:24:07,169 - BNAI_Network - INFO - Epoch [32/100] - Loss: 0.0212
+2025-03-13 01:24:07,211 - BNAI_Network - INFO - Validation Loss: 0.0218
+2025-03-13 01:24:07,211 - BNAI_Network - INFO - Validation Loss: 0.0218
+2025-03-13 01:24:08,486 - BNAI_Network - INFO - Epoch [33/100] - Loss: 0.0212
+2025-03-13 01:24:08,486 - BNAI_Network - INFO - Epoch [33/100] - Loss: 0.0212
+2025-03-13 01:24:08,522 - BNAI_Network - INFO - Validation Loss: 0.0277
+2025-03-13 01:24:08,522 - BNAI_Network - INFO - Validation Loss: 0.0277
+2025-03-13 01:24:09,639 - BNAI_Network - INFO - Epoch [34/100] - Loss: 0.0212
+2025-03-13 01:24:09,639 - BNAI_Network - INFO - Epoch [34/100] - Loss: 0.0212
+2025-03-13 01:24:09,681 - BNAI_Network - INFO - Validation Loss: 0.0268
+2025-03-13 01:24:09,681 - BNAI_Network - INFO - Validation Loss: 0.0268
+2025-03-13 01:24:10,746 - BNAI_Network - INFO - Epoch [35/100] - Loss: 0.0211
+2025-03-13 01:24:10,746 - BNAI_Network - INFO - Epoch [35/100] - Loss: 0.0211
+2025-03-13 01:24:10,787 - BNAI_Network - INFO - Validation Loss: 0.0257
+2025-03-13 01:24:10,787 - BNAI_Network - INFO - Validation Loss: 0.0257
+2025-03-13 01:24:11,803 - BNAI_Network - INFO - Epoch [36/100] - Loss: 0.0212
+2025-03-13 01:24:11,803 - BNAI_Network - INFO - Epoch [36/100] - Loss: 0.0212
+2025-03-13 01:24:11,847 - BNAI_Network - INFO - Validation Loss: 0.0276
+2025-03-13 01:24:11,847 - BNAI_Network - INFO - Validation Loss: 0.0276
+2025-03-13 01:24:12,659 - BNAI_Network - INFO - Epoch [37/100] - Loss: 0.0212
+2025-03-13 01:24:12,659 - BNAI_Network - INFO - Epoch [37/100] - Loss: 0.0212
+2025-03-13 01:24:12,688 - BNAI_Network - INFO - Validation Loss: 0.0275
+2025-03-13 01:24:12,688 - BNAI_Network - INFO - Validation Loss: 0.0275
+2025-03-13 01:24:13,238 - BNAI_Network - INFO - Epoch [38/100] - Loss: 0.0211
+2025-03-13 01:24:13,238 - BNAI_Network - INFO - Epoch [38/100] - Loss: 0.0211
+2025-03-13 01:24:13,268 - BNAI_Network - INFO - Validation Loss: 0.0291
+2025-03-13 01:24:13,268 - BNAI_Network - INFO - Validation Loss: 0.0291
+2025-03-13 01:24:14,468 - BNAI_Network - INFO - Epoch [39/100] - Loss: 0.0212
+2025-03-13 01:24:14,468 - BNAI_Network - INFO - Epoch [39/100] - Loss: 0.0212
+2025-03-13 01:24:14,509 - BNAI_Network - INFO - Validation Loss: 0.0274
+2025-03-13 01:24:14,509 - BNAI_Network - INFO - Validation Loss: 0.0274
+2025-03-13 01:24:15,507 - BNAI_Network - INFO - Epoch [40/100] - Loss: 0.0211
+2025-03-13 01:24:15,507 - BNAI_Network - INFO - Epoch [40/100] - Loss: 0.0211
+2025-03-13 01:24:15,542 - BNAI_Network - INFO - Validation Loss: 0.0252
+2025-03-13 01:24:15,542 - BNAI_Network - INFO - Validation Loss: 0.0252
+2025-03-13 01:24:16,574 - BNAI_Network - INFO - Epoch [41/100] - Loss: 0.0211
+2025-03-13 01:24:16,574 - BNAI_Network - INFO - Epoch [41/100] - Loss: 0.0211
+2025-03-13 01:24:16,618 - BNAI_Network - INFO - Validation Loss: 0.0246
+2025-03-13 01:24:16,618 - BNAI_Network - INFO - Validation Loss: 0.0246
+2025-03-13 01:24:17,735 - BNAI_Network - INFO - Epoch [42/100] - Loss: 0.0212
+2025-03-13 01:24:17,735 - BNAI_Network - INFO - Epoch [42/100] - Loss: 0.0212
+2025-03-13 01:24:17,777 - BNAI_Network - INFO - Validation Loss: 0.0257
+2025-03-13 01:24:17,777 - BNAI_Network - INFO - Validation Loss: 0.0257
+2025-03-13 01:24:18,728 - BNAI_Network - INFO - Epoch [43/100] - Loss: 0.0211
+2025-03-13 01:24:18,728 - BNAI_Network - INFO - Epoch [43/100] - Loss: 0.0211
+2025-03-13 01:24:18,758 - BNAI_Network - INFO - Validation Loss: 0.0280
+2025-03-13 01:24:18,758 - BNAI_Network - INFO - Validation Loss: 0.0280
+2025-03-13 01:24:19,447 - BNAI_Network - INFO - Epoch [44/100] - Loss: 0.0211
+2025-03-13 01:24:19,447 - BNAI_Network - INFO - Epoch [44/100] - Loss: 0.0211
+2025-03-13 01:24:19,475 - BNAI_Network - INFO - Validation Loss: 0.0272
+2025-03-13 01:24:19,475 - BNAI_Network - INFO - Validation Loss: 0.0272
+2025-03-13 01:24:20,698 - BNAI_Network - INFO - Epoch [45/100] - Loss: 0.0211
+2025-03-13 01:24:20,698 - BNAI_Network - INFO - Epoch [45/100] - Loss: 0.0211
+2025-03-13 01:24:20,737 - BNAI_Network - INFO - Validation Loss: 0.0280
+2025-03-13 01:24:20,737 - BNAI_Network - INFO - Validation Loss: 0.0280
+2025-03-13 01:24:21,821 - BNAI_Network - INFO - Epoch [46/100] - Loss: 0.0210
+2025-03-13 01:24:21,821 - BNAI_Network - INFO - Epoch [46/100] - Loss: 0.0210
+2025-03-13 01:24:21,866 - BNAI_Network - INFO - Validation Loss: 0.0251
+2025-03-13 01:24:21,866 - BNAI_Network - INFO - Validation Loss: 0.0251
+2025-03-13 01:24:22,973 - BNAI_Network - INFO - Epoch [47/100] - Loss: 0.0211
+2025-03-13 01:24:22,973 - BNAI_Network - INFO - Epoch [47/100] - Loss: 0.0211
+2025-03-13 01:24:23,020 - BNAI_Network - INFO - Validation Loss: 0.0261
+2025-03-13 01:24:23,020 - BNAI_Network - INFO - Validation Loss: 0.0261
+2025-03-13 01:24:24,101 - BNAI_Network - INFO - Epoch [48/100] - Loss: 0.0211
+2025-03-13 01:24:24,101 - BNAI_Network - INFO - Epoch [48/100] - Loss: 0.0211
+2025-03-13 01:24:24,147 - BNAI_Network - INFO - Validation Loss: 0.0277
+2025-03-13 01:24:24,147 - BNAI_Network - INFO - Validation Loss: 0.0277
+2025-03-13 01:24:24,960 - BNAI_Network - INFO - Epoch [49/100] - Loss: 0.0211
+2025-03-13 01:24:24,960 - BNAI_Network - INFO - Epoch [49/100] - Loss: 0.0211
+2025-03-13 01:24:24,990 - BNAI_Network - INFO - Validation Loss: 0.0273
+2025-03-13 01:24:24,990 - BNAI_Network - INFO - Validation Loss: 0.0273
+2025-03-13 01:24:25,564 - BNAI_Network - INFO - Epoch [50/100] - Loss: 0.0210
+2025-03-13 01:24:25,564 - BNAI_Network - INFO - Epoch [50/100] - Loss: 0.0210
+2025-03-13 01:24:25,596 - BNAI_Network - INFO - Validation Loss: 0.0260
+2025-03-13 01:24:25,596 - BNAI_Network - INFO - Validation Loss: 0.0260
+2025-03-13 01:24:26,751 - BNAI_Network - INFO - Epoch [51/100] - Loss: 0.0211
+2025-03-13 01:24:26,751 - BNAI_Network - INFO - Epoch [51/100] - Loss: 0.0211
+2025-03-13 01:24:26,803 - BNAI_Network - INFO - Validation Loss: 0.0260
+2025-03-13 01:24:26,803 - BNAI_Network - INFO - Validation Loss: 0.0260
+2025-03-13 01:24:28,220 - BNAI_Network - INFO - Epoch [52/100] - Loss: 0.0210
+2025-03-13 01:24:28,220 - BNAI_Network - INFO - Epoch [52/100] - Loss: 0.0210
+2025-03-13 01:24:28,257 - BNAI_Network - INFO - Validation Loss: 0.0268
+2025-03-13 01:24:28,257 - BNAI_Network - INFO - Validation Loss: 0.0268
+2025-03-13 01:24:29,322 - BNAI_Network - INFO - Epoch [53/100] - Loss: 0.0210
+2025-03-13 01:24:29,322 - BNAI_Network - INFO - Epoch [53/100] - Loss: 0.0210
+2025-03-13 01:24:29,367 - BNAI_Network - INFO - Validation Loss: 0.0269
+2025-03-13 01:24:29,367 - BNAI_Network - INFO - Validation Loss: 0.0269
+2025-03-13 01:24:30,517 - BNAI_Network - INFO - Epoch [54/100] - Loss: 0.0210
+2025-03-13 01:24:30,517 - BNAI_Network - INFO - Epoch [54/100] - Loss: 0.0210
+2025-03-13 01:24:30,558 - BNAI_Network - INFO - Validation Loss: 0.0276
+2025-03-13 01:24:30,558 - BNAI_Network - INFO - Validation Loss: 0.0276
+2025-03-13 01:24:31,432 - BNAI_Network - INFO - Epoch [55/100] - Loss: 0.0210
+2025-03-13 01:24:31,432 - BNAI_Network - INFO - Epoch [55/100] - Loss: 0.0210
+2025-03-13 01:24:31,462 - BNAI_Network - INFO - Validation Loss: 0.0269
+2025-03-13 01:24:31,462 - BNAI_Network - INFO - Validation Loss: 0.0269
+2025-03-13 01:24:32,016 - BNAI_Network - INFO - Epoch [56/100] - Loss: 0.0210
+2025-03-13 01:24:32,016 - BNAI_Network - INFO - Epoch [56/100] - Loss: 0.0210
+2025-03-13 01:24:32,046 - BNAI_Network - INFO - Validation Loss: 0.0267
+2025-03-13 01:24:32,046 - BNAI_Network - INFO - Validation Loss: 0.0267
+2025-03-13 01:24:33,176 - BNAI_Network - INFO - Epoch [57/100] - Loss: 0.0210
+2025-03-13 01:24:33,176 - BNAI_Network - INFO - Epoch [57/100] - Loss: 0.0210
+2025-03-13 01:24:33,215 - BNAI_Network - INFO - Validation Loss: 0.0248
+2025-03-13 01:24:33,215 - BNAI_Network - INFO - Validation Loss: 0.0248
+2025-03-13 01:24:34,253 - BNAI_Network - INFO - Epoch [58/100] - Loss: 0.0210
+2025-03-13 01:24:34,253 - BNAI_Network - INFO - Epoch [58/100] - Loss: 0.0210
+2025-03-13 01:24:34,296 - BNAI_Network - INFO - Validation Loss: 0.0273
+2025-03-13 01:24:34,296 - BNAI_Network - INFO - Validation Loss: 0.0273
+2025-03-13 01:24:35,459 - BNAI_Network - INFO - Epoch [59/100] - Loss: 0.0211
+2025-03-13 01:24:35,459 - BNAI_Network - INFO - Epoch [59/100] - Loss: 0.0211
+2025-03-13 01:24:35,507 - BNAI_Network - INFO - Validation Loss: 0.0259
+2025-03-13 01:24:35,507 - BNAI_Network - INFO - Validation Loss: 0.0259
+2025-03-13 01:24:36,571 - BNAI_Network - INFO - Epoch [60/100] - Loss: 0.0210
+2025-03-13 01:24:36,571 - BNAI_Network - INFO - Epoch [60/100] - Loss: 0.0210
+2025-03-13 01:24:36,610 - BNAI_Network - INFO - Validation Loss: 0.0264
+2025-03-13 01:24:36,610 - BNAI_Network - INFO - Validation Loss: 0.0264
+2025-03-13 01:24:37,585 - BNAI_Network - INFO - Epoch [61/100] - Loss: 0.0210
+2025-03-13 01:24:37,585 - BNAI_Network - INFO - Epoch [61/100] - Loss: 0.0210
+2025-03-13 01:24:37,638 - BNAI_Network - INFO - Validation Loss: 0.0287
+2025-03-13 01:24:37,638 - BNAI_Network - INFO - Validation Loss: 0.0287
+2025-03-13 01:24:38,419 - BNAI_Network - INFO - Epoch [62/100] - Loss: 0.0210
+2025-03-13 01:24:38,419 - BNAI_Network - INFO - Epoch [62/100] - Loss: 0.0210
+2025-03-13 01:24:38,467 - BNAI_Network - INFO - Validation Loss: 0.0255
+2025-03-13 01:24:38,467 - BNAI_Network - INFO - Validation Loss: 0.0255
+2025-03-13 01:24:39,715 - BNAI_Network - INFO - Epoch [63/100] - Loss: 0.0210
+2025-03-13 01:24:39,715 - BNAI_Network - INFO - Epoch [63/100] - Loss: 0.0210
+2025-03-13 01:24:39,751 - BNAI_Network - INFO - Validation Loss: 0.0241
+2025-03-13 01:24:39,751 - BNAI_Network - INFO - Validation Loss: 0.0241
+2025-03-13 01:24:40,826 - BNAI_Network - INFO - Epoch [64/100] - Loss: 0.0210
+2025-03-13 01:24:40,826 - BNAI_Network - INFO - Epoch [64/100] - Loss: 0.0210
+2025-03-13 01:24:40,872 - BNAI_Network - INFO - Validation Loss: 0.0242
+2025-03-13 01:24:40,872 - BNAI_Network - INFO - Validation Loss: 0.0242
+2025-03-13 01:24:42,003 - BNAI_Network - INFO - Epoch [65/100] - Loss: 0.0210
+2025-03-13 01:24:42,003 - BNAI_Network - INFO - Epoch [65/100] - Loss: 0.0210
+2025-03-13 01:24:42,047 - BNAI_Network - INFO - Validation Loss: 0.0246
+2025-03-13 01:24:42,047 - BNAI_Network - INFO - Validation Loss: 0.0246
+2025-03-13 01:24:43,220 - BNAI_Network - INFO - Epoch [66/100] - Loss: 0.0210
+2025-03-13 01:24:43,220 - BNAI_Network - INFO - Epoch [66/100] - Loss: 0.0210
+2025-03-13 01:24:43,257 - BNAI_Network - INFO - Validation Loss: 0.0271
+2025-03-13 01:24:43,257 - BNAI_Network - INFO - Validation Loss: 0.0271
+2025-03-13 01:24:43,922 - BNAI_Network - INFO - Epoch [67/100] - Loss: 0.0210
+2025-03-13 01:24:43,922 - BNAI_Network - INFO - Epoch [67/100] - Loss: 0.0210
+2025-03-13 01:24:43,951 - BNAI_Network - INFO - Validation Loss: 0.0246
+2025-03-13 01:24:43,951 - BNAI_Network - INFO - Validation Loss: 0.0246
+2025-03-13 01:24:44,586 - BNAI_Network - INFO - Epoch [68/100] - Loss: 0.0210
+2025-03-13 01:24:44,586 - BNAI_Network - INFO - Epoch [68/100] - Loss: 0.0210
+2025-03-13 01:24:44,646 - BNAI_Network - INFO - Validation Loss: 0.0266
+2025-03-13 01:24:44,646 - BNAI_Network - INFO - Validation Loss: 0.0266
+2025-03-13 01:24:45,870 - BNAI_Network - INFO - Epoch [69/100] - Loss: 0.0209
+2025-03-13 01:24:45,870 - BNAI_Network - INFO - Epoch [69/100] - Loss: 0.0209
+2025-03-13 01:24:45,916 - BNAI_Network - INFO - Validation Loss: 0.0284
+2025-03-13 01:24:45,916 - BNAI_Network - INFO - Validation Loss: 0.0284
+2025-03-13 01:24:47,046 - BNAI_Network - INFO - Epoch [70/100] - Loss: 0.0210
+2025-03-13 01:24:47,046 - BNAI_Network - INFO - Epoch [70/100] - Loss: 0.0210
+2025-03-13 01:24:47,089 - BNAI_Network - INFO - Validation Loss: 0.0247
+2025-03-13 01:24:47,089 - BNAI_Network - INFO - Validation Loss: 0.0247
+2025-03-13 01:24:48,332 - BNAI_Network - INFO - Epoch [71/100] - Loss: 0.0210
+2025-03-13 01:24:48,332 - BNAI_Network - INFO - Epoch [71/100] - Loss: 0.0210
+2025-03-13 01:24:48,380 - BNAI_Network - INFO - Validation Loss: 0.0249
+2025-03-13 01:24:48,380 - BNAI_Network - INFO - Validation Loss: 0.0249
+2025-03-13 01:24:49,552 - BNAI_Network - INFO - Epoch [72/100] - Loss: 0.0209
+2025-03-13 01:24:49,552 - BNAI_Network - INFO - Epoch [72/100] - Loss: 0.0209
+2025-03-13 01:24:49,588 - BNAI_Network - INFO - Validation Loss: 0.0282
+2025-03-13 01:24:49,588 - BNAI_Network - INFO - Validation Loss: 0.0282
+2025-03-13 01:24:50,195 - BNAI_Network - INFO - Epoch [73/100] - Loss: 0.0210
+2025-03-13 01:24:50,195 - BNAI_Network - INFO - Epoch [73/100] - Loss: 0.0210
+2025-03-13 01:24:50,225 - BNAI_Network - INFO - Validation Loss: 0.0310
+2025-03-13 01:24:50,225 - BNAI_Network - INFO - Validation Loss: 0.0310
+2025-03-13 01:24:51,068 - BNAI_Network - INFO - Epoch [74/100] - Loss: 0.0209
+2025-03-13 01:24:51,068 - BNAI_Network - INFO - Epoch [74/100] - Loss: 0.0209
+2025-03-13 01:24:51,106 - BNAI_Network - INFO - Validation Loss: 0.0267
+2025-03-13 01:24:51,106 - BNAI_Network - INFO - Validation Loss: 0.0267
+2025-03-13 01:24:52,372 - BNAI_Network - INFO - Epoch [75/100] - Loss: 0.0210
+2025-03-13 01:24:52,372 - BNAI_Network - INFO - Epoch [75/100] - Loss: 0.0210
+2025-03-13 01:24:52,411 - BNAI_Network - INFO - Validation Loss: 0.0239
+2025-03-13 01:24:52,411 - BNAI_Network - INFO - Validation Loss: 0.0239
+2025-03-13 01:24:53,595 - BNAI_Network - INFO - Epoch [76/100] - Loss: 0.0209
+2025-03-13 01:24:53,595 - BNAI_Network - INFO - Epoch [76/100] - Loss: 0.0209
+2025-03-13 01:24:53,631 - BNAI_Network - INFO - Validation Loss: 0.0258
+2025-03-13 01:24:53,631 - BNAI_Network - INFO - Validation Loss: 0.0258
+2025-03-13 01:24:54,756 - BNAI_Network - INFO - Epoch [77/100] - Loss: 0.0209
+2025-03-13 01:24:54,756 - BNAI_Network - INFO - Epoch [77/100] - Loss: 0.0209
+2025-03-13 01:24:54,791 - BNAI_Network - INFO - Validation Loss: 0.0242
+2025-03-13 01:24:54,791 - BNAI_Network - INFO - Validation Loss: 0.0242
+2025-03-13 01:24:55,939 - BNAI_Network - INFO - Epoch [78/100] - Loss: 0.0209
+2025-03-13 01:24:55,939 - BNAI_Network - INFO - Epoch [78/100] - Loss: 0.0209
+2025-03-13 01:24:55,969 - BNAI_Network - INFO - Validation Loss: 0.0276
+2025-03-13 01:24:55,969 - BNAI_Network - INFO - Validation Loss: 0.0276
+2025-03-13 01:24:56,527 - BNAI_Network - INFO - Epoch [79/100] - Loss: 0.0209
+2025-03-13 01:24:56,527 - BNAI_Network - INFO - Epoch [79/100] - Loss: 0.0209
+2025-03-13 01:24:56,556 - BNAI_Network - INFO - Validation Loss: 0.0289
+2025-03-13 01:24:56,556 - BNAI_Network - INFO - Validation Loss: 0.0289
+2025-03-13 01:24:57,697 - BNAI_Network - INFO - Epoch [80/100] - Loss: 0.0209
+2025-03-13 01:24:57,697 - BNAI_Network - INFO - Epoch [80/100] - Loss: 0.0209
+2025-03-13 01:24:57,735 - BNAI_Network - INFO - Validation Loss: 0.0263
+2025-03-13 01:24:57,735 - BNAI_Network - INFO - Validation Loss: 0.0263
+2025-03-13 01:24:58,975 - BNAI_Network - INFO - Epoch [81/100] - Loss: 0.0209
+2025-03-13 01:24:58,975 - BNAI_Network - INFO - Epoch [81/100] - Loss: 0.0209
+2025-03-13 01:24:59,012 - BNAI_Network - INFO - Validation Loss: 0.0242
+2025-03-13 01:24:59,012 - BNAI_Network - INFO - Validation Loss: 0.0242
+2025-03-13 01:25:00,215 - BNAI_Network - INFO - Epoch [82/100] - Loss: 0.0208
+2025-03-13 01:25:00,215 - BNAI_Network - INFO - Epoch [82/100] - Loss: 0.0208
+2025-03-13 01:25:00,257 - BNAI_Network - INFO - Validation Loss: 0.0264
+2025-03-13 01:25:00,257 - BNAI_Network - INFO - Validation Loss: 0.0264
+2025-03-13 01:25:01,462 - BNAI_Network - INFO - Epoch [83/100] - Loss: 0.0210
+2025-03-13 01:25:01,462 - BNAI_Network - INFO - Epoch [83/100] - Loss: 0.0210
+2025-03-13 01:25:01,507 - BNAI_Network - INFO - Validation Loss: 0.0273
+2025-03-13 01:25:01,507 - BNAI_Network - INFO - Validation Loss: 0.0273
+2025-03-13 01:25:02,331 - BNAI_Network - INFO - Epoch [84/100] - Loss: 0.0209
+2025-03-13 01:25:02,331 - BNAI_Network - INFO - Epoch [84/100] - Loss: 0.0209
+2025-03-13 01:25:02,363 - BNAI_Network - INFO - Validation Loss: 0.0247
+2025-03-13 01:25:02,363 - BNAI_Network - INFO - Validation Loss: 0.0247
+2025-03-13 01:25:02,995 - BNAI_Network - INFO - Epoch [85/100] - Loss: 0.0209
+2025-03-13 01:25:02,995 - BNAI_Network - INFO - Epoch [85/100] - Loss: 0.0209
+2025-03-13 01:25:03,036 - BNAI_Network - INFO - Validation Loss: 0.0233
+2025-03-13 01:25:03,036 - BNAI_Network - INFO - Validation Loss: 0.0233
+2025-03-13 01:25:04,362 - BNAI_Network - INFO - Epoch [86/100] - Loss: 0.0209
+2025-03-13 01:25:04,362 - BNAI_Network - INFO - Epoch [86/100] - Loss: 0.0209
+2025-03-13 01:25:04,421 - BNAI_Network - INFO - Validation Loss: 0.0264
+2025-03-13 01:25:04,421 - BNAI_Network - INFO - Validation Loss: 0.0264
+2025-03-13 01:25:05,536 - BNAI_Network - INFO - Epoch [87/100] - Loss: 0.0209
+2025-03-13 01:25:05,536 - BNAI_Network - INFO - Epoch [87/100] - Loss: 0.0209
+2025-03-13 01:25:05,577 - BNAI_Network - INFO - Validation Loss: 0.0243
+2025-03-13 01:25:05,577 - BNAI_Network - INFO - Validation Loss: 0.0243
+2025-03-13 01:25:06,835 - BNAI_Network - INFO - Epoch [88/100] - Loss: 0.0209
+2025-03-13 01:25:06,835 - BNAI_Network - INFO - Epoch [88/100] - Loss: 0.0209
+2025-03-13 01:25:06,875 - BNAI_Network - INFO - Validation Loss: 0.0267
+2025-03-13 01:25:06,875 - BNAI_Network - INFO - Validation Loss: 0.0267
+2025-03-13 01:25:08,039 - BNAI_Network - INFO - Epoch [89/100] - Loss: 0.0209
+2025-03-13 01:25:08,039 - BNAI_Network - INFO - Epoch [89/100] - Loss: 0.0209
+2025-03-13 01:25:08,072 - BNAI_Network - INFO - Validation Loss: 0.0261
+2025-03-13 01:25:08,072 - BNAI_Network - INFO - Validation Loss: 0.0261
+2025-03-13 01:25:08,946 - BNAI_Network - INFO - Epoch [90/100] - Loss: 0.0209
+2025-03-13 01:25:08,946 - BNAI_Network - INFO - Epoch [90/100] - Loss: 0.0209
+2025-03-13 01:25:08,975 - BNAI_Network - INFO - Validation Loss: 0.0261
+2025-03-13 01:25:08,975 - BNAI_Network - INFO - Validation Loss: 0.0261
+2025-03-13 01:25:09,893 - BNAI_Network - INFO - Epoch [91/100] - Loss: 0.0209
+2025-03-13 01:25:09,893 - BNAI_Network - INFO - Epoch [91/100] - Loss: 0.0209
+2025-03-13 01:25:09,940 - BNAI_Network - INFO - Validation Loss: 0.0241
+2025-03-13 01:25:09,940 - BNAI_Network - INFO - Validation Loss: 0.0241
+2025-03-13 01:25:11,269 - BNAI_Network - INFO - Epoch [92/100] - Loss: 0.0209
+2025-03-13 01:25:11,269 - BNAI_Network - INFO - Epoch [92/100] - Loss: 0.0209
+2025-03-13 01:25:11,304 - BNAI_Network - INFO - Validation Loss: 0.0279
+2025-03-13 01:25:11,304 - BNAI_Network - INFO - Validation Loss: 0.0279
+2025-03-13 01:25:12,614 - BNAI_Network - INFO - Epoch [93/100] - Loss: 0.0209
+2025-03-13 01:25:12,614 - BNAI_Network - INFO - Epoch [93/100] - Loss: 0.0209
+2025-03-13 01:25:12,655 - BNAI_Network - INFO - Validation Loss: 0.0250
+2025-03-13 01:25:12,655 - BNAI_Network - INFO - Validation Loss: 0.0250
+2025-03-13 01:25:14,067 - BNAI_Network - INFO - Epoch [94/100] - Loss: 0.0209
+2025-03-13 01:25:14,067 - BNAI_Network - INFO - Epoch [94/100] - Loss: 0.0209
+2025-03-13 01:25:14,126 - BNAI_Network - INFO - Validation Loss: 0.0262
+2025-03-13 01:25:14,126 - BNAI_Network - INFO - Validation Loss: 0.0262
+2025-03-13 01:25:15,377 - BNAI_Network - INFO - Epoch [95/100] - Loss: 0.0209
+2025-03-13 01:25:15,377 - BNAI_Network - INFO - Epoch [95/100] - Loss: 0.0209
+2025-03-13 01:25:15,410 - BNAI_Network - INFO - Validation Loss: 0.0257
+2025-03-13 01:25:15,410 - BNAI_Network - INFO - Validation Loss: 0.0257
+2025-03-13 01:25:16,419 - BNAI_Network - INFO - Epoch [96/100] - Loss: 0.0209
+2025-03-13 01:25:16,419 - BNAI_Network - INFO - Epoch [96/100] - Loss: 0.0209
+2025-03-13 01:25:16,471 - BNAI_Network - INFO - Validation Loss: 0.0295
+2025-03-13 01:25:16,471 - BNAI_Network - INFO - Validation Loss: 0.0295
+2025-03-13 01:25:18,120 - BNAI_Network - INFO - Epoch [97/100] - Loss: 0.0208
+2025-03-13 01:25:18,120 - BNAI_Network - INFO - Epoch [97/100] - Loss: 0.0208
+2025-03-13 01:25:18,182 - BNAI_Network - INFO - Validation Loss: 0.0259
+2025-03-13 01:25:18,182 - BNAI_Network - INFO - Validation Loss: 0.0259
+2025-03-13 01:25:19,816 - BNAI_Network - INFO - Epoch [98/100] - Loss: 0.0209
+2025-03-13 01:25:19,816 - BNAI_Network - INFO - Epoch [98/100] - Loss: 0.0209
+2025-03-13 01:25:19,884 - BNAI_Network - INFO - Validation Loss: 0.0265
+2025-03-13 01:25:19,884 - BNAI_Network - INFO - Validation Loss: 0.0265
+2025-03-13 01:25:21,327 - BNAI_Network - INFO - Epoch [99/100] - Loss: 0.0209
+2025-03-13 01:25:21,327 - BNAI_Network - INFO - Epoch [99/100] - Loss: 0.0209
+2025-03-13 01:25:21,363 - BNAI_Network - INFO - Validation Loss: 0.0250
+2025-03-13 01:25:21,363 - BNAI_Network - INFO - Validation Loss: 0.0250
+2025-03-13 01:25:22,066 - BNAI_Network - INFO - Epoch [100/100] - Loss: 0.0209
+2025-03-13 01:25:22,066 - BNAI_Network - INFO - Epoch [100/100] - Loss: 0.0209
+2025-03-13 01:25:22,106 - BNAI_Network - INFO - Validation Loss: 0.0258
+2025-03-13 01:25:22,106 - BNAI_Network - INFO - Validation Loss: 0.0258
+2025-03-13 01:25:22,110 - BNAI_Network - INFO - Training complete. Model saved to: models/bnai_clone.pth
+2025-03-13 01:25:22,110 - BNAI_Network - INFO - Training complete. Model saved to: models/bnai_clone.pth

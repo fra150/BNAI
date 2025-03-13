@@ -1,0 +1,2113 @@
+problem,question_code,solution,solution_code,tags,type,url,metadata
+"Python 3.13.1-jit : issue when compiling from source
+
+Hi all,
+
+I am trying to build python 3.13.1 from source (grabed here https://www.python.org/ftp/python/3.13.1/Python-3.13.1.tgz) on Ubuntu 22.04 instance with configuration so that I disable GIL + get JIT :
+
+`./configure --disable-gil --enable-experimental-jit --enable-optimizations --with-lto`
+
+Requirements installed according to https://devguide.python.org/getting-started/setup-building/index.html#install-dependencies
+
+The make step fails with error :
+
+```
+gcc -c -fno-strict-overflow -Wsign-compare -DNDEBUG -g -O3 -Wall    -D_Py_TIER2=1 -D_Py_JIT -fno-semantic-interposition -flto -fuse-linker-plugin -ffat-lto-objects -flto-partition=none -g -std=c11 -Wextra -Wno-unused-parameter
+ -Wno-missing-field-initializers -Wstrict-prototypes -Werror=implicit-function-declaration -fvisibility=hidden -fprofile-generate -I./Include/internal -I./Include/internal/mimalloc  -I. -I./Include    -DPy_BUILD_CORE -o Python
+/mystrtoul.o Python/mystrtoul.c
+Traceback (most recent call last):
+  File ""/tmp/Python-3.13.1/./Tools/jit/build.py"", line 8, in <module>
+    import _targets
+  File ""/tmp/Python-3.13.1/Tools/jit/_targets.py"", line 15, in <module>
+    import _schema
+  File ""/tmp/Python-3.13.1/Tools/jit/_schema.py"", line 60, in <module>
+    class MachORelocation(typing.TypedDict):
+  File ""/tmp/Python-3.13.1/Tools/jit/_schema.py"", line 64, in MachORelocation
+    Section: typing.NotRequired[dict[typing.Literal[""Value""], str]]
+AttributeError: module 'typing' has no attribute 'NotRequired'
+
+```
+
+I've been looking around, and was not able to find any reference to this kind of issue. What am i doing wrong ?
+
+Thank you so much for any help in reply.
+
+
+<!-- gh-linked-prs -->
+### Linked PRs
+* gh-129450
+* gh-129472
+<!-- /gh-linked-prs -->
+","['gcc -c -fno-strict-overflow -Wsign-compare -DNDEBUG -g -O3 -Wall    -D_Py_TIER2=1 -D_Py_JIT -fno-semantic-interposition -flto -fuse-linker-plugin -ffat-lto-objects -flto-partition=none -g -std=c11 -Wextra -Wno-unused-parameter\n -Wno-missing-field-initializers -Wstrict-prototypes -Werror=implicit-function-declaration -fvisibility=hidden -fprofile-generate -I./Include/internal -I./Include/internal/mimalloc  -I. -I./Include    -DPy_BUILD_CORE -o Python\n/mystrtoul.o Python/mystrtoul.c\nTraceback (most recent call last):\n  File ""/tmp/Python-3.13.1/./Tools/jit/build.py"", line 8, in <module>\n    import _targets\n  File ""/tmp/Python-3.13.1/Tools/jit/_targets.py"", line 15, in <module>\n    import _schema\n  File ""/tmp/Python-3.13.1/Tools/jit/_schema.py"", line 60, in <module>\n    class MachORelocation(typing.TypedDict):\n  File ""/tmp/Python-3.13.1/Tools/jit/_schema.py"", line 64, in MachORelocation\n    Section: typing.NotRequired[dict[typing.Literal[""Value""], str]]\nAttributeError: module \'typing\' has no attribute \'NotRequired\'']","I came to a stable build !
+
+Note that Ubuntu 22.04 comes with a 3.10 python version.
+
+The sequence I used : 
+- installed python 3.13 from deadsnake without changing default python3 version not to break apt/apt-get 
+- installed dependancy packages required for the build
+- installed llvm
+- change default python3 version to 3.13.1 (change symlink)
+- build python3.13.1t
+- restore default python3 version to 3.10 
+
+I can now experiment 3.13.1t, thank you for your crucial hint",[],['python'],github,https://github.com/python/cpython/issues/129438,{'repo': 'python/cpython'}
+"JIT build crashes on x86_64-linux with LLVM 18
+
+# Bug report
+
+### Bug description:
+
+I'm trying to build CPython 3.13.2 with JIT supported (`--enable-experimental-jit=yes-off`), but the build process crashes after reporting like this:
+
+```text
+python3>     | Traceback (most recent call last):
+python3>     |   File ""/build/Python-3.13.2/Tools/jit/_targets.py"", line 181, in _compile
+python3>     |     return await self._parse(o)
+python3>     |            ^^^^^^^^^^^^^^^^^^^^
+python3>     |   File ""/build/Python-3.13.2/Tools/jit/_targets.py"", line 89, in _parse
+python3>     |     self._handle_section(wrapped_section[""Section""], group)
+python3>     |   File ""/build/Python-3.13.2/Tools/jit/_targets.py"", line 330, in _handle_section
+python3>     |     value, base = group.symbols[section[""Info""]]
+python3>     |                   ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+python3>     | KeyError: 5
+```
+
+I've tracked the build process and found that the `_parse` routine in `Tools/_targets.py` almost fails for all the object files produced by the `_compile` process. When handling a ELF section of type `SHT_PROGBITS`, if `SHF_ALLOC` is not included in its flags, then the symbol tables of the stencil group will not be updated. Then if a later section refers to the symbol, a `KeyError` occurs. For example, an object file (_NOP.o) like this:
+
+```json
+[
+  {
+    ""Section"": {
+      ""Index"": 5,
+      ""Name"": { ""Name"": "".debug_info"", ""Value"": 108 },
+      ""Type"": { ""Name"": ""SHT_PROGBITS"", ""Value"": 1 },
+      ""Flags"": {
+        ""Value"": 2048,
+        ""Flags"": [{ ""Name"": ""SHF_COMPRESSED"", ""Value"": 2048 }]
+      },
+      ""Address"": 0,
+      ""Offset"": 463,
+      ""Size"": 29486,
+      ""Link"": 0,
+      ""Info"": 0
+      // ...
+  },
+  {
+    ""Section"": {
+      ""Index"": 6,
+      ""Name"": { ""Name"": "".rela.debug_info"", ""Value"": 103 },
+      ""Type"": { ""Name"": ""SHT_RELA"", ""Value"": 4 },
+      ""Flags"": {
+        ""Value"": 64,
+        ""Flags"": [{ ""Name"": ""SHF_INFO_LINK"", ""Value"": 64 }]
+      },
+      ""Address"": 0,
+      ""Offset"": 44968,
+      ""Size"": 96,
+      ""Link"": 20,
+      ""Info"": 5
+      // ...
+  }
+```
+
+When handling the 5th section, L349 is not executed:
+
+https://github.com/python/cpython/blob/4f8bb3947cfbc20f970ff9d9531e1132a9e95396/Tools/jit/_targets.py#L340-L357
+
+Then when handling the 6th section, L330 will try to index `group.symbols[5]`:
+
+https://github.com/python/cpython/blob/4f8bb3947cfbc20f970ff9d9531e1132a9e95396/Tools/jit/_targets.py#L327-L339
+
+where the error occurs.
+
+I'm not sure whether it's because of the version of LLVM (18.1.8) I'm using.
+
+### CPython versions tested on:
+
+3.13.2
+
+### Operating systems tested on:
+
+GNU/Linux
+
+### Build Toolchains
+
+- Python 3.12.4
+- LLVM 18.1.8
+
+<!-- gh-linked-prs -->
+### Linked PRs
+* gh-130906
+<!-- /gh-linked-prs -->
+","['python3>     | Traceback (most recent call last):\npython3>     |   File ""/build/Python-3.13.2/Tools/jit/_targets.py"", line 181, in _compile\npython3>     |     return await self._parse(o)\npython3>     |            ^^^^^^^^^^^^^^^^^^^^\npython3>     |   File ""/build/Python-3.13.2/Tools/jit/_targets.py"", line 89, in _parse\npython3>     |     self._handle_section(wrapped_section[""Section""], group)\npython3>     |   File ""/build/Python-3.13.2/Tools/jit/_targets.py"", line 330, in _handle_section\npython3>     |     value, base = group.symbols[section[""Info""]]\npython3>     |                   ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^\npython3>     | KeyError: 5', '[\n  {\n    ""Section"": {\n      ""Index"": 5,\n      ""Name"": { ""Name"": "".debug_info"", ""Value"": 108 },\n      ""Type"": { ""Name"": ""SHT_PROGBITS"", ""Value"": 1 },\n      ""Flags"": {\n        ""Value"": 2048,\n        ""Flags"": [{ ""Name"": ""SHF_COMPRESSED"", ""Value"": 2048 }]\n      },\n      ""Address"": 0,\n      ""Offset"": 463,\n      ""Size"": 29486,\n      ""Link"": 0,\n      ""Info"": 0\n      // ...\n  },\n  {\n    ""Section"": {\n      ""Index"": 6,\n      ""Name"": { ""Name"": "".rela.debug_info"", ""Value"": 103 },\n      ""Type"": { ""Name"": ""SHT_RELA"", ""Value"": 4 },\n      ""Flags"": {\n        ""Value"": 64,\n        ""Flags"": [{ ""Name"": ""SHF_INFO_LINK"", ""Value"": 64 }]\n      },\n      ""Address"": 0,\n      ""Offset"": 44968,\n      ""Size"": 96,\n      ""Link"": 20,\n      ""Info"": 5\n      // ...\n  }']","> Are you able to build successfully if you don't modify the code?
+
+No, of course.
+
+> Can you share more about why you're trying to make this modification?
+
+I do this modification because the build process try to compile and parse multiple object files asynchronously, which makes me hard to reproduce the error message. However, as I've mentioned before, the `_parse` subroutine fails to parse almost every object file produced by the `_compile` subroutine.
+
+---
+
+More information: I'm trying to port CPython with JIT to [Nixpkgs](https://github.com/NixOS/nixpkgs). The build process just works on aarch64-darwin but fails on x86_64-linux. I doubt the problem is caused by the different behavior of LLVM toolchains on Nixpkgs. Could you attach the result of `llvm-readobj` here? Maybe I can find something useful. The output can be generated by a simple shell script like:
+
+```bash
+#!/usr/bin/env bash
+
+opname=_NOP
+ll=""${opname}.ll""
+o=""${opname}.o""
+
+CPYTHON=$PWD
+
+### _compile
+
+_compile() {
+    clang --target=x86_64-unknown-linux-gnu -DPy_BUILD_CORE_MODULE -DNDEBUG  \
+          -D_JIT_OPCODE=""${opname}"" -D_PyJIT_ACTIVE -D_Py_JIT \
+          -I. \
+          -I""${CPYTHON}""/Include \
+          -I""${CPYTHON}""/Include/internal \
+          -I""${CPYTHON}""/Include/internal/mimalloc \
+          -I""${CPYTHON}""/Python \
+          -O3 \
+          -c \
+          -fno-asynchronous-unwind-tables \
+          -fno-builtin \
+          -fno-plt \
+          -fno-stack-protector \
+          -std=c11 \
+          -fpic \
+          -S -emit-llvm -fomit-frame-pointer \
+          -o ${ll} \
+          ""${CPYTHON}""/Tools/jit/template.c
+
+    sed -i.bak -E 's/((noalias|nonnull|noundef )*ptr @_JIT_\w+\()/ghccc \1/; s/musttail call/musttail call ghccc/; s/ghccc ghccc/ghccc/' $ll
+
+    clang --target=x86_64-unknown-linux-gnu -DPy_BUILD_CORE_MODULE -DNDEBUG  \
+          -D_JIT_OPCODE=""${opname}"" -D_PyJIT_ACTIVE -D_Py_JIT \
+          -I. \
+          -I""${CPYTHON}""/Include \
+          -I""${CPYTHON}""/Include/internal \
+          -I""${CPYTHON}""/Include/internal/mimalloc \
+          -I""${CPYTHON}""/Python \
+          -O3 \
+          -c \
+          -fno-asynchronous-unwind-tables \
+          -fno-builtin \
+          -fno-plt \
+          -fno-stack-protector \
+          -std=c11 \
+          -fpic \
+          -Wno-unused-command-line-argument \
+          -o ${o} \
+          ${ll}
+}
+
+### _parse
+
+_parse() {
+    llvm-readobj --elf-output-style=JSON \
+                 --expand-relocs \
+                 --section-data \
+                 --section-relocations \
+                 --section-symbols \
+                 --sections \
+                 ${o}
+}
+
+_compile
+_parse
+```
+
+I write this script for CPython 3.13.2 to reproduce the problem. The compile and parse commands are just copied from `_targets.py`.","['#!/usr/bin/env bash\n\nopname=_NOP\nll=""${opname}.ll""\no=""${opname}.o""\n\nCPYTHON=$PWD\n\n### _compile\n\n_compile() {\n    clang --target=x86_64-unknown-linux-gnu -DPy_BUILD_CORE_MODULE -DNDEBUG  \\\n          -D_JIT_OPCODE=""${opname}"" -D_PyJIT_ACTIVE -D_Py_JIT \\\n          -I. \\\n          -I""${CPYTHON}""/Include \\\n          -I""${CPYTHON}""/Include/internal \\\n          -I""${CPYTHON}""/Include/internal/mimalloc \\\n          -I""${CPYTHON}""/Python \\\n          -O3 \\\n          -c \\\n          -fno-asynchronous-unwind-tables \\\n          -fno-builtin \\\n          -fno-plt \\\n          -fno-stack-protector \\\n          -std=c11 \\\n          -fpic \\\n          -S -emit-llvm -fomit-frame-pointer \\\n          -o ${ll} \\\n          ""${CPYTHON}""/Tools/jit/template.c\n\n    sed -i.bak -E \'s/((noalias|nonnull|noundef )*ptr @_JIT_\\w+\\()/ghccc \\1/; s/musttail call/musttail call ghccc/; s/ghccc ghccc/ghccc/\' $ll\n\n    clang --target=x86_64-unknown-linux-gnu -DPy_BUILD_CORE_MODULE -DNDEBUG  \\\n          -D_JIT_OPCODE=""${opname}"" -D_PyJIT_ACTIVE -D_Py_JIT \\\n          -I. \\\n          -I""${CPYTHON}""/Include \\\n          -I""${CPYTHON}""/Include/internal \\\n          -I""${CPYTHON}""/Include/internal/mimalloc \\\n          -I""${CPYTHON}""/Python \\\n          -O3 \\\n          -c \\\n          -fno-asynchronous-unwind-tables \\\n          -fno-builtin \\\n          -fno-plt \\\n          -fno-stack-protector \\\n          -std=c11 \\\n          -fpic \\\n          -Wno-unused-command-line-argument \\\n          -o ${o} \\\n          ${ll}\n}\n\n### _parse\n\n_parse() {\n    llvm-readobj --elf-output-style=JSON \\\n                 --expand-relocs \\\n                 --section-data \\\n                 --section-relocations \\\n                 --section-symbols \\\n                 --sections \\\n                 ${o}\n}\n\n_compile\n_parse']",['python'],github,https://github.com/python/cpython/issues/130673,{'repo': 'python/cpython'}
+"`typing.Annotated` does not flatten through `typing.TypeAliasType`
+
+# Bug report
+
+### Bug description:
+
+As described in the [documentation](https://docs.python.org/3/library/typing.html#typing.Annotated), nested `Annotated` types are supposed to be flattened. This works well with legacy type aliases but not with the `type` statement introduced in python 3.12:
+
+```python
+from typing import Annotated, TypeAlias
+
+print(Annotated[Annotated[int, ""A""], ""B""] == Annotated[int, ""A"", ""B""]) # True
+
+A: TypeAlias = Annotated[int, ""A""]
+print(Annotated[A, ""B""] == Annotated[int, ""A"", ""B""]) # True
+
+type A = Annotated[int, ""A""]
+print(Annotated[A, ""B""] == Annotated[int, ""A"", ""B""]) # False
+```
+
+### CPython versions tested on:
+
+3.13
+
+### Operating systems tested on:
+
+Windows
+
+<!-- gh-linked-prs -->
+### Linked PRs
+* gh-130119
+<!-- /gh-linked-prs -->
+","['from typing import Annotated, TypeAlias\n\nprint(Annotated[Annotated[int, ""A""], ""B""] == Annotated[int, ""A"", ""B""]) # True\n\nA: TypeAlias = Annotated[int, ""A""]\nprint(Annotated[A, ""B""] == Annotated[int, ""A"", ""B""]) # True\n\ntype A = Annotated[int, ""A""]\nprint(Annotated[A, ""B""] == Annotated[int, ""A"", ""B""]) # False']","This behavior is correct and we will not change it. Flattening through TypeAliasType may force evaluation of the type alias and lead to confusing errors.
+
+I'd welcome a documentation PR clarifying this.",[],['python'],github,https://github.com/python/cpython/issues/130117,{'repo': 'python/cpython'}
+"Document that bf_getbuffer must prevent GC (only under freethreading?) to write to its `view` argument
+
+https://docs.python.org/3/c-api/typeobj.html#c.PyBufferProcs.bf_getbuffer
+
+does not mention any requirement for the callee to hold the GIL or otherwise prevent Python GC to write to the `view` argument. One might think this is safe, because one has no particular reason to think that the `view` object is shared between threads and that the `bf_getbuffer` implementation has exclusive access to it.
+
+However, the `view` object can be allocated from GC memory, e.g., in https://github.com/python/cpython/blob/4f07fd59cbd2656ae31e164098b8d10c5b7e51f0/Objects/memoryobject.c#L72
+and this means that we may see concurrent GC traversals if we do not prevent GC (e.g., by holding the GIL).
+
+Under free-threading mode, I saw the following race in the JAX test suite which I believe stems from this problem:
+```
+WARNING: ThreadSanitizer: data race (pid=268192)
+  Read of size 8 at 0x7fffc2221a38 by thread T69 (mutexes: read M0):
+    #0 mbuf_traverse /__w/jax/jax/cpython/Objects/memoryobject.c:134:5 (python3.13+0x27f190) (BuildId: 5001c71441642d7e6efdfc82265e7ee63d55228e)
+    #1 update_refs /__w/jax/jax/cpython/Python/gc_free_threading.c:441:5 (python3.13+0x44854a) (BuildId: 5001c71441642d7e6efdfc82265e7ee63d55228e)
+    #2 _mi_heap_area_visit_blocks /__w/jax/jax/cpython/Objects/mimalloc/heap.c:630:14 (python3.13+0x2a9fe4) (BuildId: 5001c71441642d7e6efdfc82265e7ee63d55228e)
+    #3 mi_heap_area_visitor /__w/jax/jax/cpython/Objects/mimalloc/heap.c:681:12 (python3.13+0x2aa547) (BuildId: 5001c71441642d7e6efdfc82265e7ee63d55228e)
+    #4 mi_heap_visit_areas_page /__w/jax/jax/cpython/Objects/mimalloc/heap.c:661:10 (python3.13+0x2aa547)
+    #5 mi_heap_visit_pages /__w/jax/jax/cpython/Objects/mimalloc/heap.c:46:12 (python3.13+0x2aa547)
+    #6 mi_heap_visit_areas /__w/jax/jax/cpython/Objects/mimalloc/heap.c:667:10 (python3.13+0x2aa547)
+    #7 mi_heap_visit_blocks /__w/jax/jax/cpython/Objects/mimalloc/heap.c:692:10 (python3.13+0x2aa547)
+    #8 gc_visit_heaps_lock_held /__w/jax/jax/cpython/Python/gc_free_threading.c:267:14 (python3.13+0x4446ff) (BuildId: 5001c71441642d7e6efdfc82265e7ee63d55228e)
+    #9 gc_visit_heaps /__w/jax/jax/cpython/Python/gc_free_threading.c:306:11 (python3.13+0x4446ff)
+    #10 deduce_unreachable_heap /__w/jax/jax/cpython/Python/gc_free_threading.c:614:5 (python3.13+0x4458db) (BuildId: 5001c71441642d7e6efdfc82265e7ee63d55228e)
+    #11 gc_collect_internal /__w/jax/jax/cpython/Python/gc_free_threading.c:1126:15 (python3.13+0x4458db)
+    #12 gc_collect_main /__w/jax/jax/cpython/Python/gc_free_threading.c:1239:5 (python3.13+0x4458db)
+    #13 _Py_RunGC /__w/jax/jax/cpython/Python/gc_free_threading.c:1684:5 (python3.13+0x44730e) (BuildId: 5001c71441642d7e6efdfc82265e7ee63d55228e)
+
+ Previous write of size 8 at 0x7fffc2221a38 by thread T68 (mutexes: read M0):
+    #0 __tsan_memset  (python3.13+0xda21d) (BuildId: 5001c71441642d7e6efdfc82265e7ee63d55228e)
+    #1 memset /usr/include/x86_64-linux-gnu/bits/string_fortified.h:59:10 (xla_extension.so+0xa7a60ec) (BuildId: 0cb922163d5a5c8d99583339143c71c4c2e776b1)
+    #2 xla::(anonymous namespace)::PyArray_bf_getbuffer(_object*, Py_buffer*, int)::$_0::operator()() const /proc/self/cwd/external/xla/xla/python/py_array.cc:1601:5 (xla_extension.so+0xa7a60ec)
+    #3 xla::(anonymous namespace)::PyArray_bf_getbuffer(_object*, Py_buffer*, int) /proc/self/cwd/external/xla/xla/python/py_array.cc:1518:25 (xla_extension.so+0xa7a60ec)
+    #4 PyObject_GetBuffer /__w/jax/jax/cpython/Objects/abstract.c:442:15 (python3.13+0x1ba90d) (BuildId: 5001c71441642d7e6efdfc82265e7ee63d55228e)
+    #5 _PyManagedBuffer_FromObject /__w/jax/jax/cpython/Objects/memoryobject.c:97:9 (python3.13+0x27fdf5) (BuildId: 5001c71441642d7e6efdfc82265e7ee63d55228e)
+```
+
+","['WARNING: ThreadSanitizer: data race (pid=268192)\n  Read of size 8 at 0x7fffc2221a38 by thread T69 (mutexes: read M0):\n    #0 mbuf_traverse /__w/jax/jax/cpython/Objects/memoryobject.c:134:5 (python3.13+0x27f190) (BuildId: 5001c71441642d7e6efdfc82265e7ee63d55228e)\n    #1 update_refs /__w/jax/jax/cpython/Python/gc_free_threading.c:441:5 (python3.13+0x44854a) (BuildId: 5001c71441642d7e6efdfc82265e7ee63d55228e)\n    #2 _mi_heap_area_visit_blocks /__w/jax/jax/cpython/Objects/mimalloc/heap.c:630:14 (python3.13+0x2a9fe4) (BuildId: 5001c71441642d7e6efdfc82265e7ee63d55228e)\n    #3 mi_heap_area_visitor /__w/jax/jax/cpython/Objects/mimalloc/heap.c:681:12 (python3.13+0x2aa547) (BuildId: 5001c71441642d7e6efdfc82265e7ee63d55228e)\n    #4 mi_heap_visit_areas_page /__w/jax/jax/cpython/Objects/mimalloc/heap.c:661:10 (python3.13+0x2aa547)\n    #5 mi_heap_visit_pages /__w/jax/jax/cpython/Objects/mimalloc/heap.c:46:12 (python3.13+0x2aa547)\n    #6 mi_heap_visit_areas /__w/jax/jax/cpython/Objects/mimalloc/heap.c:667:10 (python3.13+0x2aa547)\n    #7 mi_heap_visit_blocks /__w/jax/jax/cpython/Objects/mimalloc/heap.c:692:10 (python3.13+0x2aa547)\n    #8 gc_visit_heaps_lock_held /__w/jax/jax/cpython/Python/gc_free_threading.c:267:14 (python3.13+0x4446ff) (BuildId: 5001c71441642d7e6efdfc82265e7ee63d55228e)\n    #9 gc_visit_heaps /__w/jax/jax/cpython/Python/gc_free_threading.c:306:11 (python3.13+0x4446ff)\n    #10 deduce_unreachable_heap /__w/jax/jax/cpython/Python/gc_free_threading.c:614:5 (python3.13+0x4458db) (BuildId: 5001c71441642d7e6efdfc82265e7ee63d55228e)\n    #11 gc_collect_internal /__w/jax/jax/cpython/Python/gc_free_threading.c:1126:15 (python3.13+0x4458db)\n    #12 gc_collect_main /__w/jax/jax/cpython/Python/gc_free_threading.c:1239:5 (python3.13+0x4458db)\n    #13 _Py_RunGC /__w/jax/jax/cpython/Python/gc_free_threading.c:1684:5 (python3.13+0x44730e) (BuildId: 5001c71441642d7e6efdfc82265e7ee63d55228e)\n\n Previous write of size 8 at 0x7fffc2221a38 by thread T68 (mutexes: read M0):\n    #0 __tsan_memset  (python3.13+0xda21d) (BuildId: 5001c71441642d7e6efdfc82265e7ee63d55228e)\n    #1 memset /usr/include/x86_64-linux-gnu/bits/string_fortified.h:59:10 (xla_extension.so+0xa7a60ec) (BuildId: 0cb922163d5a5c8d99583339143c71c4c2e776b1)\n    #2 xla::(anonymous namespace)::PyArray_bf_getbuffer(_object*, Py_buffer*, int)::$_0::operator()() const /proc/self/cwd/external/xla/xla/python/py_array.cc:1601:5 (xla_extension.so+0xa7a60ec)\n    #3 xla::(anonymous namespace)::PyArray_bf_getbuffer(_object*, Py_buffer*, int) /proc/self/cwd/external/xla/xla/python/py_array.cc:1518:25 (xla_extension.so+0xa7a60ec)\n    #4 PyObject_GetBuffer /__w/jax/jax/cpython/Objects/abstract.c:442:15 (python3.13+0x1ba90d) (BuildId: 5001c71441642d7e6efdfc82265e7ee63d55228e)\n    #5 _PyManagedBuffer_FromObject /__w/jax/jax/cpython/Objects/memoryobject.c:97:9 (python3.13+0x27fdf5) (BuildId: 5001c71441642d7e6efdfc82265e7ee63d55228e)']","I do wonder if it would be better if the `mbuf` type avoided traversing a partially constructed `Py_buffer`, though.",[],['python'],github,https://github.com/python/cpython/issues/130409,{'repo': 'python/cpython'}
+"Broken symlink fails `os.path.exists(symlink)` check but raises FileExists error in `os.makedirs(symlink, exist_ok=True)`.
+
+# Bug report
+
+### Bug description:
+
+### Description
+Suppose I have a `symlink` that points to `original`, and then `original` gets deleted, which makes it an invalid symlink. I get an unexpected behavior where:
+```python
+os.path.exists(""symlink"")
+>>> False
+os.makedirs(""symlink"", exist_ok=True)
+>>> FileExistsError: [Errno 17] File exists: ""symlink""
+```
+
+### Why this is important
+It is not uncommon for code to rely on `os.makedirs(..., exist_ok=True)` to create a directory only if it exists, or to use a `if not os.path.exists(...)` to guard before calling `os.makedirs(...)`. In the case when the given directory is a broken symlink, this would no longer work. In particular, raising a `FileExistsError` when `exist_ok=True` is especially confusing, and this behavior should be avoided.
+
+
+### Steps to reproduce
+In terminal, create a broken symlink
+```
+mkdir original
+ln -s original symlink
+rm -r original
+```
+In Python, observe:
+```python
+os.path.exists(""symlink"")
+>>> False
+os.makedirs(""symlink"", exist_ok=True)
+>>> FileExistsError: [Errno 17] File exists: ""symlink""
+```
+Python version: 3.12.8
+
+### Expected behavior
+`os.path.exists` behavior should be consistent with `os.makedirs`. When given a broken symlink, either:
+1. `os.path.exists(symlink)` returns True (does not implicitly resolve symlink) and `os.makedirs(symlink, exist_ok=True)` does nothing
+2. OR: `os.path.exists(symlink)` returns False (implicitly resolves symlink) and `os.makedirs(symlink, exist_ok=True)` creates a directory at the symlink target.
+
+1 might be the preferred behavior since implicitly resolving symlink is kind of bad. Open to other options (perhaps a special error for handling symlinks), but regardless the main thing is to fix the behavior where a `FileExistsError` is raised even when `exist_ok=True` is passed.
+
+
+### CPython versions tested on:
+
+3.12
+
+### Operating systems tested on:
+
+Linux","['os.path.exists(""symlink"")\n>>> False\nos.makedirs(""symlink"", exist_ok=True)\n>>> FileExistsError: [Errno 17] File exists: ""symlink""', 'mkdir original\nln -s original symlink\nrm -r original', 'os.path.exists(""symlink"")\n>>> False\nos.makedirs(""symlink"", exist_ok=True)\n>>> FileExistsError: [Errno 17] File exists: ""symlink""']","I can confirm that it's what POSIX does, namely we do have an error and `mkdir -p symlink` reports that the file already exists. 
+
+I can also confirm that `test -e symlink && echo 1` prints nothing so a broken symlink is not considered to be existing. Considering this, I will close this one as `wont fix` as we would diverge from POSIX otherwise.",[],['python'],github,https://github.com/python/cpython/issues/129626,{'repo': 'python/cpython'}
+"Data races in free-threaded python on Py_buffer use
+
+# Bug report
+
+### Bug description:
+
+`memoryview` is used here for demonstration purposes, this should pop up in anything that uses the buffer interface.
+
+Reproducer:
+```
+import threading
+
+
+def copy_back_and_forth(b, a, d, count):
+    b.wait()
+    for _ in range(count):
+        a[0] = d[1]
+        a[1] = d[0]
+
+
+def check(funcs, *args):
+    barrier = threading.Barrier(len(funcs))
+    thrds = []
+
+    for func in funcs:
+        thrd = threading.Thread(target=func, args=(barrier, *args))
+
+        thrds.append(thrd)
+        thrd.start()
+
+    for thrd in thrds:
+        thrd.join()
+
+
+if __name__ == '__main__':
+    b = bytearray([0, 1])
+    while True:
+        check([copy_back_and_forth] * 10, memoryview(b), memoryview(b), 100)
+```
+
+Output:
+```
+WARNING: ThreadSanitizer: data race (pid=25332)
+  Write of size 1 at 0x7f618e090d91 by thread T20:
+    #0 pack_single Objects/memoryobject.c:1926 (python+0x24ed75)
+    #1 memory_ass_sub Objects/memoryobject.c:2688 (python+0x25015a)
+    #2 PyObject_SetItem Objects/abstract.c:232 (python+0x150cd6)
+    #3 _PyEval_EvalFrameDefault Python/generated_cases.c.h:11143 (python+0x466235)
+    #4 _PyEval_EvalFrame Include/internal/pycore_ceval.h:116 (python+0x46db5c)
+    #5 _PyEval_Vector Python/ceval.c:1820 (python+0x46db5c)
+    #6 _PyFunction_Vectorcall Objects/call.c:413 (python+0x187eb4)
+    #7 _PyObject_VectorcallTstate Include/internal/pycore_call.h:167 (python+0x18fb2c)
+    #8 method_vectorcall Objects/classobject.c:72 (python+0x18fb2c)
+    #9 _PyVectorcall_Call Objects/call.c:273 (python+0x18b9a7)
+    #10 _PyObject_Call Objects/call.c:348 (python+0x18be9f)
+    #11 PyObject_Call Objects/call.c:373 (python+0x18bf24)
+    #12 thread_run Modules/_threadmodule.c:354 (python+0x668b93)
+    #13 pythread_wrapper Python/thread_pthread.h:242 (python+0x57d1ea)
+
+  Previous read of size 1 at 0x7f618e090d91 by thread T11:
+    #0 unpack_single Objects/memoryobject.c:1803 (python+0x24b841)
+    #1 memory_item Objects/memoryobject.c:2471 (python+0x24c79a)
+    #2 memory_subscript Objects/memoryobject.c:2607 (python+0x254d56)
+    #3 PyObject_GetItem Objects/abstract.c:158 (python+0x1504c1)
+    #4 _PyEval_EvalFrameDefault Python/generated_cases.c.h:62 (python+0x41b75c)
+    #5 _PyEval_EvalFrame Include/internal/pycore_ceval.h:116 (python+0x46db5c)
+    #6 _PyEval_Vector Python/ceval.c:1820 (python+0x46db5c)
+    #7 _PyFunction_Vectorcall Objects/call.c:413 (python+0x187eb4)
+    #8 _PyObject_VectorcallTstate Include/internal/pycore_call.h:167 (python+0x18fb2c)
+    #9 method_vectorcall Objects/classobject.c:72 (python+0x18fb2c)
+    #10 _PyVectorcall_Call Objects/call.c:273 (python+0x18b9a7)
+    #11 _PyObject_Call Objects/call.c:348 (python+0x18be9f)
+    #12 PyObject_Call Objects/call.c:373 (python+0x18bf24)
+    #13 thread_run Modules/_threadmodule.c:354 (python+0x668b93)
+    #14 pythread_wrapper Python/thread_pthread.h:242 (python+0x57d1ea)
+```
+
+Is this an issue?
+
+
+### CPython versions tested on:
+
+3.14
+
+### Operating systems tested on:
+
+Linux","[""import threading\n\n\ndef copy_back_and_forth(b, a, d, count):\n    b.wait()\n    for _ in range(count):\n        a[0] = d[1]\n        a[1] = d[0]\n\n\ndef check(funcs, *args):\n    barrier = threading.Barrier(len(funcs))\n    thrds = []\n\n    for func in funcs:\n        thrd = threading.Thread(target=func, args=(barrier, *args))\n\n        thrds.append(thrd)\n        thrd.start()\n\n    for thrd in thrds:\n        thrd.join()\n\n\nif __name__ == '__main__':\n    b = bytearray([0, 1])\n    while True:\n        check([copy_back_and_forth] * 10, memoryview(b), memoryview(b), 100)"", 'WARNING: ThreadSanitizer: data race (pid=25332)\n  Write of size 1 at 0x7f618e090d91 by thread T20:\n    #0 pack_single Objects/memoryobject.c:1926 (python+0x24ed75)\n    #1 memory_ass_sub Objects/memoryobject.c:2688 (python+0x25015a)\n    #2 PyObject_SetItem Objects/abstract.c:232 (python+0x150cd6)\n    #3 _PyEval_EvalFrameDefault Python/generated_cases.c.h:11143 (python+0x466235)\n    #4 _PyEval_EvalFrame Include/internal/pycore_ceval.h:116 (python+0x46db5c)\n    #5 _PyEval_Vector Python/ceval.c:1820 (python+0x46db5c)\n    #6 _PyFunction_Vectorcall Objects/call.c:413 (python+0x187eb4)\n    #7 _PyObject_VectorcallTstate Include/internal/pycore_call.h:167 (python+0x18fb2c)\n    #8 method_vectorcall Objects/classobject.c:72 (python+0x18fb2c)\n    #9 _PyVectorcall_Call Objects/call.c:273 (python+0x18b9a7)\n    #10 _PyObject_Call Objects/call.c:348 (python+0x18be9f)\n    #11 PyObject_Call Objects/call.c:373 (python+0x18bf24)\n    #12 thread_run Modules/_threadmodule.c:354 (python+0x668b93)\n    #13 pythread_wrapper Python/thread_pthread.h:242 (python+0x57d1ea)\n\n  Previous read of size 1 at 0x7f618e090d91 by thread T11:\n    #0 unpack_single Objects/memoryobject.c:1803 (python+0x24b841)\n    #1 memory_item Objects/memoryobject.c:2471 (python+0x24c79a)\n    #2 memory_subscript Objects/memoryobject.c:2607 (python+0x254d56)\n    #3 PyObject_GetItem Objects/abstract.c:158 (python+0x1504c1)\n    #4 _PyEval_EvalFrameDefault Python/generated_cases.c.h:62 (python+0x41b75c)\n    #5 _PyEval_EvalFrame Include/internal/pycore_ceval.h:116 (python+0x46db5c)\n    #6 _PyEval_Vector Python/ceval.c:1820 (python+0x46db5c)\n    #7 _PyFunction_Vectorcall Objects/call.c:413 (python+0x187eb4)\n    #8 _PyObject_VectorcallTstate Include/internal/pycore_call.h:167 (python+0x18fb2c)\n    #9 method_vectorcall Objects/classobject.c:72 (python+0x18fb2c)\n    #10 _PyVectorcall_Call Objects/call.c:273 (python+0x18b9a7)\n    #11 _PyObject_Call Objects/call.c:348 (python+0x18be9f)\n    #12 PyObject_Call Objects/call.c:373 (python+0x18bf24)\n    #13 thread_run Modules/_threadmodule.c:354 (python+0x668b93)\n    #14 pythread_wrapper Python/thread_pthread.h:242 (python+0x57d1ea)']","The buffer protocol is really to give external C-like code fast access to C array data. At least in C code it was always possible to work on a buffer with the GIL released. So it was never something where Python enforced the thread safety. 
+
+I can't imagine that accessing it through memoryview and Python can really be made usefully thread-safe either because it doesn't know anything about what assumptions other users of the buffer are making.
+
+There has been some talk of adding Rust-style borrow-checked buffers (which would have many readers and 0 writers, or 0 readers and 1 writer) which would be safe, but that would be new feature.",[],['python'],github,https://github.com/python/cpython/issues/130977,{'repo': 'python/cpython'}
+"ast.parse() without optimize=True doesn't error on invalid AST type
+
+```
+>>> ast.parse(ast.Constant(42))
+Constant(value=42, kind=None)
+
+
+>>> ast.parse(ast.Constant(42), optimize=True)
+Traceback (most recent call last):
+  File ""<python-input-4>"", line 1, in <module>
+    ast.parse(ast.Constant(42), optimize=True)
+    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/usr/local/lib/python3.14/ast.py"", line 53, in parse
+    return compile(source, filename, mode, flags,
+                   _feature_version=feature_version, optimize=optimize)
+TypeError: expected Module node, got Constant
+```
+
+(This came up while implementing PEP 765 https://github.com/python/cpython/issues/130080).
+
+<!-- gh-linked-prs -->
+### Linked PRs
+* gh-130140
+<!-- /gh-linked-prs -->
+","['>>> ast.parse(ast.Constant(42))\nConstant(value=42, kind=None)\n\n\n>>> ast.parse(ast.Constant(42), optimize=True)\nTraceback (most recent call last):\n  File ""<python-input-4>"", line 1, in <module>\n    ast.parse(ast.Constant(42), optimize=True)\n    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File ""/usr/local/lib/python3.14/ast.py"", line 53, in parse\n    return compile(source, filename, mode, flags,\n                   _feature_version=feature_version, optimize=optimize)\nTypeError: expected Module node, got Constant']","PR merged, can we close the issue or is there something left to do?",[],['python'],github,https://github.com/python/cpython/issues/130139,{'repo': 'python/cpython'}
+"Python launcher should prefer local architecture
+
+# Bug report
+
+### Bug description:
+
+In https://github.com/brettcannon/python-launcher/discussions/425#discussioncomment-12287807, I learned that on Windows for ARM, if both Python for x64 and Python for ARM are installed, the Python launcher prefers the x64 version.
+
+
+```
+> py -0p
+ -V:3.13t *       C:\Program Files\Python313\python3.13t.exe
+ -V:3.13t-arm64   C:\Users\jaraco\AppData\Local\Programs\Python\Python313-arm64\python3.13t.exe
+ -V:3.13          C:\Program Files\Python313\python.exe
+ -V:3.13-arm64    C:\Users\jaraco\AppData\Local\Programs\Python\Python313-arm64\python.exe
+```
+
+I understand the ARM version is experimental. When it becomes non-experimental, and probably before then, the Python launcher should prefer version that aligns with the host machine's architecture instead of preferring versions that are run under a compatibility layer.
+
+### CPython versions tested on:
+
+3.13
+
+### Operating systems tested on:
+
+Windows",['> py -0p\n -V:3.13t *       C:\\Program Files\\Python313\\python3.13t.exe\n -V:3.13t-arm64   C:\\Users\\jaraco\\AppData\\Local\\Programs\\Python\\Python313-arm64\\python3.13t.exe\n -V:3.13          C:\\Program Files\\Python313\\python.exe\n -V:3.13-arm64    C:\\Users\\jaraco\\AppData\\Local\\Programs\\Python\\Python313-arm64\\python.exe'],"> When it becomes non-experimental, and probably before then, the Python launcher should prefer version that aligns with the host machine's architecture
+
+Becoming non-experimental is the trigger for it to start preferring ARM64 builds on ARM64; everything pivots at that point. And hopefully it'll happen in the new launcher implementation as part of PEP 773 (my prototype already supports it, it just isn't enabled yet, nor is it published) rather than in the old one, which means there won't be anything to fix here.
+
+Other feedback has suggested that defaulting to _selecting_ the experimental install but not defaulting to _installing_ it is also suboptimal, so there isn't really a good answer for ""when should we choose a non-default install by default"" other than ""never"". Always selecting the default version unless the caller overrides is considered correct behaviour, so changing that would be a feature anyway.
+
+And FWIW, it'll become non-experimental when regular users are not going to immediately fail. Right now, I still believe too many will fail at the first package install, and so it's out there for package developers to update their releases, but not ",[],['python'],github,https://github.com/python/cpython/issues/130470,{'repo': 'python/cpython'}
+"Parallel import of modules causes a ModuleNotFoundError
+
+# Bug report
+
+### Bug description:
+
+Using the free-threading build parallel import of modules causes a `ModuleNotFoundError`. The module that cannot be found can differ. A minimal reproducer:
+```python
+import sys
+from threading import Thread, Barrier
+from importlib import import_module, reload
+import time
+
+
+# Setup threads
+t0 = time.perf_counter()
+number_of_threads = 8
+barrier = Barrier(number_of_threads)
+
+pmods = []
+
+
+def work(ii):
+    # Method doing the actual import
+    barrier.wait()
+    while True:
+        try:
+            m = pmods.pop()
+            mod = import_module(m)
+            # print(f'  {ii}: {m} done')
+        except IndexError:
+            return
+
+
+worker_threads = []
+for ii in range(number_of_threads):
+    worker_threads.append(Thread(target=work, args=[ii]))
+
+dt = time.perf_counter() - t0
+print(f""setup threads {dt*1e3:.2f}"")
+
+
+def parallel_import(modules: list[str]):
+    global pmods
+    pmods += modules
+    for t in worker_threads:
+        t.start()
+    for t in worker_threads:
+        t.join()
+
+
+def seq_import(modules: list[str]):
+    for m in modules:
+        mod = import_module(m)
+
+
+import_method = seq_import
+import_method = parallel_import
+
+mods = [
+    ""abc"",
+    ""functools"",
+    ""weakref"",
+    ""linecache"",
+    ""glob"",
+    ""annotationlib"",
+    ""argparse"",
+    ""fnmatch"",
+    ""itertools"",
+    ""operator"",
+    ""string"",
+    ""re"",
+    ""collections"",
+    ""sqlite3"",
+    ""pathlib"",
+    ""urllib"",
+    ""typing"",
+    ""csv"",
+    ""uuid"",
+]
+
+mods += [
+    ""setuptools"",
+    ""sympy"",
+    ""django"",
+    ""boto3"",
+]  # these are some packages that need to be installed. without these the reproduction is the issue is much harder
+
+t0 = time.perf_counter()
+import_method(mods)
+dt = time.perf_counter() - t0
+print(f""{import_method.__name__} {dt*1e3:.2f}"")
+```
+Note: this script fails on my system about 1 in 4 times. Changing the modules imported (or the order, or the number of threads) can effect this.
+
+Modules that have given issues: `collections.abs`, `glob`, `sympy`, `django.utils.regex_helper`. This suggests it is a general issue, and not a particular package.
+
+
+### CPython versions tested on:
+
+CPython main branch
+
+### Operating systems tested on:
+
+Windows
+
+<!-- gh-linked-prs -->
+### Linked PRs
+* gh-130101
+<!-- /gh-linked-prs -->
+","['import sys\nfrom threading import Thread, Barrier\nfrom importlib import import_module, reload\nimport time\n\n\n# Setup threads\nt0 = time.perf_counter()\nnumber_of_threads = 8\nbarrier = Barrier(number_of_threads)\n\npmods = []\n\n\ndef work(ii):\n    # Method doing the actual import\n    barrier.wait()\n    while True:\n        try:\n            m = pmods.pop()\n            mod = import_module(m)\n            # print(f\'  {ii}: {m} done\')\n        except IndexError:\n            return\n\n\nworker_threads = []\nfor ii in range(number_of_threads):\n    worker_threads.append(Thread(target=work, args=[ii]))\n\ndt = time.perf_counter() - t0\nprint(f""setup threads {dt*1e3:.2f}"")\n\n\ndef parallel_import(modules: list[str]):\n    global pmods\n    pmods += modules\n    for t in worker_threads:\n        t.start()\n    for t in worker_threads:\n        t.join()\n\n\ndef seq_import(modules: list[str]):\n    for m in modules:\n        mod = import_module(m)\n\n\nimport_method = seq_import\nimport_method = parallel_import\n\nmods = [\n    ""abc"",\n    ""functools"",\n    ""weakref"",\n    ""linecache"",\n    ""glob"",\n    ""annotationlib"",\n    ""argparse"",\n    ""fnmatch"",\n    ""itertools"",\n    ""operator"",\n    ""string"",\n    ""re"",\n    ""collections"",\n    ""sqlite3"",\n    ""pathlib"",\n    ""urllib"",\n    ""typing"",\n    ""csv"",\n    ""uuid"",\n]\n\nmods += [\n    ""setuptools"",\n    ""sympy"",\n    ""django"",\n    ""boto3"",\n]  # these are some packages that need to be installed. without these the reproduction is the issue is much harder\n\nt0 = time.perf_counter()\nimport_method(mods)\ndt = time.perf_counter() - t0\nprint(f""{import_method.__name__} {dt*1e3:.2f}"")']","I'm seeing failures in the GIL-enabled build too (3.14.0a5 from uv). I made some slight modifications to the script to exit on error and set `sys.setswitchinterval` to a small value: 
+
+https://gist.github.com/colesbury/90493ef5b6f818bbbfde6922ffc8ea8a
+
+```
+setup threads 0.05
+  4: sympy failed: SymPy now depends on mpmath as an external library. See https://docs.sympy.org/latest/install.html#mpmath for more information.
+Traceback (most recent call last):
+  File ""/raid/sgross/tmp/.venv/lib/python3.14/site-packages/sympy/__init__.py"", line 22, in <module>
+    import mpmath
+  File ""/raid/sgross/tmp/.venv/lib/python3.14/site-packages/mpmath/__init__.py"", line 5, in <module>
+    from .ctx_fp import FPContext
+  File ""/raid/sgross/tmp/.venv/lib/python3.14/site-packages/mpmath/ctx_fp.py"", line 1, in <module>
+    from .ctx_base import StandardBaseContext
+  File ""/raid/sgross/tmp/.venv/lib/python3.14/site-packages/mpmath/ctx_base.py"", line 3, in <module>
+    from .libmp.backend import xrange
+  File ""/raid/sgross/tmp/.venv/lib/python3.14/site-packages/mpmath/libmp/__init__.py"", line 40, in <module>
+    from .libhyper import (NoConvergence, make_hyp_summator,
+    ...<3 lines>...
+      mpf_ellipk, mpc_ellipk, mpf_ellipe, mpc_ellipe)
+ModuleNotFoundError: No module named 'mpmath.libmp.libhyper'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File ""/raid/sgross/tmp/parallel_imports.py"", line 25, in work
+    mod = import_module(m)
+  File ""/private/home/sgross/.local/share/uv/python/cpython-3.14.0a5-linux-x86_64-gnu/lib/python3.14/importlib/__init__.py"", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""<frozen importlib._bootstrap>"", line 1386, in _gcd_import
+  File ""<frozen importlib._bootstrap>"", line 1359, in _find_and_load
+  File ""<frozen importlib._bootstrap>"", line 1330, in _find_and_load_unlocked
+  File ""<frozen importlib._bootstrap>"", line 935, in _load_unlocked
+  File ""<frozen importlib._bootstrap_external>"", line 762, in exec_module
+  File ""<frozen importlib._bootstrap>"", line 488, in _call_with_frames_removed
+  File ""/raid/sgross/tmp/.venv/lib/python3.14/site-packages/sympy/__init__.py"", line 24, in <module>
+    raise ImportError(""SymPy now depends on mpmath as an external library. ""
+    ""See https://docs.sympy.org/latest/install.html#mpmath for more information."")
+ImportError: SymPy now depends on mpmath as an external library. See https://docs.sympy.org/latest/install.html#mpmath for more information.
+```","['setup threads 0.05\n  4: sympy failed: SymPy now depends on mpmath as an external library. See https://docs.sympy.org/latest/install.html#mpmath for more information.\nTraceback (most recent call last):\n  File ""/raid/sgross/tmp/.venv/lib/python3.14/site-packages/sympy/__init__.py"", line 22, in <module>\n    import mpmath\n  File ""/raid/sgross/tmp/.venv/lib/python3.14/site-packages/mpmath/__init__.py"", line 5, in <module>\n    from .ctx_fp import FPContext\n  File ""/raid/sgross/tmp/.venv/lib/python3.14/site-packages/mpmath/ctx_fp.py"", line 1, in <module>\n    from .ctx_base import StandardBaseContext\n  File ""/raid/sgross/tmp/.venv/lib/python3.14/site-packages/mpmath/ctx_base.py"", line 3, in <module>\n    from .libmp.backend import xrange\n  File ""/raid/sgross/tmp/.venv/lib/python3.14/site-packages/mpmath/libmp/__init__.py"", line 40, in <module>\n    from .libhyper import (NoConvergence, make_hyp_summator,\n    ...<3 lines>...\n      mpf_ellipk, mpc_ellipk, mpf_ellipe, mpc_ellipe)\nModuleNotFoundError: No module named \'mpmath.libmp.libhyper\'\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File ""/raid/sgross/tmp/parallel_imports.py"", line 25, in work\n    mod = import_module(m)\n  File ""/private/home/sgross/.local/share/uv/python/cpython-3.14.0a5-linux-x86_64-gnu/lib/python3.14/importlib/__init__.py"", line 88, in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File ""<frozen importlib._bootstrap>"", line 1386, in _gcd_import\n  File ""<frozen importlib._bootstrap>"", line 1359, in _find_and_load\n  File ""<frozen importlib._bootstrap>"", line 1330, in _find_and_load_unlocked\n  File ""<frozen importlib._bootstrap>"", line 935, in _load_unlocked\n  File ""<frozen importlib._bootstrap_external>"", line 762, in exec_module\n  File ""<frozen importlib._bootstrap>"", line 488, in _call_with_frames_removed\n  File ""/raid/sgross/tmp/.venv/lib/python3.14/site-packages/sympy/__init__.py"", line 24, in <module>\n    raise ImportError(""SymPy now depends on mpmath as an external library. ""\n    ""See https://docs.sympy.org/latest/install.html#mpmath for more information."")\nImportError: SymPy now depends on mpmath as an external library. See https://docs.sympy.org/latest/install.html#mpmath for more information.']",['python'],github,https://github.com/python/cpython/issues/130094,{'repo': 'python/cpython'}
+"socket.CAN_RAW_ERR_FILTER is not defined in Python 3.11 and later
+
+# Bug report
+
+### Bug description:
+
+When trying to use `socket.CAN_RAW_ERR_FILTER` on a Debian bookworm system, running Python 3.11, an `AttributeError` is raised. This is because the value is no longer defined in `socket.py`/`_socket`.
+
+I have also tested in Python 3.13.1, and the issue is still present there.
+
+Typical usage of the value:
+```python
+import socket
+sock = socket.socket(socket.AF_CAN, socket.SOCK_RAW | socket.SOCK_NONBLOCK, socket.CAN_RAW)
+sock.bind((interface_name,))
+sock.setsockopt(socket.SOL_CAN_RAW, socket.CAN_RAW_ERR_FILTER, socket.CAN_ERR_MASK)
+```
+
+Minimized reproduction:
+```python
+import socket
+print(socket.CAN_RAW_ERR_FILTER)
+```
+
+Actual output:
+```
+Traceback (most recent call last):
+  File ""<python-input-1>"", line 1, in <module>
+    print(socket.CAN_RAW_ERR_FILTER)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'socket' has no attribute 'CAN_RAW_ERR_FILTER'. Did you mean: 'CAN_RAW_FILTER'?
+```
+
+Expected output (taken from Python 3.10.12):
+```
+2
+```
+
+Investigating the issue, it seems to have been introduced in Python 3.11 by the following PR: https://github.com/python/cpython/pull/30066
+In this PR, adding the `CAN_RAW_ERR_FILTER` value to `socket` was made conditional on defining `CAN_RAW_ERR_FILTER` during compilation. However, no change was made to actually define the value, thus it is never compiled for compatible systems.
+
+Note that the `CAN_RAW_ERR_FILTER` value is coming from `linux/can/raw.h` where is it defined as an `enum` value. Thus it will not be used by the C/C++ preprocessor to evaluate the `#ifdef CAN_RAW_ERR_FILTER` in `Modules/socketmodule.c`.
+
+Excerpt of relevant `raw.h` file from Debian Bookworm:
+```c
+/* for socket options affecting the socket (not the global system) */
+
+enum {
+	CAN_RAW_FILTER = 1,	/* set 0 .. n can_filter(s)          */
+	CAN_RAW_ERR_FILTER,	/* set filter for error frames       */
+	CAN_RAW_LOOPBACK,	/* local loopback (default:on)       */
+	CAN_RAW_RECV_OWN_MSGS,	/* receive my own msgs (default:off) */
+	CAN_RAW_FD_FRAMES,	/* allow CAN FD frames (default:off) */
+	CAN_RAW_JOIN_FILTERS,	/* all filters must match to trigger */
+	CAN_RAW_XL_FRAMES,	/* allow CAN XL frames (default:off) */
+};
+```
+
+### CPython versions tested on:
+
+3.11, 3.13
+
+### Operating systems tested on:
+
+Linux
+
+<!-- gh-linked-prs -->
+### Linked PRs
+* gh-129721
+<!-- /gh-linked-prs -->
+","['import socket\nsock = socket.socket(socket.AF_CAN, socket.SOCK_RAW | socket.SOCK_NONBLOCK, socket.CAN_RAW)\nsock.bind((interface_name,))\nsock.setsockopt(socket.SOL_CAN_RAW, socket.CAN_RAW_ERR_FILTER, socket.CAN_ERR_MASK)', 'import socket\nprint(socket.CAN_RAW_ERR_FILTER)', 'Traceback (most recent call last):\n  File ""<python-input-1>"", line 1, in <module>\n    print(socket.CAN_RAW_ERR_FILTER)\n          ^^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: module \'socket\' has no attribute \'CAN_RAW_ERR_FILTER\'. Did you mean: \'CAN_RAW_FILTER\'?', '2', '/* for socket options affecting the socket (not the global system) */\n\nenum {\n\tCAN_RAW_FILTER = 1,\t/* set 0 .. n can_filter(s)          */\n\tCAN_RAW_ERR_FILTER,\t/* set filter for error frames       */\n\tCAN_RAW_LOOPBACK,\t/* local loopback (default:on)       */\n\tCAN_RAW_RECV_OWN_MSGS,\t/* receive my own msgs (default:off) */\n\tCAN_RAW_FD_FRAMES,\t/* allow CAN FD frames (default:off) */\n\tCAN_RAW_JOIN_FILTERS,\t/* all filters must match to trigger */\n\tCAN_RAW_XL_FRAMES,\t/* allow CAN XL frames (default:off) */\n};']","I've tried to make a PR with a fix (https://github.com/python/cpython/pull/129721). This is my first time contributing, so I hope I've correctly followed the required procedures.",[],['python'],github,https://github.com/python/cpython/issues/129719,{'repo': 'python/cpython'}
+"Raw string of r'\' incorrectly being flagged as SyntaxError: unterminated string literal
+
+# Bug report
+
+### Bug description:
+
+```python
+# Add a code block here, if required
+Python 3.13.1 (tags/v3.13.1:0671451, Dec  3 2024, 19:06:28) [MSC v.1942 64 bit (AMD64)] on win32
+Type ""help"", ""copyright"", ""credits"" or ""license()"" for more information.
+r'\'
+SyntaxError: unterminated string literal (detected at line 1); perhaps you escaped the end quote?
+```
+The raw string of the single character '\' incorrectly gets flagged as an unterminated string when both opening and closing quotations are present.
+
+This also occurs in 3.12, 3.13; both on windows and linux.
+
+### CPython versions tested on:
+
+3.13
+
+### Operating systems tested on:
+
+Windows","['# Add a code block here, if required\nPython 3.13.1 (tags/v3.13.1:0671451, Dec  3 2024, 19:06:28) [MSC v.1942 64 bit (AMD64)] on win32\nType ""help"", ""copyright"", ""credits"" or ""license()"" for more information.\nr\'\\\'\nSyntaxError: unterminated string literal (detected at line 1); perhaps you escaped the end quote?']","I believe this is behaving as expected, as described in the docs ([Section 2.4.1.1 - Escape Sequences](https://docs.python.org/3/reference/lexical_analysis.html#escape-sequences)):
+
+> Even in a raw literal, quotes can be escaped with a backslash, but the backslash remains in the result; for example, r""\"""" is a valid string literal consisting of two characters: a backslash and a double quote; r""\"" is not a valid string literal (even a raw string cannot end in an odd number of backslashes). Specifically, a raw literal cannot end in a single backslash (since the backslash would escape the following quote character). Note also that a single backslash followed by a newline is interpreted as those two characters as part of the literal, not as a line continuation.",[],['python'],github,https://github.com/python/cpython/issues/129537,{'repo': 'python/cpython'}
+"pygettext: Wrapping to `width` is not implemented for msgids
+
+# Bug report
+
+### Bug description:
+
+It has been implemented for comments but not for msgids.
+
+Patch soon :-)
+
+
+### CPython versions tested on:
+
+CPython main branch
+
+### Operating systems tested on:
+
+Linux
+
+<!-- gh-linked-prs -->
+### Linked PRs
+* gh-130705
+<!-- /gh-linked-prs -->
+",[],"Well, it makes sense. But full compatibility with `xgettext` (or `pybabel`) should not be the goal.",[],['python'],github,https://github.com/python/cpython/issues/130703,{'repo': 'python/cpython'}
+"PGO amd64 build broken on Windows: ""Internal compiler error""
+
+# Bug report
+
+### Bug description:
+
+The Windows release build is failing for 3.14.0a5 for MSVC 14.42.34433 on AMD64:
+
+```
+Merging D:\a\1\b\bin\amd64\python314!1.pgc
+         D:\a\1\b\bin\amd64\python314!1.pgc: Used 25.9% (16346384 / 63139840) of total space reserved.  0.0% of the counts were dropped due to overflow.
+           Reading PGD file 1: D:\a\1\b\bin\amd64\python314.pgd
+            Creating library D:\a\1\b\bin\amd64\python314.lib and object D:\a\1\b\bin\amd64\python314.exp
+         Generating code
+         
+         0 of 0 ( 0.0%) original invalid call sites were matched.
+         0 new call sites were added.
+         261 of 16128 (  1.62%) profiled functions will be compiled for speed, and the rest of the functions will be compiled for size
+     3>D:\a\1\s\Python\ceval.c(774): fatal error C1001: Internal compiler error. [D:\a\1\s\PCbuild\pythoncore.vcxproj]
+         (compiler file 'D:\a\_work\1\s\src\vctools\Compiler\Utc\src\p2\main.cpp', line 253)
+          To work around this problem, try simplifying or changing the program near the locations listed above.
+         If possible please provide a repro here: https://developercommunity.visualstudio.com/ 
+         Please choose the Technical Support command on the Visual C++ 
+          Help menu, or open the Technical Support help file for more information
+           link!InvokeCompilerPass()+0xdab22
+           link!InvokeCompilerPass()+0xdab22
+           link!InvokeCompilerPass()+0xda884
+           link!InvokeCompilerPass()+0xd76f7
+           link!InvokeCompilerPass()+0xd75fc
+           link!InvokeCompilerPassW()+0xf25bd
+         
+     3>Done Building Project ""D:\a\1\s\PCbuild\pythoncore.vcxproj"" (Build target(s)) -- FAILED.
+     1>Done Building Project ""D:\a\1\s\PCbuild\pcbuild.proj"" (Build target(s)) -- FAILED.
+
+Build FAILED.
+
+       ""D:\a\1\s\PCbuild\pcbuild.proj"" (Build target) (1) ->
+       ""D:\a\1\s\PCbuild\pythoncore.vcxproj"" (Build target) (3) ->
+       (Link target) -> 
+         D:\a\1\s\Python\ceval.c(774): fatal error C1001: Internal compiler error. [D:\a\1\s\PCbuild\pythoncore.vcxproj]
+
+    0 Warning(s)
+    1 Error(s)
+```
+
+https://dev.azure.com/Python/cpython/_build/results?buildId=159104&view=logs&j=b9a7e24a-1d9b-5019-7703-8e6075dba299&t=339e554d-d1e3-55db-ce3b-12a33950552a
+
+### CPython versions tested on:
+
+3.14
+
+### Operating systems tested on:
+
+Windows
+
+<!-- gh-linked-prs -->
+### Linked PRs
+* gh-130005
+* gh-130009
+<!-- /gh-linked-prs -->
+","['Merging D:\\a\\1\\b\\bin\\amd64\\python314!1.pgc\n         D:\\a\\1\\b\\bin\\amd64\\python314!1.pgc: Used 25.9% (16346384 / 63139840) of total space reserved.  0.0% of the counts were dropped due to overflow.\n           Reading PGD file 1: D:\\a\\1\\b\\bin\\amd64\\python314.pgd\n            Creating library D:\\a\\1\\b\\bin\\amd64\\python314.lib and object D:\\a\\1\\b\\bin\\amd64\\python314.exp\n         Generating code\n         \n         0 of 0 ( 0.0%) original invalid call sites were matched.\n         0 new call sites were added.\n         261 of 16128 (  1.62%) profiled functions will be compiled for speed, and the rest of the functions will be compiled for size\n     3>D:\\a\\1\\s\\Python\\ceval.c(774): fatal error C1001: Internal compiler error. [D:\\a\\1\\s\\PCbuild\\pythoncore.vcxproj]\n         (compiler file \'D:\\a\\_work\\1\\s\\src\\vctools\\Compiler\\Utc\\src\\p2\\main.cpp\', line 253)\n          To work around this problem, try simplifying or changing the program near the locations listed above.\n         If possible please provide a repro here: https://developercommunity.visualstudio.com/ \n         Please choose the Technical Support command on the Visual C++ \n          Help menu, or open the Technical Support help file for more information\n           link!InvokeCompilerPass()+0xdab22\n           link!InvokeCompilerPass()+0xdab22\n           link!InvokeCompilerPass()+0xda884\n           link!InvokeCompilerPass()+0xd76f7\n           link!InvokeCompilerPass()+0xd75fc\n           link!InvokeCompilerPassW()+0xf25bd\n         \n     3>Done Building Project ""D:\\a\\1\\s\\PCbuild\\pythoncore.vcxproj"" (Build target(s)) -- FAILED.\n     1>Done Building Project ""D:\\a\\1\\s\\PCbuild\\pcbuild.proj"" (Build target(s)) -- FAILED.\n\nBuild FAILED.\n\n       ""D:\\a\\1\\s\\PCbuild\\pcbuild.proj"" (Build target) (1) ->\n       ""D:\\a\\1\\s\\PCbuild\\pythoncore.vcxproj"" (Build target) (3) ->\n       (Link target) -> \n         D:\\a\\1\\s\\Python\\ceval.c(774): fatal error C1001: Internal compiler error. [D:\\a\\1\\s\\PCbuild\\pythoncore.vcxproj]\n\n    0 Warning(s)\n    1 Error(s)']",Should be fine. The other issue can try guard it on a specific MSVC version.,[],['python'],github,https://github.com/python/cpython/issues/130004,{'repo': 'python/cpython'}
+"Issues with Decimal and three-argument pow()
+
+# Crash report
+
+1. Three-argument `pow()` with non-Decimal first argument does not work in the Python implementation.
+```pycon
+>>> from decimal import Decimal
+>>> pow(10, Decimal(2), 7)
+Decimal('2')
+>>> from _pydecimal import Decimal
+>>> pow(10, Decimal(2), 7)
+Traceback (most recent call last):
+  File ""<python-input-3>"", line 1, in <module>
+    pow(10, Decimal(2), 7)
+    ~~~^^^^^^^^^^^^^^^^^^^
+TypeError: unsupported operand type(s) for ** or pow(): 'int', 'Decimal', 'int'
+```
+But it works in the C implementation.
+
+2. Three-argument `pow()` with only Decimal third argument crashes in the C implementation.
+```pycon
+>>> from decimal import Decimal
+>>> pow(10, 2, Decimal(7))
+python: ./Modules/_decimal/_decimal.c:139: find_state_left_or_right: Assertion `mod != NULL' failed.
+Aborted (core dumped)
+```
+In the Python implementation it only raises TypeError, which is expected.
+
+
+<!-- gh-linked-prs -->
+### Linked PRs
+* gh-130237
+* gh-130246
+* gh-130247
+<!-- /gh-linked-prs -->
+","['>>> from decimal import Decimal\n>>> pow(10, Decimal(2), 7)\nDecimal(\'2\')\n>>> from _pydecimal import Decimal\n>>> pow(10, Decimal(2), 7)\nTraceback (most recent call last):\n  File ""<python-input-3>"", line 1, in <module>\n    pow(10, Decimal(2), 7)\n    ~~~^^^^^^^^^^^^^^^^^^^\nTypeError: unsupported operand type(s) for ** or pow(): \'int\', \'Decimal\', \'int\'', "">>> from decimal import Decimal\n>>> pow(10, 2, Decimal(7))\npython: ./Modules/_decimal/_decimal.c:139: find_state_left_or_right: Assertion `mod != NULL' failed.\nAborted (core dumped)""]","#130237 fixes the second issue. It was a regression in 3.13 (most likely introduced in #106078). In 3.12 and older, `pow(10, 2, Decimal(7))` evaluates to `Decimal('2')`.
+
+The first issue is older (it exists from the beginning) and much more complex.",[],['python'],github,https://github.com/python/cpython/issues/130230,{'repo': 'python/cpython'}
+"Data race in `_PyType_AllocNoTrack` in free threaded build
+
+# Bug report
+
+Seen in https://github.com/python/cpython/actions/runs/13272883082/job/37056243083?pr=130015
+
+```
+WARNING: ThreadSanitizer: data race (pid=17248)
+  Write of size 8 at 0x7fbca00601d0 by thread T2652:
+    #0 __tsan_memset <null> (python+0xdc7a8) (BuildId: cba02c45a3623f17982fb0d328c59833[13](https://github.com/python/cpython/actions/runs/13272883082/job/37056243083?pr=130015#step:14:14)92b589)
+    #1 _PyType_AllocNoTrack /home/runner/work/cpython/cpython/Objects/typeobject.c:2251:5 (python+0x37dd92) (BuildId: cba02c45a3623f17982fb0d328c598331392b589)
+    #2 PyType_GenericAlloc /home/runner/work/cpython/cpython/Objects/typeobject.c:2268:21 (python+0x37daf0) (BuildId: cba02c45a3623f17982fb0d328c598331392b589)
+    #3 PyType_GenericNew /home/runner/work/cpython/cpython/Objects/typeobject.c:2282:12 (python+0x37e1a8) (BuildId: cba02c45a3623f17982fb0d328c598331392b589)
+    #4 type_call /home/runner/work/cpython/cpython/Objects/typeobject.c:2183:11 (python+0x386be7) (BuildId: cba02c45a3623f17982fb0d328c598331392b589)
+    #5 _PyObject_MakeTpCall /home/runner/work/cpython/cpython/Objects/call.c:242:18 (python+0x24ee43) (BuildId: cba02c45a3623f17982fb0d328c598331392b589)
+    #6 _PyObject_VectorcallTstate /home/runner/work/cpython/cpython/./Include/internal/pycore_call.h:[16](https://github.com/python/cpython/actions/runs/13272883082/job/37056243083?pr=130015#step:14:17)5:16 (python+0x24e70b) (BuildId: cba02c45a3623f17982fb0d328c598331392b589)
+...
+
+Previous atomic read of size 8 at 0x7fbca00601d0 by thread T2651:
+    #0 _Py_atomic_load_uintptr_relaxed /home/runner/work/cpython/cpython/./Include/cpython/pyatomic_gcc.h:375:10 (python+0x382bea) (BuildId: cba02c45a3623f17982fb0d328c598331392b589)
+    #1 _Py_IsOwnedByCurrentThread /home/runner/work/cpython/cpython/./Include/object.h:252:12 (python+0x382bea)
+    #2 _Py_TryIncrefFast /home/runner/work/cpython/cpython/./Include/internal/pycore_object.h:560:9 (python+0x382bea)
+    #3 _Py_TryIncref /home/runner/work/cpython/cpython/./Include/internal/pycore_object.h:764:12 (python+0x382bea)
+    #4 _PyType_LookupRefAndVersion /home/runner/work/cpython/cpython/Objects/typeobject.c:5567:34 (python+0x382bea)
+    #5 _PyType_LookupRef /home/runner/work/cpython/cpython/Objects/typeobject.c:5659:12 (python+0x37e522) (BuildId: cba02c[45](https://github.com/python/cpython/actions/runs/13272883082/job/37056243083?pr=130015#step:14:46)a3623f17982fb0d328c598331392b589)
+    #6 _PyObject_GenericSetAttrWithDict /home/runner/work/cpython/cpython/Objects/object.c:1805:13 (python+0x3257d9) (BuildId: cba02c45a3623f17982fb0d328c598331392b589)
+...
+```
+
+`_PyType_AllocNoTrack()` zeroes out the the allocation, including reference count fields. The memset is not atomic and so can race with `_Py_TryIncref` or similar function.
+
+I think we should `memset()` on the data after the `PyObject` header. The `ob_type` and reference count fields are immediately initialized after the `memset` anyways by `_PyObject_Init` or `_PyObject_InitVar`.
+
+https://github.com/python/cpython/blob/ed816f1a7088f5e85d9b27ed5828408dff007d18/Objects/typeobject.c#L2248-L2262
+
+<!-- gh-linked-prs -->
+### Linked PRs
+* gh-130058
+<!-- /gh-linked-prs -->
+",['WARNING: ThreadSanitizer: data race (pid=17248)\n  Write of size 8 at 0x7fbca00601d0 by thread T2652:\n    #0 __tsan_memset <null> (python+0xdc7a8) (BuildId: cba02c45a3623f17982fb0d328c59833[13](https://github.com/python/cpython/actions/runs/13272883082/job/37056243083?pr=130015#step:14:14)92b589)\n    #1 _PyType_AllocNoTrack /home/runner/work/cpython/cpython/Objects/typeobject.c:2251:5 (python+0x37dd92) (BuildId: cba02c45a3623f17982fb0d328c598331392b589)\n    #2 PyType_GenericAlloc /home/runner/work/cpython/cpython/Objects/typeobject.c:2268:21 (python+0x37daf0) (BuildId: cba02c45a3623f17982fb0d328c598331392b589)\n    #3 PyType_GenericNew /home/runner/work/cpython/cpython/Objects/typeobject.c:2282:12 (python+0x37e1a8) (BuildId: cba02c45a3623f17982fb0d328c598331392b589)\n    #4 type_call /home/runner/work/cpython/cpython/Objects/typeobject.c:2183:11 (python+0x386be7) (BuildId: cba02c45a3623f17982fb0d328c598331392b589)\n    #5 _PyObject_MakeTpCall /home/runner/work/cpython/cpython/Objects/call.c:242:18 (python+0x24ee43) (BuildId: cba02c45a3623f17982fb0d328c598331392b589)\n    #6 _PyObject_VectorcallTstate /home/runner/work/cpython/cpython/./Include/internal/pycore_call.h:[16](https://github.com/python/cpython/actions/runs/13272883082/job/37056243083?pr=130015#step:14:17)5:16 (python+0x24e70b) (BuildId: cba02c45a3623f17982fb0d328c598331392b589)\n...\n\nPrevious atomic read of size 8 at 0x7fbca00601d0 by thread T2651:\n    #0 _Py_atomic_load_uintptr_relaxed /home/runner/work/cpython/cpython/./Include/cpython/pyatomic_gcc.h:375:10 (python+0x382bea) (BuildId: cba02c45a3623f17982fb0d328c598331392b589)\n    #1 _Py_IsOwnedByCurrentThread /home/runner/work/cpython/cpython/./Include/object.h:252:12 (python+0x382bea)\n    #2 _Py_TryIncrefFast /home/runner/work/cpython/cpython/./Include/internal/pycore_object.h:560:9 (python+0x382bea)\n    #3 _Py_TryIncref /home/runner/work/cpython/cpython/./Include/internal/pycore_object.h:764:12 (python+0x382bea)\n    #4 _PyType_LookupRefAndVersion /home/runner/work/cpython/cpython/Objects/typeobject.c:5567:34 (python+0x382bea)\n    #5 _PyType_LookupRef /home/runner/work/cpython/cpython/Objects/typeobject.c:5659:12 (python+0x37e522) (BuildId: cba02c[45](https://github.com/python/cpython/actions/runs/13272883082/job/37056243083?pr=130015#step:14:46)a3623f17982fb0d328c598331392b589)\n    #6 _PyObject_GenericSetAttrWithDict /home/runner/work/cpython/cpython/Objects/object.c:1805:13 (python+0x3257d9) (BuildId: cba02c45a3623f17982fb0d328c598331392b589)\n...'],I'll have a PR for this soon. I think we should adjust the memset unconditionally. It's not really a false positive.,[],['python'],github,https://github.com/python/cpython/issues/130019,{'repo': 'python/cpython'}
+"PEP 668: Ability to have relative paths instead of absolute paths
+
+# Feature or enhancement
+
+### Proposal:
+
+**What's the problem this feature will solve?**
+
+So I just started using PIP and got an ""externally managed enviornment"" error, I suspected this was due to me changing the file location so I ran ``echo $PATH`` and found that it was looking for my file in its old location and then I did ``which pip`` and found it was resorting to my system wide pip in ./local
+
+This is a problem for me, after doing some light searching online it appears pip uses exclusively hard coded absolute addresses and they can't be changed. That's possibly incorrect, but that's what I've read, hence the issue request.
+
+**Describe the solution you'd like**
+
+The ability to either change the PATH variables or set it to a relative one instead
+
+
+**Use Case**
+
+To explain my specific use case, I have files synced to a laptop and PC. The problem is VENV's break between the two because those devices obviously have to have different names, and thus they have different absolute paths.
+e.g.
+``home/laptop/pythonProjects/venv/source/bin/activate`` and ``home/pc/pythonProjects/venv/source/bin/activate``
+
+Allowing users to make PATHs relative, so the VENV would check a user selected folder, e.g. pythonProjects, allowing for compatibility between the two as the VENV would check ``pythonProjects/venv/source/bin/activate`` on both systems would be great.
+
+Still, the ability to be able to change PATH variables, which was extensively discussed here https://discuss.python.org/t/q-what-stops-a-venv-from-being-relocatable/57166, would be ideal if a suitable method could be found to implement this.
+
+Better yet, have VENV be intelligent enough to determine its location has changed and attempt to update its PATH variables automatically to match its new location.
+
+
+### Has this already been discussed elsewhere?
+
+No response given
+
+### Links to previous discussion of this feature:
+
+https://github.com/pypa/virtualenv/issues/2854
+https://github.com/pypa/pip/issues/13259",[],"If you are genuinely interested in having this feature, and are unwilling to accept the opinions being given to you by others, I strongly suggest that you try to implement your proposal in a copy of the stdlib venv module. I am personally pretty certain that it's not possible to do what you suggest, but rather than debate it, if you can show us working code then that will be a far more compelling argument than simply stating that ""there are solutions"".
+
+But honestly, I'd suggest that your time would be better spent learning how to use virtual environments the way they are intended to be used.",[],['python'],github,https://github.com/python/cpython/issues/130844,{'repo': 'python/cpython'}
+"[C API] Add PyBytesWriter API
+
+# Feature or enhancement
+
+### Proposal:
+
+I propose adding a PyBytesWriter API to create `bytes` objects.
+
+* Efficient API thanks to overallocation in `PyBytesWriter_Extend()` and usage of a ""small buffer"" of (around) 256 bytes
+* [Avoid creating incomplete/inconsistent](https://github.com/capi-workgroup/api-evolution/issues/36) `bytes` objects.
+* [Avoid mutating immutable](https://github.com/capi-workgroup/api-evolution/issues/20) `bytes`.
+
+API:
+
+```c
+typedef struct PyBytesWriter PyBytesWriter;
+
+PyAPI_FUNC(void*) PyBytesWriter_Create(
+    PyBytesWriter **writer,
+    Py_ssize_t alloc);
+PyAPI_FUNC(void) PyBytesWriter_Discard(
+    PyBytesWriter *writer);
+PyAPI_FUNC(PyObject*) PyBytesWriter_Finish(
+    PyBytesWriter *writer,
+    void *buf);
+
+PyAPI_FUNC(Py_ssize_t) PyBytesWriter_GetRemaining(
+    PyBytesWriter *writer,
+    void *buf);
+PyAPI_FUNC(void*) PyBytesWriter_Extend(
+    PyBytesWriter *writer,
+    void *buf,
+    Py_ssize_t extend);
+PyAPI_FUNC(void*) PyBytesWriter_WriteBytes(
+    PyBytesWriter *writer,
+    void *buf,
+    const void *bytes,
+    Py_ssize_t size);
+PyAPI_FUNC(void*) PyBytesWriter_Format(
+    PyBytesWriter *writer,
+    void *buf,
+    const char *format,
+    ...);
+```
+
+Simple example creating the string `b""abc""`:
+
+```c
+PyObject* create_abc(void)
+{
+    PyBytesWriter *writer;
+    char *str = PyBytesWriter_Create(&writer, 3);
+    if (writer == NULL) return NULL;
+
+    memcpy(str, ""abc"", 3);
+    str += 3;
+
+    return PyBytesWriter_Finish(writer, str);
+}
+```
+
+Example formatting an integer in decimal, the size is not known in advance::
+
+```c
+PyObject* format_int(int value)
+{
+    PyBytesWriter *writer;
+    char *str = PyBytesWriter_Create(&writer, 20);
+    if (writer == NULL) return NULL;
+
+    str += PyOS_snprintf(str, 20, ""%i"", value);
+
+    return PyBytesWriter_Finish(writer, str);
+}
+```
+
+Note: using `PyBytesWriter_Format()` would make this code simpler.
+
+Example using `PyBytesWriter_Extend()`,smilar to `bytes.center()` with a different API: spaces are number of whitespaces added to the left and to the right:
+
+```c
+static PyObject *
+byteswriter_center_example(Py_ssize_t spaces, char *str, Py_ssize_t str_size)
+{
+    PyBytesWriter *writer;
+    char *buf = PyBytesWriter_Create(&writer, spaces * 2);
+    if (buf == NULL) {
+        goto error;
+    }
+    assert(PyBytesWriter_GetRemaining(writer, buf) == spaces * 2);
+
+    // Add left spaces
+    memset(buf, ' ', spaces);
+    buf += spaces;
+    assert(PyBytesWriter_GetRemaining(writer, buf) == spaces);
+
+    // Copy string
+    buf = PyBytesWriter_Extend(writer, buf, str_size);
+    if (buf == NULL) {
+        goto error;
+    }
+    assert(PyBytesWriter_GetRemaining(writer, buf) == spaces + str_size);
+
+    memcpy(buf, str, str_size);
+    buf += str_size;
+    assert(PyBytesWriter_GetRemaining(writer, buf) == spaces);
+
+    // Add right spaces
+    memset(buf, ' ', spaces);
+    buf += spaces;
+    assert(PyBytesWriter_GetRemaining(writer, buf) == 0);
+
+    return PyBytesWriter_Finish(writer, buf);
+
+error:
+    PyBytesWriter_Discard(writer);
+    return NULL;
+}
+```
+
+### Has this already been discussed elsewhere?
+
+No response given
+
+### Links to previous discussion of this feature:
+
+My previous attempt in July/August 2024:
+
+* https://github.com/capi-workgroup/decisions/issues/39
+* https://github.com/python/cpython/pull/121726
+
+<!-- gh-linked-prs -->
+### Linked PRs
+* gh-129814
+<!-- /gh-linked-prs -->
+","['typedef struct PyBytesWriter PyBytesWriter;\n\nPyAPI_FUNC(void*) PyBytesWriter_Create(\n    PyBytesWriter **writer,\n    Py_ssize_t alloc);\nPyAPI_FUNC(void) PyBytesWriter_Discard(\n    PyBytesWriter *writer);\nPyAPI_FUNC(PyObject*) PyBytesWriter_Finish(\n    PyBytesWriter *writer,\n    void *buf);\n\nPyAPI_FUNC(Py_ssize_t) PyBytesWriter_GetRemaining(\n    PyBytesWriter *writer,\n    void *buf);\nPyAPI_FUNC(void*) PyBytesWriter_Extend(\n    PyBytesWriter *writer,\n    void *buf,\n    Py_ssize_t extend);\nPyAPI_FUNC(void*) PyBytesWriter_WriteBytes(\n    PyBytesWriter *writer,\n    void *buf,\n    const void *bytes,\n    Py_ssize_t size);\nPyAPI_FUNC(void*) PyBytesWriter_Format(\n    PyBytesWriter *writer,\n    void *buf,\n    const char *format,\n    ...);', 'PyObject* create_abc(void)\n{\n    PyBytesWriter *writer;\n    char *str = PyBytesWriter_Create(&writer, 3);\n    if (writer == NULL) return NULL;\n\n    memcpy(str, ""abc"", 3);\n    str += 3;\n\n    return PyBytesWriter_Finish(writer, str);\n}', 'PyObject* format_int(int value)\n{\n    PyBytesWriter *writer;\n    char *str = PyBytesWriter_Create(&writer, 20);\n    if (writer == NULL) return NULL;\n\n    str += PyOS_snprintf(str, 20, ""%i"", value);\n\n    return PyBytesWriter_Finish(writer, str);\n}', ""static PyObject *\nbyteswriter_center_example(Py_ssize_t spaces, char *str, Py_ssize_t str_size)\n{\n    PyBytesWriter *writer;\n    char *buf = PyBytesWriter_Create(&writer, spaces * 2);\n    if (buf == NULL) {\n        goto error;\n    }\n    assert(PyBytesWriter_GetRemaining(writer, buf) == spaces * 2);\n\n    // Add left spaces\n    memset(buf, ' ', spaces);\n    buf += spaces;\n    assert(PyBytesWriter_GetRemaining(writer, buf) == spaces);\n\n    // Copy string\n    buf = PyBytesWriter_Extend(writer, buf, str_size);\n    if (buf == NULL) {\n        goto error;\n    }\n    assert(PyBytesWriter_GetRemaining(writer, buf) == spaces + str_size);\n\n    memcpy(buf, str, str_size);\n    buf += str_size;\n    assert(PyBytesWriter_GetRemaining(writer, buf) == spaces);\n\n    // Add right spaces\n    memset(buf, ' ', spaces);\n    buf += spaces;\n    assert(PyBytesWriter_GetRemaining(writer, buf) == 0);\n\n    return PyBytesWriter_Finish(writer, buf);\n\nerror:\n    PyBytesWriter_Discard(writer);\n    return NULL;\n}""]","> Consider returning the writer, and having void **buf as an output argument, for consistency with other *_Create/*_Finish/*_Discard families.
+
+It would be inconvenient. If `&buf` is passed as `void**` with `char *buf`, it fails with a compiler error:
+
+`error: passing argument 1 of 'PyBytesWriter_Create' from incompatible pointer type [-Wincompatible-pointer-types]`
+
+You cannot pass `char**` as `void**` without an explicit cast to `void**`.
+
+Also, as written before, I'm afraid of type punning / strict aliasing issues if `void**` is used.",[],['python'],github,https://github.com/python/cpython/issues/129813,{'repo': 'python/cpython'}
+"Use `.. program::` and `.. option::` directives for modules with a documented CLI
+
+This is something (https://github.com/python/cpython/pull/129607#discussion_r1957162894) I thought of when reviewing #129607. It's usually fine not to have links, but once we begin adding new command-line options to specific modules (e.g., `http.server`), I think it'd be nice to be able to reference them using Sphinx.
+
+Using the `.. program::` directive also improves readability. For instance, compare https://docs.python.org/3/library/dis.html#command-line-interface with https://docs.python.org/3/library/http.server.html where the CLI documentation is at the end of the page, without even a dedicated section.
+
+I suggest going through the modules in https://github.com/python/cpython/issues/109435 and select those whose documentation page can be improved. By looking at the list, I found the following that can be improved:
+
+- [x] https://docs.python.org/dev/library/ensurepip.html#command-line-interface ([gh-130253](https://github.com/python/cpython/pull/130253))
+- [x] https://docs.python.org/dev/library/idle.html#command-line-usage ([gh-130278](https://github.com/python/cpython/pull/130278))
+- [x] https://docs.python.org/3/library/pdb.html (roughly at 10% of the page)
+- [x] https://docs.python.org/dev/library/profile.html#instant-user-s-manual (roughly at 20% of the page) ([gh-130314](https://github.com/python/cpython/pull/130314))
+- [ ] https://docs.python.org/dev/library/venv.html#creating-virtual-environments
+- [x] https://docs.python.org/3.14/library/webbrowser.html (section before https://docs.python.org/3.14/library/webbrowser.html#webbrowser.Error)
+
+`quopri` is both missing a documentation for its CLI so we can also add it. `base64` as well, but I think it's meant to be undocumented. More modules can be found in https://github.com/python/cpython/issues/93096 as well.
+
+For now, I suggest focusing on only those who already have a documented command-line interface and just improving them. Whether a module should have its `main()` function documented or not is out-of-scope for this issue.
+
+> [!IMPORTANT]
+> For those who want to work on the issue, please:
+>
+> - Read https://devguide.python.org/getting-started/pull-request-lifecycle/ before anything else.
+> - Read https://www.sphinx-doc.org/en/master/usage/domains/standard.html#directive-program to understand how to use the `program` directive.
+> - Select **one** module for which the documentation will be improved. It's easier to review and backport.
+> - Open a pull request with the following title: <code>gh-130160: use \`.. program::\` directive for documenting \`MODULE_NAME\` CLI</code>
+
+<!-- gh-linked-prs -->
+### Linked PRs
+* gh-130253
+* gh-130258
+* gh-130259
+* gh-130255
+* gh-130264
+* gh-130265
+* gh-130278
+* gh-130314
+* gh-130494
+* gh-130495
+* gh-130497 (closed to allow newcomers to pick it up)
+* gh-130699
+* gh-130745
+* gh-130746
+* gh-130995
+* gh-130996
+* gh-131003
+* gh-131004
+* gh-131010
+* gh-131013
+* gh-131014
+* gh-131034
+<!-- /gh-linked-prs -->
+",[],"Except for venv where we may not want to do this, and for http.server which is the reason why I initially created this issue, I don't think we need to do more.
+
+Exposing more CLIs likely requires a separate feature request for each module and deciding the fate of each existing CLI option such as those for self-testing should be tracked separately as well. So, once we're done with http.server and once we are done with venv as well, we will close this issue.
+
+As such I'll remove the easy label as there is no ""new"" task apart from the ongoing ones.",[],['python'],github,https://github.com/python/cpython/issues/130160,{'repo': 'python/cpython'}
+"Tidy up tier two
+
+Tier two has grown quite organically, and the two different implementations (the interpreter and JIT) have grown with it. In many places, we're repeating the same logic, or doing things in two or three different ways.
+
+I'd like clean up tier two a bit, in the process making the tier two interpreter and JIT more similar. We enter the JIT by making a call, so I don't see a very compelling reason why the tier two interpreter needs to do anything different.
+
+There are also some unused macros and labels lying around, and a few labels that are only used by one or two instructions. These can be cleaned up as well.
+
+I'll start by generally tidying things up in one PR, then moving the tier two interpreter out into its own function in a follow-up PR.
+
+<!-- gh-linked-prs -->
+### Linked PRs
+* gh-129710
+<!-- /gh-linked-prs -->
+",[],"Next, move the tier two interpreter into its own function with the same interface as the JIT.",[],['python'],github,https://github.com/python/cpython/issues/129709,{'repo': 'python/cpython'}
+"Path concatenation in pathlib do not allow for leading slash
+
+# Bug report
+
+### Bug description:
+
+Under Linux, a leading `/` in a string results in a funny situation:
+
+```python
+>>> p = Path(""/home/someone"")
+>>> l = p / 'b' / 'test'
+>>> print(l)
+/home/someone/b/test
+>>> l = p / 'b' / '/test'
+>>> print(l)
+/test
+```
+
+This may result in an unintended access relative to the root of a file system.
+
+### CPython versions tested on:
+
+3.12
+
+### Operating systems tested on:
+
+Linux","['>>> p = Path(""/home/someone"")\n>>> l = p / \'b\' / \'test\'\n>>> print(l)\n/home/someone/b/test\n>>> l = p / \'b\' / \'/test\'\n>>> print(l)\n/test']","This is documented behaviour, see https://docs.python.org/3/library/pathlib.html#operators:
+
+> The slash operator helps create child paths, like [os.path.join()](https://docs.python.org/3/library/os.path.html#os.path.join). **If the argument is an absolute path, the previous path is ignored.**",[],['python'],github,https://github.com/python/cpython/issues/130889,{'repo': 'python/cpython'}
+"Weakly Referenceable Object
+
+Is there a public API that allows me to check whether an object is **weakly referenceable**? I know that you can check the value of the `tp_weaklistoffset` slot or check for the `Py_TPFLAGS_MANAGED_WEAKREF` flag to get the answer, but what about having something like:
+- `PyObject_WeaklyReferenceable` or
+- `PyWeakref_Referenceable`
+
+or whatever name fits the situation? This would encapsulate things and keep the extension module developer away from the internal stuff.
+
+https://discuss.python.org/t/weakly-referencable-object/80248",[],"I mean that this is a documentation problem in the sense that we don't have any note about detecting whether an object is weakly referenceable or not, I think adding that could be a good idea. But there's no reason we need a new API, because everything to detect that is *already* public.
+
+If you're worried about ""type object internals"" (`tp_weakreflistoffset` is again, public, but let's go into a hypothetical situation with the limited API), then you could just check it the same way you would in Python: `hasattr(obj, ""__weakref__"")` or `PyObject_HasAttrString(obj, ""__weakref__"")`. If you really want, you could macro it and get your API:
+
+```c
+#define PyObject_WeaklyReferenceable(op) PyObject_HasAttrString(op, ""__weakref__"")
+```","['#define PyObject_WeaklyReferenceable(op) PyObject_HasAttrString(op, ""__weakref__"")']",['python'],github,https://github.com/python/cpython/issues/130062,{'repo': 'python/cpython'}
+"Implement stack overflow protection for webassembly
+
+Implementing stack overflow protection for webassembly is tricky, as there are two stacks:
+1. The hidden webassembly stack
+2. The stack used for C stack objects that can have their address taken
+
+We need to avoid overflowing either. It generally seems that the first stack is the one most vulnerable to overflow, so perhaps a simple counter would work. 
+
+@brettcannon 
+@hoodmane
+ ",[],"If the spilled stack ever overflows, we can just recompile and make it bigger whereas the wasm stack size is determined by the runtime and can't easily be made bigger. At least for Emscripten run in the browser. Perhaps with wasmtime we can easily ask the runtime to make the stack bigger. ",[],['python'],github,https://github.com/python/cpython/issues/130397,{'repo': 'python/cpython'}
+"Pygettext: Support translator comments
+
+# Feature or enhancement
+
+### Proposal:
+
+Most gettext extraction tools such as xgettext or pybabel allow one to extract additional comments written by
+the programmer which are meant to be read by the translator. These are prefixed with `#.` in the PO file.
+
+The comments typically look something like this:
+```python
+# i18n: Translator comment
+_('foo')
+```
+
+This can be extracted with e.g. xgettext using `xgettext --add-comments=i18n`:
+
+```po
+#. i18n: Translator comment
+msgid ""foo""
+msgstr """"
+```
+
+Since this is a pretty widely used feature I propose we add this to pygettext as well.
+
+### Has this already been discussed elsewhere?
+
+This is a minor feature, which does not need previous discussion elsewhere
+
+### Links to previous discussion of this feature:
+
+_No response_
+
+<!-- gh-linked-prs -->
+### Linked PRs
+* gh-130061
+<!-- /gh-linked-prs -->
+","[""# i18n: Translator comment\n_('foo')"", '#. i18n: Translator comment\nmsgid ""foo""\nmsgstr """"']",This is a duplicate of https://github.com/python/cpython/issues/42361. I would close the older one in favor of this.,[],['python'],github,https://github.com/python/cpython/issues/130057,{'repo': 'python/cpython'}
+"test_calendar and test_pdb always fail in non-English locale
+
+Example of the `test_calendar` output for locale uk_UA.UTF-8:
+```pytb
+======================================================================
+FAIL: test_option_encoding (test.test_calendar.CommandLineTestCase.test_option_encoding)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File ""/home/serhiy/py/cpython/Lib/test/test_calendar.py"", line 1035, in test_option_encoding
+    self.assertEqual(output, result_2004_text.encode('utf-16-le'))
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: b' \x[224 chars] \x00 \x00A\x04V\x04G\x04=\x04O\x04 \x00 \x00 [10163 chars]\x00' != b' \x[224 chars] \x00J\x00a\x00n\x00u\x00a\x00r\x00y\x00 \x00 [10163 chars]\x00'
+
+======================================================================
+FAIL: test_option_lines (test.test_calendar.CommandLineTestCase.test_option_lines)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File ""/home/serhiy/py/cpython/Lib/test/test_calendar.py"", line 1074, in test_option_lines
+    self.assertIn(conv('December\n\nMo Tu We'), output)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: b'December\n\nMo Tu We' not found in b'                                  2004\n\n\n\n       \xd1\x81\xd1\x96\xd1\x87\xd0\xbd\xd1\x8f                     \xd0\xbb\xd1\x8e\xd1\x82\xd0\xbe\xd0\xb3\xd0\xbe                   \xd0\xb1\xd0\xb5\xd1\x80\xd0\xb5\xd0\xb7\xd0\xbd\xd1\x8f\n\n\xd0\xbf\xd0\xbd \xd0\xb2\xd1\x82 \xd1\x81\xd1\x80 \xd1\x87\xd1\x82 \xd0\xbf\xd1\x82 \xd1\x81\xd0\xb1 \xd0\xbd\xd0\xb4      \xd0\xbf\xd0\xbd \xd0\xb2\xd1\x82 \xd1\x81\xd1\x80 \xd1\x87\xd1\x82 \xd0\xbf\xd1\x82 \xd1\x81\xd0\xb1 \xd0\xbd\xd0\xb4      \xd0\xbf\xd0\xbd \xd0\xb2\xd1\x82 \xd1\x81\xd1\x80 \xd1\x87\xd1\x82 \xd0\xbf\xd1\x82 \xd1\x81\xd0\xb1 \xd0\xbd\xd0\xb4\n\n          1  2  3  4                         1       1  2  3  4  5  6  7\n\n 5  6  7  8  9 10 11       2  3  4  5  6  7  8       8  9 10 11 12 13 14\n\n12 13 14 15 16 17 18       9 10 11 12 13 14 15      15 16 17 18 19 20 21\n\n19 20 21 22 23 24 25      16 17 18 19 20 21 22      22 23 24 25 26 27 28\n\n26 27 28 29 30 31         23 24 25 26 27 28 29      29 30 31\n\n\n\n       \xd0\xba\xd0\xb2\xd1\x96\xd1\x82\xd0\xbd\xd1\x8f                    \xd1\x82\xd1\x80\xd0\xb0\xd0\xb2\xd0\xbd\xd1\x8f                    \xd1\x87\xd0\xb5\xd1\x80\xd0\xb2\xd0\xbd\xd1\x8f\n\n\xd0\xbf\xd0\xbd \xd0\xb2\xd1\x82 \xd1\x81\xd1\x80 \xd1\x87\xd1\x82 \xd0\xbf\xd1\x82 \xd1\x81\xd0\xb1 \xd0\xbd\xd0\xb4      \xd0\xbf\xd0\xbd \xd0\xb2\xd1\x82 \xd1\x81\xd1\x80 \xd1\x87\xd1\x82 \xd0\xbf\xd1\x82 \xd1\x81\xd0\xb1 \xd0\xbd\xd0\xb4      \xd0\xbf\xd0\xbd \xd0\xb2\xd1\x82 \xd1\x81\xd1\x80 \xd1\x87\xd1\x82 \xd0\xbf\xd1\x82 \xd1\x81\xd0\xb1 \xd0\xbd\xd0\xb4\n\n          1  2  3  4                      1  2          1  2  3  4  5  6\n\n 5  6  7  8  9 10 11       3  4  5  6  7  8  9       7  8  9 10 11 12 13\n\n12 13 14 15 16 17 18      10 11 12 13 14 15 16      14 15 16 17 18 19 20\n\n19 20 21 22 23 24 25      17 18 19 20 21 22 23      21 22 23 24 25 26 27\n\n26 27 28 29 30            24 25 26 27 28 29 30      28 29 30\n\n                          31\n\n\n\n       \xd0\xbb\xd0\xb8\xd0\xbf\xd0\xbd\xd1\x8f                     \xd1\x81\xd0\xb5\xd1\x80\xd0\xbf\xd0\xbd\xd1\x8f                   \xd0\xb2\xd0\xb5\xd1\x80\xd0\xb5\xd1\x81\xd0\xbd\xd1\x8f\n\n\xd0\xbf\xd0\xbd \xd0\xb2\xd1\x82 \xd1\x81\xd1\x80 \xd1\x87\xd1\x82 \xd0\xbf\xd1\x82 \xd1\x81\xd0\xb1 \xd0\xbd\xd0\xb4      \xd0\xbf\xd0\xbd \xd0\xb2\xd1\x82 \xd1\x81\xd1\x80 \xd1\x87\xd1\x82 \xd0\xbf\xd1\x82 \xd1\x81\xd0\xb1 \xd0\xbd\xd0\xb4      \xd0\xbf\xd0\xbd \xd0\xb2\xd1\x82 \xd1\x81\xd1\x80 \xd1\x87\xd1\x82 \xd0\xbf\xd1\x82 \xd1\x81\xd0\xb1 \xd0\xbd\xd0\xb4\n\n          1  2  3  4                         1             1  2  3  4  5\n\n 5  6  7  8  9 10 11       2  3  4  5  6  7  8       6  7  8  9 10 11 12\n\n12 13 14 15 16 17 18       9 10 11 12 13 14 15      13 14 15 16 17 18 19\n\n19 20 21 22 23 24 25      16 17 18 19 20 21 22      20 21 22 23 24 25 26\n\n26 27 28 29 30 31         23 24 25 26 27 28 29      27 28 29 30\n\n                          30 31\n\n\n\n       \xd0\xb6\xd0\xbe\xd0\xb2\xd1\x82\xd0\xbd\xd1\x8f                  \xd0\xbb\xd0\xb8\xd1\x81\xd1\x82\xd0\xbe\xd0\xbf\xd0\xb0\xd0\xb4\xd0\xb0                   \xd0\xb3\xd1\x80\xd1\x83\xd0\xb4\xd0\xbd\xd1\x8f\n\n\xd0\xbf\xd0\xbd \xd0\xb2\xd1\x82 \xd1\x81\xd1\x80 \xd1\x87\xd1\x82 \xd0\xbf\xd1\x82 \xd1\x81\xd0\xb1 \xd0\xbd\xd0\xb4      \xd0\xbf\xd0\xbd \xd0\xb2\xd1\x82 \xd1\x81\xd1\x80 \xd1\x87\xd1\x82 \xd0\xbf\xd1\x82 \xd1\x81\xd0\xb1 \xd0\xbd\xd0\xb4      \xd0\xbf\xd0\xbd \xd0\xb2\xd1\x82 \xd1\x81\xd1\x80 \xd1\x87\xd1\x82 \xd0\xbf\xd1\x82 \xd1\x81\xd0\xb1 \xd0\xbd\xd0\xb4\n\n             1  2  3       1  2  3  4  5  6  7             1  2  3  4  5\n\n 4  5  6  7  8  9 10       8  9 10 11 12 13 14       6  7  8  9 10 11 12\n\n11 12 13 14 15 16 17      15 16 17 18 19 20 21      13 14 15 16 17 18 19\n\n18 19 20 21 22 23 24      22 23 24 25 26 27 28      20 21 22 23 24 25 26\n\n25 26 27 28 29 30 31      29 30                     27 28 29 30 31\n\n'
+
+======================================================================
+FAIL: test_option_months (test.test_calendar.CommandLineTestCase.test_option_months)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File ""/home/serhiy/py/cpython/Lib/test/test_calendar.py"", line 1090, in test_option_months
+    self.assertIn(conv('\nMo Tu We Th Fr Sa Su\n'), output)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: b'\nMo Tu We Th Fr Sa Su\n' not found in b'        2004\n\n       \xd1\x81\xd1\x96\xd1\x87\xd0\xbd\xd1\x8f\n\xd0\xbf\xd0\xbd \xd0\xb2\xd1\x82 \xd1\x81\xd1\x80 \xd1\x87\xd1\x82 \xd0\xbf\xd1\x82 \xd1\x81\xd0\xb1 \xd0\xbd\xd0\xb4\n          1  2  3  4\n 5  6  7  8  9 10 11\n12 13 14 15 16 17 18\n19 20 21 22 23 24 25\n26 27 28 29 30 31\n\n       \xd0\xbb\xd1\x8e\xd1\x82\xd0\xbe\xd0\xb3\xd0\xbe\n\xd0\xbf\xd0\xbd \xd0\xb2\xd1\x82 \xd1\x81\xd1\x80 \xd1\x87\xd1\x82 \xd0\xbf\xd1\x82 \xd1\x81\xd0\xb1 \xd0\xbd\xd0\xb4\n                   1\n 2  3  4  5  6  7  8\n 9 10 11 12 13 14 15\n16 17 18 19 20 21 22\n23 24 25 26 27 28 29\n\n      \xd0\xb1\xd0\xb5\xd1\x80\xd0\xb5\xd0\xb7\xd0\xbd\xd1\x8f\n\xd0\xbf\xd0\xbd \xd0\xb2\xd1\x82 \xd1\x81\xd1\x80 \xd1\x87\xd1\x82 \xd0\xbf\xd1\x82 \xd1\x81\xd0\xb1 \xd0\xbd\xd0\xb4\n 1  2  3  4  5  6  7\n 8  9 10 11 12 13 14\n15 16 17 18 19 20 21\n22 23 24 25 26 27 28\n29 30 31\n\n       \xd0\xba\xd0\xb2\xd1\x96\xd1\x82\xd0\xbd\xd1\x8f\n\xd0\xbf\xd0\xbd \xd0\xb2\xd1\x82 \xd1\x81\xd1\x80 \xd1\x87\xd1\x82 \xd0\xbf\xd1\x82 \xd1\x81\xd0\xb1 \xd0\xbd\xd0\xb4\n          1  2  3  4\n 5  6  7  8  9 10 11\n12 13 14 15 16 17 18\n19 20 21 22 23 24 25\n26 27 28 29 30\n\n       \xd1\x82\xd1\x80\xd0\xb0\xd0\xb2\xd0\xbd\xd1\x8f\n\xd0\xbf\xd0\xbd \xd0\xb2\xd1\x82 \xd1\x81\xd1\x80 \xd1\x87\xd1\x82 \xd0\xbf\xd1\x82 \xd1\x81\xd0\xb1 \xd0\xbd\xd0\xb4\n                1  2\n 3  4  5  6  7  8  9\n10 11 12 13 14 15 16\n17 18 19 20 21 22 23\n24 25 26 27 28 29 30\n31\n\n       \xd1\x87\xd0\xb5\xd1\x80\xd0\xb2\xd0\xbd\xd1\x8f\n\xd0\xbf\xd0\xbd \xd0\xb2\xd1\x82 \xd1\x81\xd1\x80 \xd1\x87\xd1\x82 \xd0\xbf\xd1\x82 \xd1\x81\xd0\xb1 \xd0\xbd\xd0\xb4\n    1  2  3  4  5  6\n 7  8  9 10 11 12 13\n14 15 16 17 18 19 20\n21 22 23 24 25 26 27\n28 29 30\n\n       \xd0\xbb\xd0\xb8\xd0\xbf\xd0\xbd\xd1\x8f\n\xd0\xbf\xd0\xbd \xd0\xb2\xd1\x82 \xd1\x81\xd1\x80 \xd1\x87\xd1\x82 \xd0\xbf\xd1\x82 \xd1\x81\xd0\xb1 \xd0\xbd\xd0\xb4\n          1  2  3  4\n 5  6  7  8  9 10 11\n12 13 14 15 16 17 18\n19 20 21 22 23 24 25\n26 27 28 29 30 31\n\n       \xd1\x81\xd0\xb5\xd1\x80\xd0\xbf\xd0\xbd\xd1\x8f\n\xd0\xbf\xd0\xbd \xd0\xb2\xd1\x82 \xd1\x81\xd1\x80 \xd1\x87\xd1\x82 \xd0\xbf\xd1\x82 \xd1\x81\xd0\xb1 \xd0\xbd\xd0\xb4\n                   1\n 2  3  4  5  6  7  8\n 9 10 11 12 13 14 15\n16 17 18 19 20 21 22\n23 24 25 26 27 28 29\n30 31\n\n      \xd0\xb2\xd0\xb5\xd1\x80\xd0\xb5\xd1\x81\xd0\xbd\xd1\x8f\n\xd0\xbf\xd0\xbd \xd0\xb2\xd1\x82 \xd1\x81\xd1\x80 \xd1\x87\xd1\x82 \xd0\xbf\xd1\x82 \xd1\x81\xd0\xb1 \xd0\xbd\xd0\xb4\n       1  2  3  4  5\n 6  7  8  9 10 11 12\n13 14 15 16 17 18 19\n20 21 22 23 24 25 26\n27 28 29 30\n\n       \xd0\xb6\xd0\xbe\xd0\xb2\xd1\x82\xd0\xbd\xd1\x8f\n\xd0\xbf\xd0\xbd \xd0\xb2\xd1\x82 \xd1\x81\xd1\x80 \xd1\x87\xd1\x82 \xd0\xbf\xd1\x82 \xd1\x81\xd0\xb1 \xd0\xbd\xd0\xb4\n             1  2  3\n 4  5  6  7  8  9 10\n11 12 13 14 15 16 17\n18 19 20 21 22 23 24\n25 26 27 28 29 30 31\n\n     \xd0\xbb\xd0\xb8\xd1\x81\xd1\x82\xd0\xbe\xd0\xbf\xd0\xb0\xd0\xb4\xd0\xb0\n\xd0\xbf\xd0\xbd \xd0\xb2\xd1\x82 \xd1\x81\xd1\x80 \xd1\x87\xd1\x82 \xd0\xbf\xd1\x82 \xd1\x81\xd0\xb1 \xd0\xbd\xd0\xb4\n 1  2  3  4  5  6  7\n 8  9 10 11 12 13 14\n15 16 17 18 19 20 21\n22 23 24 25 26 27 28\n29 30\n\n       \xd0\xb3\xd1\x80\xd1\x83\xd0\xb4\xd0\xbd\xd1\x8f\n\xd0\xbf\xd0\xbd \xd0\xb2\xd1\x82 \xd1\x81\xd1\x80 \xd1\x87\xd1\x82 \xd0\xbf\xd1\x82 \xd1\x81\xd0\xb1 \xd0\xbd\xd0\xb4\n       1  2  3  4  5\n 6  7  8  9 10 11 12\n13 14 15 16 17 18 19\n20 21 22 23 24 25 26\n27 28 29 30 31\n'
+
+======================================================================
+FAIL: test_option_spacing (test.test_calendar.CommandLineTestCase.test_option_spacing)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File ""/home/serhiy/py/cpython/Lib/test/test_calendar.py"", line 1082, in test_option_spacing
+    self.assertIn(b'Su        Mo', output)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: b'Su        Mo' not found in b'                                    2004\n\n       \xd1\x81\xd1\x96\xd1\x87\xd0\xbd\xd1\x8f                       \xd0\xbb\xd1\x8e\xd1\x82\xd0\xbe\xd0\xb3\xd0\xbe                     \xd0\xb1\xd0\xb5\xd1\x80\xd0\xb5\xd0\xb7\xd0\xbd\xd1\x8f\n\xd0\xbf\xd0\xbd \xd0\xb2\xd1\x82 \xd1\x81\xd1\x80 \xd1\x87\xd1\x82 \xd0\xbf\xd1\x82 \xd1\x81\xd0\xb1 \xd0\xbd\xd0\xb4        \xd0\xbf\xd0\xbd \xd0\xb2\xd1\x82 \xd1\x81\xd1\x80 \xd1\x87\xd1\x82 \xd0\xbf\xd1\x82 \xd1\x81\xd0\xb1 \xd0\xbd\xd0\xb4        \xd0\xbf\xd0\xbd \xd0\xb2\xd1\x82 \xd1\x81\xd1\x80 \xd1\x87\xd1\x82 \xd0\xbf\xd1\x82 \xd1\x81\xd0\xb1 \xd0\xbd\xd0\xb4\n          1  2  3  4                           1         1  2  3  4  5  6  7\n 5  6  7  8  9 10 11         2  3  4  5  6  7  8         8  9 10 11 12 13 14\n12 13 14 15 16 17 18         9 10 11 12 13 14 15        15 16 17 18 19 20 21\n19 20 21 22 23 24 25        16 17 18 19 20 21 22        22 23 24 25 26 27 28\n26 27 28 29 30 31           23 24 25 26 27 28 29        29 30 31\n\n       \xd0\xba\xd0\xb2\xd1\x96\xd1\x82\xd0\xbd\xd1\x8f                      \xd1\x82\xd1\x80\xd0\xb0\xd0\xb2\xd0\xbd\xd1\x8f                      \xd1\x87\xd0\xb5\xd1\x80\xd0\xb2\xd0\xbd\xd1\x8f\n\xd0\xbf\xd0\xbd \xd0\xb2\xd1\x82 \xd1\x81\xd1\x80 \xd1\x87\xd1\x82 \xd0\xbf\xd1\x82 \xd1\x81\xd0\xb1 \xd0\xbd\xd0\xb4        \xd0\xbf\xd0\xbd \xd0\xb2\xd1\x82 \xd1\x81\xd1\x80 \xd1\x87\xd1\x82 \xd0\xbf\xd1\x82 \xd1\x81\xd0\xb1 \xd0\xbd\xd0\xb4        \xd0\xbf\xd0\xbd \xd0\xb2\xd1\x82 \xd1\x81\xd1\x80 \xd1\x87\xd1\x82 \xd0\xbf\xd1\x82 \xd1\x81\xd0\xb1 \xd0\xbd\xd0\xb4\n          1  2  3  4                        1  2            1  2  3  4  5  6\n 5  6  7  8  9 10 11         3  4  5  6  7  8  9         7  8  9 10 11 12 13\n12 13 14 15 16 17 18        10 11 12 13 14 15 16        14 15 16 17 18 19 20\n19 20 21 22 23 24 25        17 18 19 20 21 22 23        21 22 23 24 25 26 27\n26 27 28 29 30              24 25 26 27 28 29 30        28 29 30\n                            31\n\n       \xd0\xbb\xd0\xb8\xd0\xbf\xd0\xbd\xd1\x8f                       \xd1\x81\xd0\xb5\xd1\x80\xd0\xbf\xd0\xbd\xd1\x8f                     \xd0\xb2\xd0\xb5\xd1\x80\xd0\xb5\xd1\x81\xd0\xbd\xd1\x8f\n\xd0\xbf\xd0\xbd \xd0\xb2\xd1\x82 \xd1\x81\xd1\x80 \xd1\x87\xd1\x82 \xd0\xbf\xd1\x82 \xd1\x81\xd0\xb1 \xd0\xbd\xd0\xb4        \xd0\xbf\xd0\xbd \xd0\xb2\xd1\x82 \xd1\x81\xd1\x80 \xd1\x87\xd1\x82 \xd0\xbf\xd1\x82 \xd1\x81\xd0\xb1 \xd0\xbd\xd0\xb4        \xd0\xbf\xd0\xbd \xd0\xb2\xd1\x82 \xd1\x81\xd1\x80 \xd1\x87\xd1\x82 \xd0\xbf\xd1\x82 \xd1\x81\xd0\xb1 \xd0\xbd\xd0\xb4\n          1  2  3  4                           1               1  2  3  4  5\n 5  6  7  8  9 10 11         2  3  4  5  6  7  8         6  7  8  9 10 11 12\n12 13 14 15 16 17 18         9 10 11 12 13 14 15        13 14 15 16 17 18 19\n19 20 21 22 23 24 25        16 17 18 19 20 21 22        20 21 22 23 24 25 26\n26 27 28 29 30 31           23 24 25 26 27 28 29        27 28 29 30\n                            30 31\n\n       \xd0\xb6\xd0\xbe\xd0\xb2\xd1\x82\xd0\xbd\xd1\x8f                    \xd0\xbb\xd0\xb8\xd1\x81\xd1\x82\xd0\xbe\xd0\xbf\xd0\xb0\xd0\xb4\xd0\xb0                     \xd0\xb3\xd1\x80\xd1\x83\xd0\xb4\xd0\xbd\xd1\x8f\n\xd0\xbf\xd0\xbd \xd0\xb2\xd1\x82 \xd1\x81\xd1\x80 \xd1\x87\xd1\x82 \xd0\xbf\xd1\x82 \xd1\x81\xd0\xb1 \xd0\xbd\xd0\xb4        \xd0\xbf\xd0\xbd \xd0\xb2\xd1\x82 \xd1\x81\xd1\x80 \xd1\x87\xd1\x82 \xd0\xbf\xd1\x82 \xd1\x81\xd0\xb1 \xd0\xbd\xd0\xb4        \xd0\xbf\xd0\xbd \xd0\xb2\xd1\x82 \xd1\x81\xd1\x80 \xd1\x87\xd1\x82 \xd0\xbf\xd1\x82 \xd1\x81\xd0\xb1 \xd0\xbd\xd0\xb4\n             1  2  3         1  2  3  4  5  6  7               1  2  3  4  5\n 4  5  6  7  8  9 10         8  9 10 11 12 13 14         6  7  8  9 10 11 12\n11 12 13 14 15 16 17        15 16 17 18 19 20 21        13 14 15 16 17 18 19\n18 19 20 21 22 23 24        22 23 24 25 26 27 28        20 21 22 23 24 25 26\n25 26 27 28 29 30 31        29 30                       27 28 29 30 31\n'
+
+======================================================================
+FAIL: test_option_type (test.test_calendar.CommandLineTestCase.test_option_type)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File ""/home/serhiy/py/cpython/Lib/test/test_calendar.py"", line 1098, in test_option_type
+    self.assertEqual(output, conv(result_2004_text))
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: b'   [40 chars]      \xd1\x81\xd1\x96\xd1\x87\xd0\xbd\xd1\x8f[3724 chars]31\n' != b'   [40 chars]     January                   February       [2023 chars]31\n'
+
+======================================================================
+FAIL: test_option_width (test.test_calendar.CommandLineTestCase.test_option_width)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File ""/home/serhiy/py/cpython/Lib/test/test_calendar.py"", line 1066, in test_option_width
+    self.assertIn(b'Mon Tue Wed Thu Fri Sat Sun', output)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: b'Mon Tue Wed Thu Fri Sat Sun' not found in b'                                             2004\n\n           \xd1\x81\xd1\x96\xd1\x87\xd0\xbd\xd1\x8f                            \xd0\xbb\xd1\x8e\xd1\x82\xd0\xbe\xd0\xb3\xd0\xbe                          \xd0\xb1\xd0\xb5\xd1\x80\xd0\xb5\xd0\xb7\xd0\xbd\xd1\x8f\n \xd0\xbf\xd0\xbd  \xd0\xb2\xd1\x82  \xd1\x81\xd1\x80  \xd1\x87\xd1\x82  \xd0\xbf\xd1\x82  \xd1\x81\xd0\xb1  \xd0\xbd\xd0\xb4       \xd0\xbf\xd0\xbd  \xd0\xb2\xd1\x82  \xd1\x81\xd1\x80  \xd1\x87\xd1\x82  \xd0\xbf\xd1\x82  \xd1\x81\xd0\xb1  \xd0\xbd\xd0\xb4       \xd0\xbf\xd0\xbd  \xd0\xb2\xd1\x82  \xd1\x81\xd1\x80  \xd1\x87\xd1\x82  \xd0\xbf\xd1\x82  \xd1\x81\xd0\xb1  \xd0\xbd\xd0\xb4\n              1   2   3   4                                1        1   2   3   4   5   6   7\n  5   6   7   8   9  10  11        2   3   4   5   6   7   8        8   9  10  11  12  13  14\n 12  13  14  15  16  17  18        9  10  11  12  13  14  15       15  16  17  18  19  20  21\n 19  20  21  22  23  24  25       16  17  18  19  20  21  22       22  23  24  25  26  27  28\n 26  27  28  29  30  31           23  24  25  26  27  28  29       29  30  31\n\n           \xd0\xba\xd0\xb2\xd1\x96\xd1\x82\xd0\xbd\xd1\x8f                           \xd1\x82\xd1\x80\xd0\xb0\xd0\xb2\xd0\xbd\xd1\x8f                           \xd1\x87\xd0\xb5\xd1\x80\xd0\xb2\xd0\xbd\xd1\x8f\n \xd0\xbf\xd0\xbd  \xd0\xb2\xd1\x82  \xd1\x81\xd1\x80  \xd1\x87\xd1\x82  \xd0\xbf\xd1\x82  \xd1\x81\xd0\xb1  \xd0\xbd\xd0\xb4       \xd0\xbf\xd0\xbd  \xd0\xb2\xd1\x82  \xd1\x81\xd1\x80  \xd1\x87\xd1\x82  \xd0\xbf\xd1\x82  \xd1\x81\xd0\xb1  \xd0\xbd\xd0\xb4       \xd0\xbf\xd0\xbd  \xd0\xb2\xd1\x82  \xd1\x81\xd1\x80  \xd1\x87\xd1\x82  \xd0\xbf\xd1\x82  \xd1\x81\xd0\xb1  \xd0\xbd\xd0\xb4\n              1   2   3   4                            1   2            1   2   3   4   5   6\n  5   6   7   8   9  10  11        3   4   5   6   7   8   9        7   8   9  10  11  12  13\n 12  13  14  15  16  17  18       10  11  12  13  14  15  16       14  15  16  17  18  19  20\n 19  20  21  22  23  24  25       17  18  19  20  21  22  23       21  22  23  24  25  26  27\n 26  27  28  29  30               24  25  26  27  28  29  30       28  29  30\n                                  31\n\n           \xd0\xbb\xd0\xb8\xd0\xbf\xd0\xbd\xd1\x8f                            \xd1\x81\xd0\xb5\xd1\x80\xd0\xbf\xd0\xbd\xd1\x8f                          \xd0\xb2\xd0\xb5\xd1\x80\xd0\xb5\xd1\x81\xd0\xbd\xd1\x8f\n \xd0\xbf\xd0\xbd  \xd0\xb2\xd1\x82  \xd1\x81\xd1\x80  \xd1\x87\xd1\x82  \xd0\xbf\xd1\x82  \xd1\x81\xd0\xb1  \xd0\xbd\xd0\xb4       \xd0\xbf\xd0\xbd  \xd0\xb2\xd1\x82  \xd1\x81\xd1\x80  \xd1\x87\xd1\x82  \xd0\xbf\xd1\x82  \xd1\x81\xd0\xb1  \xd0\xbd\xd0\xb4       \xd0\xbf\xd0\xbd  \xd0\xb2\xd1\x82  \xd1\x81\xd1\x80  \xd1\x87\xd1\x82  \xd0\xbf\xd1\x82  \xd1\x81\xd0\xb1  \xd0\xbd\xd0\xb4\n              1   2   3   4                                1                1   2   3   4   5\n  5   6   7   8   9  10  11        2   3   4   5   6   7   8        6   7   8   9  10  11  12\n 12  13  14  15  16  17  18        9  10  11  12  13  14  15       13  14  15  16  17  18  19\n 19  20  21  22  23  24  25       16  17  18  19  20  21  22       20  21  22  23  24  25  26\n 26  27  28  29  30  31           23  24  25  26  27  28  29       27  28  29  30\n                                  30  31\n\n           \xd0\xb6\xd0\xbe\xd0\xb2\xd1\x82\xd0\xbd\xd1\x8f                         \xd0\xbb\xd0\xb8\xd1\x81\xd1\x82\xd0\xbe\xd0\xbf\xd0\xb0\xd0\xb4\xd0\xb0                          \xd0\xb3\xd1\x80\xd1\x83\xd0\xb4\xd0\xbd\xd1\x8f\n \xd0\xbf\xd0\xbd  \xd0\xb2\xd1\x82  \xd1\x81\xd1\x80  \xd1\x87\xd1\x82  \xd0\xbf\xd1\x82  \xd1\x81\xd0\xb1  \xd0\xbd\xd0\xb4       \xd0\xbf\xd0\xbd  \xd0\xb2\xd1\x82  \xd1\x81\xd1\x80  \xd1\x87\xd1\x82  \xd0\xbf\xd1\x82  \xd1\x81\xd0\xb1  \xd0\xbd\xd0\xb4       \xd0\xbf\xd0\xbd  \xd0\xb2\xd1\x82  \xd1\x81\xd1\x80  \xd1\x87\xd1\x82  \xd0\xbf\xd1\x82  \xd1\x81\xd0\xb1  \xd0\xbd\xd0\xb4\n                  1   2   3        1   2   3   4   5   6   7                1   2   3   4   5\n  4   5   6   7   8   9  10        8   9  10  11  12  13  14        6   7   8   9  10  11  12\n 11  12  13  14  15  16  17       15  16  17  18  19  20  21       13  14  15  16  17  18  19\n 18  19  20  21  22  23  24       22  23  24  25  26  27  28       20  21  22  23  24  25  26\n 25  26  27  28  29  30  31       29  30                           27  28  29  30  31\n'
+
+======================================================================
+FAIL: test_output_current_year (test.test_calendar.CommandLineTestCase.test_output_current_year)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File ""/home/serhiy/py/cpython/Lib/test/test_calendar.py"", line 1017, in test_output_current_year
+    self.assertIn(b'January', output)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+AssertionError: b'January' not found in b'                                  2025\n\n       \xd1\x81\xd1\x96\xd1\x87\xd0\xbd\xd1\x8f                     \xd0\xbb\xd1\x8e\xd1\x82\xd0\xbe\xd0\xb3\xd0\xbe                   \xd0\xb1\xd0\xb5\xd1\x80\xd0\xb5\xd0\xb7\xd0\xbd\xd1\x8f\n\xd0\xbf\xd0\xbd \xd0\xb2\xd1\x82 \xd1\x81\xd1\x80 \xd1\x87\xd1\x82 \xd0\xbf\xd1\x82 \xd1\x81\xd0\xb1 \xd0\xbd\xd0\xb4      \xd0\xbf\xd0\xbd \xd0\xb2\xd1\x82 \xd1\x81\xd1\x80 \xd1\x87\xd1\x82 \xd0\xbf\xd1\x82 \xd1\x81\xd0\xb1 \xd0\xbd\xd0\xb4      \xd0\xbf\xd0\xbd \xd0\xb2\xd1\x82 \xd1\x81\xd1\x80 \xd1\x87\xd1\x82 \xd0\xbf\xd1\x82 \xd1\x81\xd0\xb1 \xd0\xbd\xd0\xb4\n       1  2  3  4  5                      1  2                      1  2\n 6  7  8  9 10 11 12       3  4  5  6  7  8  9       3  4  5  6  7  8  9\n13 14 15 16 17 18 19      10 11 12 13 14 15 16      10 11 12 13 14 15 16\n20 21 22 23 24 25 26      17 18 19 20 21 22 23      17 18 19 20 21 22 23\n27 28 29 30 31            24 25 26 27 28            24 25 26 27 28 29 30\n                                                    31\n\n       \xd0\xba\xd0\xb2\xd1\x96\xd1\x82\xd0\xbd\xd1\x8f                    \xd1\x82\xd1\x80\xd0\xb0\xd0\xb2\xd0\xbd\xd1\x8f                    \xd1\x87\xd0\xb5\xd1\x80\xd0\xb2\xd0\xbd\xd1\x8f\n\xd0\xbf\xd0\xbd \xd0\xb2\xd1\x82 \xd1\x81\xd1\x80 \xd1\x87\xd1\x82 \xd0\xbf\xd1\x82 \xd1\x81\xd0\xb1 \xd0\xbd\xd0\xb4      \xd0\xbf\xd0\xbd \xd0\xb2\xd1\x82 \xd1\x81\xd1\x80 \xd1\x87\xd1\x82 \xd0\xbf\xd1\x82 \xd1\x81\xd0\xb1 \xd0\xbd\xd0\xb4      \xd0\xbf\xd0\xbd \xd0\xb2\xd1\x82 \xd1\x81\xd1\x80 \xd1\x87\xd1\x82 \xd0\xbf\xd1\x82 \xd1\x81\xd0\xb1 \xd0\xbd\xd0\xb4\n    1  2  3  4  5  6                1  2  3  4                         1\n 7  8  9 10 11 12 13       5  6  7  8  9 10 11       2  3  4  5  6  7  8\n14 15 16 17 18 19 20      12 13 14 15 16 17 18       9 10 11 12 13 14 15\n21 22 23 24 25 26 27      19 20 21 22 23 24 25      16 17 18 19 20 21 22\n28 29 30                  26 27 28 29 30 31         23 24 25 26 27 28 29\n                                                    30\n\n       \xd0\xbb\xd0\xb8\xd0\xbf\xd0\xbd\xd1\x8f                     \xd1\x81\xd0\xb5\xd1\x80\xd0\xbf\xd0\xbd\xd1\x8f                   \xd0\xb2\xd0\xb5\xd1\x80\xd0\xb5\xd1\x81\xd0\xbd\xd1\x8f\n\xd0\xbf\xd0\xbd \xd0\xb2\xd1\x82 \xd1\x81\xd1\x80 \xd1\x87\xd1\x82 \xd0\xbf\xd1\x82 \xd1\x81\xd0\xb1 \xd0\xbd\xd0\xb4      \xd0\xbf\xd0\xbd \xd0\xb2\xd1\x82 \xd1\x81\xd1\x80 \xd1\x87\xd1\x82 \xd0\xbf\xd1\x82 \xd1\x81\xd0\xb1 \xd0\xbd\xd0\xb4      \xd0\xbf\xd0\xbd \xd0\xb2\xd1\x82 \xd1\x81\xd1\x80 \xd1\x87\xd1\x82 \xd0\xbf\xd1\x82 \xd1\x81\xd0\xb1 \xd0\xbd\xd0\xb4\n    1  2  3  4  5  6                   1  2  3       1  2  3  4  5  6  7\n 7  8  9 10 11 12 13       4  5  6  7  8  9 10       8  9 10 11 12 13 14\n14 15 16 17 18 19 20      11 12 13 14 15 16 17      15 16 17 18 19 20 21\n21 22 23 24 25 26 27      18 19 20 21 22 23 24      22 23 24 25 26 27 28\n28 29 30 31               25 26 27 28 29 30 31      29 30\n\n       \xd0\xb6\xd0\xbe\xd0\xb2\xd1\x82\xd0\xbd\xd1\x8f                  \xd0\xbb\xd0\xb8\xd1\x81\xd1\x82\xd0\xbe\xd0\xbf\xd0\xb0\xd0\xb4\xd0\xb0                   \xd0\xb3\xd1\x80\xd1\x83\xd0\xb4\xd0\xbd\xd1\x8f\n\xd0\xbf\xd0\xbd \xd0\xb2\xd1\x82 \xd1\x81\xd1\x80 \xd1\x87\xd1\x82 \xd0\xbf\xd1\x82 \xd1\x81\xd0\xb1 \xd0\xbd\xd0\xb4      \xd0\xbf\xd0\xbd \xd0\xb2\xd1\x82 \xd1\x81\xd1\x80 \xd1\x87\xd1\x82 \xd0\xbf\xd1\x82 \xd1\x81\xd0\xb1 \xd0\xbd\xd0\xb4      \xd0\xbf\xd0\xbd \xd0\xb2\xd1\x82 \xd1\x81\xd1\x80 \xd1\x87\xd1\x82 \xd0\xbf\xd1\x82 \xd1\x81\xd0\xb1 \xd0\xbd\xd0\xb4\n       1  2  3  4  5                      1  2       1  2  3  4  5  6  7\n 6  7  8  9 10 11 12       3  4  5  6  7  8  9       8  9 10 11 12 13 14\n13 14 15 16 17 18 19      10 11 12 13 14 15 16      15 16 17 18 19 20 21\n20 21 22 23 24 25 26      17 18 19 20 21 22 23      22 23 24 25 26 27 28\n27 28 29 30 31            24 25 26 27 28 29 30      29 30 31\n'
+
+======================================================================
+FAIL: test_output_month (test.test_calendar.CommandLineTestCase.test_output_month)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File ""/home/serhiy/py/cpython/Lib/test/test_calendar.py"", line 1028, in test_output_month
+    self.assertEqual(output, conv(result_2004_01_text))
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: b'     \xd1\x81\xd1\x96\xd1\x87\xd0\xbd\xd1\x8f[230 chars]31\n' != b'    January 2004\nMo Tu We Th Fr Sa Su\n     [98 chars]31\n'
+
+======================================================================
+FAIL: test_output_year (test.test_calendar.CommandLineTestCase.test_output_year)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File ""/home/serhiy/py/cpython/Lib/test/test_calendar.py"", line 1023, in test_output_year
+    self.assertEqual(output, conv(result_2004_text))
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: b'   [40 chars]      \xd1\x81\xd1\x96\xd1\x87\xd0\xbd\xd1\x8f[3724 chars]31\n' != b'   [40 chars]     January                   February       [2023 chars]31\n'
+
+----------------------------------------------------------------------
+```
+`test_pdb` also fails, because it uses the `calendar` module:
+```pytb
+======================================================================
+FAIL: test_run_module_with_args (test.test_pdb.PdbTestCase.test_run_module_with_args)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File ""/home/serhiy/py/cpython/Lib/test/test_pdb.py"", line 3696, in test_run_module_with_args
+    self.assertIn(""December"", stdout)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'December' not found in '> /home/serhiy/py/cpython/Lib/calendar.py(1)<module>()\n-> """"""Calendar printing functions\n(Pdb) (Pdb)                                    1\n\n       січня                     лютого                   березня\nпн вт ср чт пт сб нд      пн вт ср чт пт сб нд      пн вт ср чт пт сб нд\n 1  2  3  4  5  6  7                1  2  3  4                1  2  3  4\n 8  9 10 11 12 13 14       5  6  7  8  9 10 11       5  6  7  8  9 10 11\n15 16 17 18 19 20 21      12 13 14 15 16 17 18      12 13 14 15 16 17 18\n22 23 24 25 26 27 28      19 20 21 22 23 24 25      19 20 21 22 23 24 25\n29 30 31                  26 27 28                  26 27 28 29 30 31\n\n       квітня                    травня                    червня\nпн вт ср чт пт сб нд      пн вт ср чт пт сб нд      пн вт ср чт пт сб нд\n                   1          1  2  3  4  5  6                   1  2  3\n 2  3  4  5  6  7  8       7  8  9 10 11 12 13       4  5  6  7  8  9 10\n 9 10 11 12 13 14 15      14 15 16 17 18 19 20      11 12 13 14 15 16 17\n16 17 18 19 20 21 22      21 22 23 24 25 26 27      18 19 20 21 22 23 24\n23 24 25 26 27 28 29      28 29 30 31               25 26 27 28 29 30\n30\n\n       липня                     серпня                   вересня\nпн вт ср чт пт сб нд      пн вт ср чт пт сб нд      пн вт ср чт пт сб нд\n                   1             1  2  3  4  5                      1  2\n 2  3  4  5  6  7  8       6  7  8  9 10 11 12       3  4  5  6  7  8  9\n 9 10 11 12 13 14 15      13 14 15 16 17 18 19      10 11 12 13 14 15 16\n16 17 18 19 20 21 22      20 21 22 23 24 25 26      17 18 19 20 21 22 23\n23 24 25 26 27 28 29      27 28 29 30 31            24 25 26 27 28 29 30\n30 31\n\n       жовтня                  листопада                   грудня\nпн вт ср чт пт сб нд      пн вт ср чт пт сб нд      пн вт ср чт пт сб нд\n 1  2  3  4  5  6  7                1  2  3  4                      1  2\n 8  9 10 11 12 13 14       5  6  7  8  9 10 11       3  4  5  6  7  8  9\n15 16 17 18 19 20 21      12 13 14 15 16 17 18      10 11 12 13 14 15 16\n22 23 24 25 26 27 28      19 20 21 22 23 24 25      17 18 19 20 21 22 23\n29 30 31                  26 27 28 29 30            24 25 26 27 28 29 30\n                                                    31\nThe program finished and will be restarted\n> /home/serhiy/py/cpython/Lib/calendar.py(1)<module>()\n-> """"""Calendar printing functions\n(Pdb)                                    1\n\n       січня                     лютого                   березня\nпн вт ср чт пт сб нд      пн вт ср чт пт сб нд      пн вт ср чт пт сб нд\n 1  2  3  4  5  6  7                1  2  3  4                1  2  3  4\n 8  9 10 11 12 13 14       5  6  7  8  9 10 11       5  6  7  8  9 10 11\n15 16 17 18 19 20 21      12 13 14 15 16 17 18      12 13 14 15 16 17 18\n22 23 24 25 26 27 28      19 20 21 22 23 24 25      19 20 21 22 23 24 25\n29 30 31                  26 27 28                  26 27 28 29 30 31\n\n       квітня                    травня                    червня\nпн вт ср чт пт сб нд      пн вт ср чт пт сб нд      пн вт ср чт пт сб нд\n                   1          1  2  3  4  5  6                   1  2  3\n 2  3  4  5  6  7  8       7  8  9 10 11 12 13       4  5  6  7  8  9 10\n 9 10 11 12 13 14 15      14 15 16 17 18 19 20      11 12 13 14 15 16 17\n16 17 18 19 20 21 22      21 22 23 24 25 26 27      18 19 20 21 22 23 24\n23 24 25 26 27 28 29      28 29 30 31               25 26 27 28 29 30\n30\n\n       липня                     серпня                   вересня\nпн вт ср чт пт сб нд      пн вт ср чт пт сб нд      пн вт ср чт пт сб нд\n                   1             1  2  3  4  5                      1  2\n 2  3  4  5  6  7  8       6  7  8  9 10 11 12       3  4  5  6  7  8  9\n 9 10 11 12 13 14 15      13 14 15 16 17 18 19      10 11 12 13 14 15 16\n16 17 18 19 20 21 22      20 21 22 23 24 25 26      17 18 19 20 21 22 23\n23 24 25 26 27 28 29      27 28 29 30 31            24 25 26 27 28 29 30\n30 31\n\n       жовтня                  листопада                   грудня\nпн вт ср чт пт сб нд      пн вт ср чт пт сб нд      пн вт ср чт пт сб нд\n 1  2  3  4  5  6  7                1  2  3  4                      1  2\n 8  9 10 11 12 13 14       5  6  7  8  9 10 11       3  4  5  6  7  8  9\n15 16 17 18 19 20 21      12 13 14 15 16 17 18      10 11 12 13 14 15 16\n22 23 24 25 26 27 28      19 20 21 22 23 24 25      17 18 19 20 21 22 23\n29 30 31                  26 27 28 29 30            24 25 26 27 28 29 30\n                                                    31\nThe program finished and will be restarted\n> /home/serhiy/py/cpython/Lib/calendar.py(1)<module>()\n-> """"""Calendar printing functions\n(Pdb) \n'
+
+----------------------------------------------------------------------
+```
+
+This is caused by #128317. Reverting that change fixes tests.
+
+cc @hugovk
+
+<!-- gh-linked-prs -->
+### Linked PRs
+* gh-130676
+<!-- /gh-linked-prs -->
+","['======================================================================\nFAIL: test_option_encoding (test.test_calendar.CommandLineTestCase.test_option_encoding)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File ""/home/serhiy/py/cpython/Lib/test/test_calendar.py"", line 1035, in test_option_encoding\n    self.assertEqual(output, result_2004_text.encode(\'utf-16-le\'))\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: b\' \\x[224 chars] \\x00 \\x00A\\x04V\\x04G\\x04=\\x04O\\x04 \\x00 \\x00 [10163 chars]\\x00\' != b\' \\x[224 chars] \\x00J\\x00a\\x00n\\x00u\\x00a\\x00r\\x00y\\x00 \\x00 [10163 chars]\\x00\'\n\n======================================================================\nFAIL: test_option_lines (test.test_calendar.CommandLineTestCase.test_option_lines)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File ""/home/serhiy/py/cpython/Lib/test/test_calendar.py"", line 1074, in test_option_lines\n    self.assertIn(conv(\'December\\n\\nMo Tu We\'), output)\n    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: b\'December\\n\\nMo Tu We\' not found in b\'                                  2004\\n\\n\\n\\n       \\xd1\\x81\\xd1\\x96\\xd1\\x87\\xd0\\xbd\\xd1\\x8f                     \\xd0\\xbb\\xd1\\x8e\\xd1\\x82\\xd0\\xbe\\xd0\\xb3\\xd0\\xbe                   \\xd0\\xb1\\xd0\\xb5\\xd1\\x80\\xd0\\xb5\\xd0\\xb7\\xd0\\xbd\\xd1\\x8f\\n\\n\\xd0\\xbf\\xd0\\xbd \\xd0\\xb2\\xd1\\x82 \\xd1\\x81\\xd1\\x80 \\xd1\\x87\\xd1\\x82 \\xd0\\xbf\\xd1\\x82 \\xd1\\x81\\xd0\\xb1 \\xd0\\xbd\\xd0\\xb4      \\xd0\\xbf\\xd0\\xbd \\xd0\\xb2\\xd1\\x82 \\xd1\\x81\\xd1\\x80 \\xd1\\x87\\xd1\\x82 \\xd0\\xbf\\xd1\\x82 \\xd1\\x81\\xd0\\xb1 \\xd0\\xbd\\xd0\\xb4      \\xd0\\xbf\\xd0\\xbd \\xd0\\xb2\\xd1\\x82 \\xd1\\x81\\xd1\\x80 \\xd1\\x87\\xd1\\x82 \\xd0\\xbf\\xd1\\x82 \\xd1\\x81\\xd0\\xb1 \\xd0\\xbd\\xd0\\xb4\\n\\n          1  2  3  4                         1       1  2  3  4  5  6  7\\n\\n 5  6  7  8  9 10 11       2  3  4  5  6  7  8       8  9 10 11 12 13 14\\n\\n12 13 14 15 16 17 18       9 10 11 12 13 14 15      15 16 17 18 19 20 21\\n\\n19 20 21 22 23 24 25      16 17 18 19 20 21 22      22 23 24 25 26 27 28\\n\\n26 27 28 29 30 31         23 24 25 26 27 28 29      29 30 31\\n\\n\\n\\n       \\xd0\\xba\\xd0\\xb2\\xd1\\x96\\xd1\\x82\\xd0\\xbd\\xd1\\x8f                    \\xd1\\x82\\xd1\\x80\\xd0\\xb0\\xd0\\xb2\\xd0\\xbd\\xd1\\x8f                    \\xd1\\x87\\xd0\\xb5\\xd1\\x80\\xd0\\xb2\\xd0\\xbd\\xd1\\x8f\\n\\n\\xd0\\xbf\\xd0\\xbd \\xd0\\xb2\\xd1\\x82 \\xd1\\x81\\xd1\\x80 \\xd1\\x87\\xd1\\x82 \\xd0\\xbf\\xd1\\x82 \\xd1\\x81\\xd0\\xb1 \\xd0\\xbd\\xd0\\xb4      \\xd0\\xbf\\xd0\\xbd \\xd0\\xb2\\xd1\\x82 \\xd1\\x81\\xd1\\x80 \\xd1\\x87\\xd1\\x82 \\xd0\\xbf\\xd1\\x82 \\xd1\\x81\\xd0\\xb1 \\xd0\\xbd\\xd0\\xb4      \\xd0\\xbf\\xd0\\xbd \\xd0\\xb2\\xd1\\x82 \\xd1\\x81\\xd1\\x80 \\xd1\\x87\\xd1\\x82 \\xd0\\xbf\\xd1\\x82 \\xd1\\x81\\xd0\\xb1 \\xd0\\xbd\\xd0\\xb4\\n\\n          1  2  3  4                      1  2          1  2  3  4  5  6\\n\\n 5  6  7  8  9 10 11       3  4  5  6  7  8  9       7  8  9 10 11 12 13\\n\\n12 13 14 15 16 17 18      10 11 12 13 14 15 16      14 15 16 17 18 19 20\\n\\n19 20 21 22 23 24 25      17 18 19 20 21 22 23      21 22 23 24 25 26 27\\n\\n26 27 28 29 30            24 25 26 27 28 29 30      28 29 30\\n\\n                          31\\n\\n\\n\\n       \\xd0\\xbb\\xd0\\xb8\\xd0\\xbf\\xd0\\xbd\\xd1\\x8f                     \\xd1\\x81\\xd0\\xb5\\xd1\\x80\\xd0\\xbf\\xd0\\xbd\\xd1\\x8f                   \\xd0\\xb2\\xd0\\xb5\\xd1\\x80\\xd0\\xb5\\xd1\\x81\\xd0\\xbd\\xd1\\x8f\\n\\n\\xd0\\xbf\\xd0\\xbd \\xd0\\xb2\\xd1\\x82 \\xd1\\x81\\xd1\\x80 \\xd1\\x87\\xd1\\x82 \\xd0\\xbf\\xd1\\x82 \\xd1\\x81\\xd0\\xb1 \\xd0\\xbd\\xd0\\xb4      \\xd0\\xbf\\xd0\\xbd \\xd0\\xb2\\xd1\\x82 \\xd1\\x81\\xd1\\x80 \\xd1\\x87\\xd1\\x82 \\xd0\\xbf\\xd1\\x82 \\xd1\\x81\\xd0\\xb1 \\xd0\\xbd\\xd0\\xb4      \\xd0\\xbf\\xd0\\xbd \\xd0\\xb2\\xd1\\x82 \\xd1\\x81\\xd1\\x80 \\xd1\\x87\\xd1\\x82 \\xd0\\xbf\\xd1\\x82 \\xd1\\x81\\xd0\\xb1 \\xd0\\xbd\\xd0\\xb4\\n\\n          1  2  3  4                         1             1  2  3  4  5\\n\\n 5  6  7  8  9 10 11       2  3  4  5  6  7  8       6  7  8  9 10 11 12\\n\\n12 13 14 15 16 17 18       9 10 11 12 13 14 15      13 14 15 16 17 18 19\\n\\n19 20 21 22 23 24 25      16 17 18 19 20 21 22      20 21 22 23 24 25 26\\n\\n26 27 28 29 30 31         23 24 25 26 27 28 29      27 28 29 30\\n\\n                          30 31\\n\\n\\n\\n       \\xd0\\xb6\\xd0\\xbe\\xd0\\xb2\\xd1\\x82\\xd0\\xbd\\xd1\\x8f                  \\xd0\\xbb\\xd0\\xb8\\xd1\\x81\\xd1\\x82\\xd0\\xbe\\xd0\\xbf\\xd0\\xb0\\xd0\\xb4\\xd0\\xb0                   \\xd0\\xb3\\xd1\\x80\\xd1\\x83\\xd0\\xb4\\xd0\\xbd\\xd1\\x8f\\n\\n\\xd0\\xbf\\xd0\\xbd \\xd0\\xb2\\xd1\\x82 \\xd1\\x81\\xd1\\x80 \\xd1\\x87\\xd1\\x82 \\xd0\\xbf\\xd1\\x82 \\xd1\\x81\\xd0\\xb1 \\xd0\\xbd\\xd0\\xb4      \\xd0\\xbf\\xd0\\xbd \\xd0\\xb2\\xd1\\x82 \\xd1\\x81\\xd1\\x80 \\xd1\\x87\\xd1\\x82 \\xd0\\xbf\\xd1\\x82 \\xd1\\x81\\xd0\\xb1 \\xd0\\xbd\\xd0\\xb4      \\xd0\\xbf\\xd0\\xbd \\xd0\\xb2\\xd1\\x82 \\xd1\\x81\\xd1\\x80 \\xd1\\x87\\xd1\\x82 \\xd0\\xbf\\xd1\\x82 \\xd1\\x81\\xd0\\xb1 \\xd0\\xbd\\xd0\\xb4\\n\\n             1  2  3       1  2  3  4  5  6  7             1  2  3  4  5\\n\\n 4  5  6  7  8  9 10       8  9 10 11 12 13 14       6  7  8  9 10 11 12\\n\\n11 12 13 14 15 16 17      15 16 17 18 19 20 21      13 14 15 16 17 18 19\\n\\n18 19 20 21 22 23 24      22 23 24 25 26 27 28      20 21 22 23 24 25 26\\n\\n25 26 27 28 29 30 31      29 30                     27 28 29 30 31\\n\\n\'\n\n======================================================================\nFAIL: test_option_months (test.test_calendar.CommandLineTestCase.test_option_months)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File ""/home/serhiy/py/cpython/Lib/test/test_calendar.py"", line 1090, in test_option_months\n    self.assertIn(conv(\'\\nMo Tu We Th Fr Sa Su\\n\'), output)\n    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: b\'\\nMo Tu We Th Fr Sa Su\\n\' not found in b\'        2004\\n\\n       \\xd1\\x81\\xd1\\x96\\xd1\\x87\\xd0\\xbd\\xd1\\x8f\\n\\xd0\\xbf\\xd0\\xbd \\xd0\\xb2\\xd1\\x82 \\xd1\\x81\\xd1\\x80 \\xd1\\x87\\xd1\\x82 \\xd0\\xbf\\xd1\\x82 \\xd1\\x81\\xd0\\xb1 \\xd0\\xbd\\xd0\\xb4\\n          1  2  3  4\\n 5  6  7  8  9 10 11\\n12 13 14 15 16 17 18\\n19 20 21 22 23 24 25\\n26 27 28 29 30 31\\n\\n       \\xd0\\xbb\\xd1\\x8e\\xd1\\x82\\xd0\\xbe\\xd0\\xb3\\xd0\\xbe\\n\\xd0\\xbf\\xd0\\xbd \\xd0\\xb2\\xd1\\x82 \\xd1\\x81\\xd1\\x80 \\xd1\\x87\\xd1\\x82 \\xd0\\xbf\\xd1\\x82 \\xd1\\x81\\xd0\\xb1 \\xd0\\xbd\\xd0\\xb4\\n                   1\\n 2  3  4  5  6  7  8\\n 9 10 11 12 13 14 15\\n16 17 18 19 20 21 22\\n23 24 25 26 27 28 29\\n\\n      \\xd0\\xb1\\xd0\\xb5\\xd1\\x80\\xd0\\xb5\\xd0\\xb7\\xd0\\xbd\\xd1\\x8f\\n\\xd0\\xbf\\xd0\\xbd \\xd0\\xb2\\xd1\\x82 \\xd1\\x81\\xd1\\x80 \\xd1\\x87\\xd1\\x82 \\xd0\\xbf\\xd1\\x82 \\xd1\\x81\\xd0\\xb1 \\xd0\\xbd\\xd0\\xb4\\n 1  2  3  4  5  6  7\\n 8  9 10 11 12 13 14\\n15 16 17 18 19 20 21\\n22 23 24 25 26 27 28\\n29 30 31\\n\\n       \\xd0\\xba\\xd0\\xb2\\xd1\\x96\\xd1\\x82\\xd0\\xbd\\xd1\\x8f\\n\\xd0\\xbf\\xd0\\xbd \\xd0\\xb2\\xd1\\x82 \\xd1\\x81\\xd1\\x80 \\xd1\\x87\\xd1\\x82 \\xd0\\xbf\\xd1\\x82 \\xd1\\x81\\xd0\\xb1 \\xd0\\xbd\\xd0\\xb4\\n          1  2  3  4\\n 5  6  7  8  9 10 11\\n12 13 14 15 16 17 18\\n19 20 21 22 23 24 25\\n26 27 28 29 30\\n\\n       \\xd1\\x82\\xd1\\x80\\xd0\\xb0\\xd0\\xb2\\xd0\\xbd\\xd1\\x8f\\n\\xd0\\xbf\\xd0\\xbd \\xd0\\xb2\\xd1\\x82 \\xd1\\x81\\xd1\\x80 \\xd1\\x87\\xd1\\x82 \\xd0\\xbf\\xd1\\x82 \\xd1\\x81\\xd0\\xb1 \\xd0\\xbd\\xd0\\xb4\\n                1  2\\n 3  4  5  6  7  8  9\\n10 11 12 13 14 15 16\\n17 18 19 20 21 22 23\\n24 25 26 27 28 29 30\\n31\\n\\n       \\xd1\\x87\\xd0\\xb5\\xd1\\x80\\xd0\\xb2\\xd0\\xbd\\xd1\\x8f\\n\\xd0\\xbf\\xd0\\xbd \\xd0\\xb2\\xd1\\x82 \\xd1\\x81\\xd1\\x80 \\xd1\\x87\\xd1\\x82 \\xd0\\xbf\\xd1\\x82 \\xd1\\x81\\xd0\\xb1 \\xd0\\xbd\\xd0\\xb4\\n    1  2  3  4  5  6\\n 7  8  9 10 11 12 13\\n14 15 16 17 18 19 20\\n21 22 23 24 25 26 27\\n28 29 30\\n\\n       \\xd0\\xbb\\xd0\\xb8\\xd0\\xbf\\xd0\\xbd\\xd1\\x8f\\n\\xd0\\xbf\\xd0\\xbd \\xd0\\xb2\\xd1\\x82 \\xd1\\x81\\xd1\\x80 \\xd1\\x87\\xd1\\x82 \\xd0\\xbf\\xd1\\x82 \\xd1\\x81\\xd0\\xb1 \\xd0\\xbd\\xd0\\xb4\\n          1  2  3  4\\n 5  6  7  8  9 10 11\\n12 13 14 15 16 17 18\\n19 20 21 22 23 24 25\\n26 27 28 29 30 31\\n\\n       \\xd1\\x81\\xd0\\xb5\\xd1\\x80\\xd0\\xbf\\xd0\\xbd\\xd1\\x8f\\n\\xd0\\xbf\\xd0\\xbd \\xd0\\xb2\\xd1\\x82 \\xd1\\x81\\xd1\\x80 \\xd1\\x87\\xd1\\x82 \\xd0\\xbf\\xd1\\x82 \\xd1\\x81\\xd0\\xb1 \\xd0\\xbd\\xd0\\xb4\\n                   1\\n 2  3  4  5  6  7  8\\n 9 10 11 12 13 14 15\\n16 17 18 19 20 21 22\\n23 24 25 26 27 28 29\\n30 31\\n\\n      \\xd0\\xb2\\xd0\\xb5\\xd1\\x80\\xd0\\xb5\\xd1\\x81\\xd0\\xbd\\xd1\\x8f\\n\\xd0\\xbf\\xd0\\xbd \\xd0\\xb2\\xd1\\x82 \\xd1\\x81\\xd1\\x80 \\xd1\\x87\\xd1\\x82 \\xd0\\xbf\\xd1\\x82 \\xd1\\x81\\xd0\\xb1 \\xd0\\xbd\\xd0\\xb4\\n       1  2  3  4  5\\n 6  7  8  9 10 11 12\\n13 14 15 16 17 18 19\\n20 21 22 23 24 25 26\\n27 28 29 30\\n\\n       \\xd0\\xb6\\xd0\\xbe\\xd0\\xb2\\xd1\\x82\\xd0\\xbd\\xd1\\x8f\\n\\xd0\\xbf\\xd0\\xbd \\xd0\\xb2\\xd1\\x82 \\xd1\\x81\\xd1\\x80 \\xd1\\x87\\xd1\\x82 \\xd0\\xbf\\xd1\\x82 \\xd1\\x81\\xd0\\xb1 \\xd0\\xbd\\xd0\\xb4\\n             1  2  3\\n 4  5  6  7  8  9 10\\n11 12 13 14 15 16 17\\n18 19 20 21 22 23 24\\n25 26 27 28 29 30 31\\n\\n     \\xd0\\xbb\\xd0\\xb8\\xd1\\x81\\xd1\\x82\\xd0\\xbe\\xd0\\xbf\\xd0\\xb0\\xd0\\xb4\\xd0\\xb0\\n\\xd0\\xbf\\xd0\\xbd \\xd0\\xb2\\xd1\\x82 \\xd1\\x81\\xd1\\x80 \\xd1\\x87\\xd1\\x82 \\xd0\\xbf\\xd1\\x82 \\xd1\\x81\\xd0\\xb1 \\xd0\\xbd\\xd0\\xb4\\n 1  2  3  4  5  6  7\\n 8  9 10 11 12 13 14\\n15 16 17 18 19 20 21\\n22 23 24 25 26 27 28\\n29 30\\n\\n       \\xd0\\xb3\\xd1\\x80\\xd1\\x83\\xd0\\xb4\\xd0\\xbd\\xd1\\x8f\\n\\xd0\\xbf\\xd0\\xbd \\xd0\\xb2\\xd1\\x82 \\xd1\\x81\\xd1\\x80 \\xd1\\x87\\xd1\\x82 \\xd0\\xbf\\xd1\\x82 \\xd1\\x81\\xd0\\xb1 \\xd0\\xbd\\xd0\\xb4\\n       1  2  3  4  5\\n 6  7  8  9 10 11 12\\n13 14 15 16 17 18 19\\n20 21 22 23 24 25 26\\n27 28 29 30 31\\n\'\n\n======================================================================\nFAIL: test_option_spacing (test.test_calendar.CommandLineTestCase.test_option_spacing)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File ""/home/serhiy/py/cpython/Lib/test/test_calendar.py"", line 1082, in test_option_spacing\n    self.assertIn(b\'Su        Mo\', output)\n    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: b\'Su        Mo\' not found in b\'                                    2004\\n\\n       \\xd1\\x81\\xd1\\x96\\xd1\\x87\\xd0\\xbd\\xd1\\x8f                       \\xd0\\xbb\\xd1\\x8e\\xd1\\x82\\xd0\\xbe\\xd0\\xb3\\xd0\\xbe                     \\xd0\\xb1\\xd0\\xb5\\xd1\\x80\\xd0\\xb5\\xd0\\xb7\\xd0\\xbd\\xd1\\x8f\\n\\xd0\\xbf\\xd0\\xbd \\xd0\\xb2\\xd1\\x82 \\xd1\\x81\\xd1\\x80 \\xd1\\x87\\xd1\\x82 \\xd0\\xbf\\xd1\\x82 \\xd1\\x81\\xd0\\xb1 \\xd0\\xbd\\xd0\\xb4        \\xd0\\xbf\\xd0\\xbd \\xd0\\xb2\\xd1\\x82 \\xd1\\x81\\xd1\\x80 \\xd1\\x87\\xd1\\x82 \\xd0\\xbf\\xd1\\x82 \\xd1\\x81\\xd0\\xb1 \\xd0\\xbd\\xd0\\xb4        \\xd0\\xbf\\xd0\\xbd \\xd0\\xb2\\xd1\\x82 \\xd1\\x81\\xd1\\x80 \\xd1\\x87\\xd1\\x82 \\xd0\\xbf\\xd1\\x82 \\xd1\\x81\\xd0\\xb1 \\xd0\\xbd\\xd0\\xb4\\n          1  2  3  4                           1         1  2  3  4  5  6  7\\n 5  6  7  8  9 10 11         2  3  4  5  6  7  8         8  9 10 11 12 13 14\\n12 13 14 15 16 17 18         9 10 11 12 13 14 15        15 16 17 18 19 20 21\\n19 20 21 22 23 24 25        16 17 18 19 20 21 22        22 23 24 25 26 27 28\\n26 27 28 29 30 31           23 24 25 26 27 28 29        29 30 31\\n\\n       \\xd0\\xba\\xd0\\xb2\\xd1\\x96\\xd1\\x82\\xd0\\xbd\\xd1\\x8f                      \\xd1\\x82\\xd1\\x80\\xd0\\xb0\\xd0\\xb2\\xd0\\xbd\\xd1\\x8f                      \\xd1\\x87\\xd0\\xb5\\xd1\\x80\\xd0\\xb2\\xd0\\xbd\\xd1\\x8f\\n\\xd0\\xbf\\xd0\\xbd \\xd0\\xb2\\xd1\\x82 \\xd1\\x81\\xd1\\x80 \\xd1\\x87\\xd1\\x82 \\xd0\\xbf\\xd1\\x82 \\xd1\\x81\\xd0\\xb1 \\xd0\\xbd\\xd0\\xb4        \\xd0\\xbf\\xd0\\xbd \\xd0\\xb2\\xd1\\x82 \\xd1\\x81\\xd1\\x80 \\xd1\\x87\\xd1\\x82 \\xd0\\xbf\\xd1\\x82 \\xd1\\x81\\xd0\\xb1 \\xd0\\xbd\\xd0\\xb4        \\xd0\\xbf\\xd0\\xbd \\xd0\\xb2\\xd1\\x82 \\xd1\\x81\\xd1\\x80 \\xd1\\x87\\xd1\\x82 \\xd0\\xbf\\xd1\\x82 \\xd1\\x81\\xd0\\xb1 \\xd0\\xbd\\xd0\\xb4\\n          1  2  3  4                        1  2            1  2  3  4  5  6\\n 5  6  7  8  9 10 11         3  4  5  6  7  8  9         7  8  9 10 11 12 13\\n12 13 14 15 16 17 18        10 11 12 13 14 15 16        14 15 16 17 18 19 20\\n19 20 21 22 23 24 25        17 18 19 20 21 22 23        21 22 23 24 25 26 27\\n26 27 28 29 30              24 25 26 27 28 29 30        28 29 30\\n                            31\\n\\n       \\xd0\\xbb\\xd0\\xb8\\xd0\\xbf\\xd0\\xbd\\xd1\\x8f                       \\xd1\\x81\\xd0\\xb5\\xd1\\x80\\xd0\\xbf\\xd0\\xbd\\xd1\\x8f                     \\xd0\\xb2\\xd0\\xb5\\xd1\\x80\\xd0\\xb5\\xd1\\x81\\xd0\\xbd\\xd1\\x8f\\n\\xd0\\xbf\\xd0\\xbd \\xd0\\xb2\\xd1\\x82 \\xd1\\x81\\xd1\\x80 \\xd1\\x87\\xd1\\x82 \\xd0\\xbf\\xd1\\x82 \\xd1\\x81\\xd0\\xb1 \\xd0\\xbd\\xd0\\xb4        \\xd0\\xbf\\xd0\\xbd \\xd0\\xb2\\xd1\\x82 \\xd1\\x81\\xd1\\x80 \\xd1\\x87\\xd1\\x82 \\xd0\\xbf\\xd1\\x82 \\xd1\\x81\\xd0\\xb1 \\xd0\\xbd\\xd0\\xb4        \\xd0\\xbf\\xd0\\xbd \\xd0\\xb2\\xd1\\x82 \\xd1\\x81\\xd1\\x80 \\xd1\\x87\\xd1\\x82 \\xd0\\xbf\\xd1\\x82 \\xd1\\x81\\xd0\\xb1 \\xd0\\xbd\\xd0\\xb4\\n          1  2  3  4                           1               1  2  3  4  5\\n 5  6  7  8  9 10 11         2  3  4  5  6  7  8         6  7  8  9 10 11 12\\n12 13 14 15 16 17 18         9 10 11 12 13 14 15        13 14 15 16 17 18 19\\n19 20 21 22 23 24 25        16 17 18 19 20 21 22        20 21 22 23 24 25 26\\n26 27 28 29 30 31           23 24 25 26 27 28 29        27 28 29 30\\n                            30 31\\n\\n       \\xd0\\xb6\\xd0\\xbe\\xd0\\xb2\\xd1\\x82\\xd0\\xbd\\xd1\\x8f                    \\xd0\\xbb\\xd0\\xb8\\xd1\\x81\\xd1\\x82\\xd0\\xbe\\xd0\\xbf\\xd0\\xb0\\xd0\\xb4\\xd0\\xb0                     \\xd0\\xb3\\xd1\\x80\\xd1\\x83\\xd0\\xb4\\xd0\\xbd\\xd1\\x8f\\n\\xd0\\xbf\\xd0\\xbd \\xd0\\xb2\\xd1\\x82 \\xd1\\x81\\xd1\\x80 \\xd1\\x87\\xd1\\x82 \\xd0\\xbf\\xd1\\x82 \\xd1\\x81\\xd0\\xb1 \\xd0\\xbd\\xd0\\xb4        \\xd0\\xbf\\xd0\\xbd \\xd0\\xb2\\xd1\\x82 \\xd1\\x81\\xd1\\x80 \\xd1\\x87\\xd1\\x82 \\xd0\\xbf\\xd1\\x82 \\xd1\\x81\\xd0\\xb1 \\xd0\\xbd\\xd0\\xb4        \\xd0\\xbf\\xd0\\xbd \\xd0\\xb2\\xd1\\x82 \\xd1\\x81\\xd1\\x80 \\xd1\\x87\\xd1\\x82 \\xd0\\xbf\\xd1\\x82 \\xd1\\x81\\xd0\\xb1 \\xd0\\xbd\\xd0\\xb4\\n             1  2  3         1  2  3  4  5  6  7               1  2  3  4  5\\n 4  5  6  7  8  9 10         8  9 10 11 12 13 14         6  7  8  9 10 11 12\\n11 12 13 14 15 16 17        15 16 17 18 19 20 21        13 14 15 16 17 18 19\\n18 19 20 21 22 23 24        22 23 24 25 26 27 28        20 21 22 23 24 25 26\\n25 26 27 28 29 30 31        29 30                       27 28 29 30 31\\n\'\n\n======================================================================\nFAIL: test_option_type (test.test_calendar.CommandLineTestCase.test_option_type)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File ""/home/serhiy/py/cpython/Lib/test/test_calendar.py"", line 1098, in test_option_type\n    self.assertEqual(output, conv(result_2004_text))\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: b\'   [40 chars]      \\xd1\\x81\\xd1\\x96\\xd1\\x87\\xd0\\xbd\\xd1\\x8f[3724 chars]31\\n\' != b\'   [40 chars]     January                   February       [2023 chars]31\\n\'\n\n======================================================================\nFAIL: test_option_width (test.test_calendar.CommandLineTestCase.test_option_width)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File ""/home/serhiy/py/cpython/Lib/test/test_calendar.py"", line 1066, in test_option_width\n    self.assertIn(b\'Mon Tue Wed Thu Fri Sat Sun\', output)\n    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: b\'Mon Tue Wed Thu Fri Sat Sun\' not found in b\'                                             2004\\n\\n           \\xd1\\x81\\xd1\\x96\\xd1\\x87\\xd0\\xbd\\xd1\\x8f                            \\xd0\\xbb\\xd1\\x8e\\xd1\\x82\\xd0\\xbe\\xd0\\xb3\\xd0\\xbe                          \\xd0\\xb1\\xd0\\xb5\\xd1\\x80\\xd0\\xb5\\xd0\\xb7\\xd0\\xbd\\xd1\\x8f\\n \\xd0\\xbf\\xd0\\xbd  \\xd0\\xb2\\xd1\\x82  \\xd1\\x81\\xd1\\x80  \\xd1\\x87\\xd1\\x82  \\xd0\\xbf\\xd1\\x82  \\xd1\\x81\\xd0\\xb1  \\xd0\\xbd\\xd0\\xb4       \\xd0\\xbf\\xd0\\xbd  \\xd0\\xb2\\xd1\\x82  \\xd1\\x81\\xd1\\x80  \\xd1\\x87\\xd1\\x82  \\xd0\\xbf\\xd1\\x82  \\xd1\\x81\\xd0\\xb1  \\xd0\\xbd\\xd0\\xb4       \\xd0\\xbf\\xd0\\xbd  \\xd0\\xb2\\xd1\\x82  \\xd1\\x81\\xd1\\x80  \\xd1\\x87\\xd1\\x82  \\xd0\\xbf\\xd1\\x82  \\xd1\\x81\\xd0\\xb1  \\xd0\\xbd\\xd0\\xb4\\n              1   2   3   4                                1        1   2   3   4   5   6   7\\n  5   6   7   8   9  10  11        2   3   4   5   6   7   8        8   9  10  11  12  13  14\\n 12  13  14  15  16  17  18        9  10  11  12  13  14  15       15  16  17  18  19  20  21\\n 19  20  21  22  23  24  25       16  17  18  19  20  21  22       22  23  24  25  26  27  28\\n 26  27  28  29  30  31           23  24  25  26  27  28  29       29  30  31\\n\\n           \\xd0\\xba\\xd0\\xb2\\xd1\\x96\\xd1\\x82\\xd0\\xbd\\xd1\\x8f                           \\xd1\\x82\\xd1\\x80\\xd0\\xb0\\xd0\\xb2\\xd0\\xbd\\xd1\\x8f                           \\xd1\\x87\\xd0\\xb5\\xd1\\x80\\xd0\\xb2\\xd0\\xbd\\xd1\\x8f\\n \\xd0\\xbf\\xd0\\xbd  \\xd0\\xb2\\xd1\\x82  \\xd1\\x81\\xd1\\x80  \\xd1\\x87\\xd1\\x82  \\xd0\\xbf\\xd1\\x82  \\xd1\\x81\\xd0\\xb1  \\xd0\\xbd\\xd0\\xb4       \\xd0\\xbf\\xd0\\xbd  \\xd0\\xb2\\xd1\\x82  \\xd1\\x81\\xd1\\x80  \\xd1\\x87\\xd1\\x82  \\xd0\\xbf\\xd1\\x82  \\xd1\\x81\\xd0\\xb1  \\xd0\\xbd\\xd0\\xb4       \\xd0\\xbf\\xd0\\xbd  \\xd0\\xb2\\xd1\\x82  \\xd1\\x81\\xd1\\x80  \\xd1\\x87\\xd1\\x82  \\xd0\\xbf\\xd1\\x82  \\xd1\\x81\\xd0\\xb1  \\xd0\\xbd\\xd0\\xb4\\n              1   2   3   4                            1   2            1   2   3   4   5   6\\n  5   6   7   8   9  10  11        3   4   5   6   7   8   9        7   8   9  10  11  12  13\\n 12  13  14  15  16  17  18       10  11  12  13  14  15  16       14  15  16  17  18  19  20\\n 19  20  21  22  23  24  25       17  18  19  20  21  22  23       21  22  23  24  25  26  27\\n 26  27  28  29  30               24  25  26  27  28  29  30       28  29  30\\n                                  31\\n\\n           \\xd0\\xbb\\xd0\\xb8\\xd0\\xbf\\xd0\\xbd\\xd1\\x8f                            \\xd1\\x81\\xd0\\xb5\\xd1\\x80\\xd0\\xbf\\xd0\\xbd\\xd1\\x8f                          \\xd0\\xb2\\xd0\\xb5\\xd1\\x80\\xd0\\xb5\\xd1\\x81\\xd0\\xbd\\xd1\\x8f\\n \\xd0\\xbf\\xd0\\xbd  \\xd0\\xb2\\xd1\\x82  \\xd1\\x81\\xd1\\x80  \\xd1\\x87\\xd1\\x82  \\xd0\\xbf\\xd1\\x82  \\xd1\\x81\\xd0\\xb1  \\xd0\\xbd\\xd0\\xb4       \\xd0\\xbf\\xd0\\xbd  \\xd0\\xb2\\xd1\\x82  \\xd1\\x81\\xd1\\x80  \\xd1\\x87\\xd1\\x82  \\xd0\\xbf\\xd1\\x82  \\xd1\\x81\\xd0\\xb1  \\xd0\\xbd\\xd0\\xb4       \\xd0\\xbf\\xd0\\xbd  \\xd0\\xb2\\xd1\\x82  \\xd1\\x81\\xd1\\x80  \\xd1\\x87\\xd1\\x82  \\xd0\\xbf\\xd1\\x82  \\xd1\\x81\\xd0\\xb1  \\xd0\\xbd\\xd0\\xb4\\n              1   2   3   4                                1                1   2   3   4   5\\n  5   6   7   8   9  10  11        2   3   4   5   6   7   8        6   7   8   9  10  11  12\\n 12  13  14  15  16  17  18        9  10  11  12  13  14  15       13  14  15  16  17  18  19\\n 19  20  21  22  23  24  25       16  17  18  19  20  21  22       20  21  22  23  24  25  26\\n 26  27  28  29  30  31           23  24  25  26  27  28  29       27  28  29  30\\n                                  30  31\\n\\n           \\xd0\\xb6\\xd0\\xbe\\xd0\\xb2\\xd1\\x82\\xd0\\xbd\\xd1\\x8f                         \\xd0\\xbb\\xd0\\xb8\\xd1\\x81\\xd1\\x82\\xd0\\xbe\\xd0\\xbf\\xd0\\xb0\\xd0\\xb4\\xd0\\xb0                          \\xd0\\xb3\\xd1\\x80\\xd1\\x83\\xd0\\xb4\\xd0\\xbd\\xd1\\x8f\\n \\xd0\\xbf\\xd0\\xbd  \\xd0\\xb2\\xd1\\x82  \\xd1\\x81\\xd1\\x80  \\xd1\\x87\\xd1\\x82  \\xd0\\xbf\\xd1\\x82  \\xd1\\x81\\xd0\\xb1  \\xd0\\xbd\\xd0\\xb4       \\xd0\\xbf\\xd0\\xbd  \\xd0\\xb2\\xd1\\x82  \\xd1\\x81\\xd1\\x80  \\xd1\\x87\\xd1\\x82  \\xd0\\xbf\\xd1\\x82  \\xd1\\x81\\xd0\\xb1  \\xd0\\xbd\\xd0\\xb4       \\xd0\\xbf\\xd0\\xbd  \\xd0\\xb2\\xd1\\x82  \\xd1\\x81\\xd1\\x80  \\xd1\\x87\\xd1\\x82  \\xd0\\xbf\\xd1\\x82  \\xd1\\x81\\xd0\\xb1  \\xd0\\xbd\\xd0\\xb4\\n                  1   2   3        1   2   3   4   5   6   7                1   2   3   4   5\\n  4   5   6   7   8   9  10        8   9  10  11  12  13  14        6   7   8   9  10  11  12\\n 11  12  13  14  15  16  17       15  16  17  18  19  20  21       13  14  15  16  17  18  19\\n 18  19  20  21  22  23  24       22  23  24  25  26  27  28       20  21  22  23  24  25  26\\n 25  26  27  28  29  30  31       29  30                           27  28  29  30  31\\n\'\n\n======================================================================\nFAIL: test_output_current_year (test.test_calendar.CommandLineTestCase.test_output_current_year)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File ""/home/serhiy/py/cpython/Lib/test/test_calendar.py"", line 1017, in test_output_current_year\n    self.assertIn(b\'January\', output)\n    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^\nAssertionError: b\'January\' not found in b\'                                  2025\\n\\n       \\xd1\\x81\\xd1\\x96\\xd1\\x87\\xd0\\xbd\\xd1\\x8f                     \\xd0\\xbb\\xd1\\x8e\\xd1\\x82\\xd0\\xbe\\xd0\\xb3\\xd0\\xbe                   \\xd0\\xb1\\xd0\\xb5\\xd1\\x80\\xd0\\xb5\\xd0\\xb7\\xd0\\xbd\\xd1\\x8f\\n\\xd0\\xbf\\xd0\\xbd \\xd0\\xb2\\xd1\\x82 \\xd1\\x81\\xd1\\x80 \\xd1\\x87\\xd1\\x82 \\xd0\\xbf\\xd1\\x82 \\xd1\\x81\\xd0\\xb1 \\xd0\\xbd\\xd0\\xb4      \\xd0\\xbf\\xd0\\xbd \\xd0\\xb2\\xd1\\x82 \\xd1\\x81\\xd1\\x80 \\xd1\\x87\\xd1\\x82 \\xd0\\xbf\\xd1\\x82 \\xd1\\x81\\xd0\\xb1 \\xd0\\xbd\\xd0\\xb4      \\xd0\\xbf\\xd0\\xbd \\xd0\\xb2\\xd1\\x82 \\xd1\\x81\\xd1\\x80 \\xd1\\x87\\xd1\\x82 \\xd0\\xbf\\xd1\\x82 \\xd1\\x81\\xd0\\xb1 \\xd0\\xbd\\xd0\\xb4\\n       1  2  3  4  5                      1  2                      1  2\\n 6  7  8  9 10 11 12       3  4  5  6  7  8  9       3  4  5  6  7  8  9\\n13 14 15 16 17 18 19      10 11 12 13 14 15 16      10 11 12 13 14 15 16\\n20 21 22 23 24 25 26      17 18 19 20 21 22 23      17 18 19 20 21 22 23\\n27 28 29 30 31            24 25 26 27 28            24 25 26 27 28 29 30\\n                                                    31\\n\\n       \\xd0\\xba\\xd0\\xb2\\xd1\\x96\\xd1\\x82\\xd0\\xbd\\xd1\\x8f                    \\xd1\\x82\\xd1\\x80\\xd0\\xb0\\xd0\\xb2\\xd0\\xbd\\xd1\\x8f                    \\xd1\\x87\\xd0\\xb5\\xd1\\x80\\xd0\\xb2\\xd0\\xbd\\xd1\\x8f\\n\\xd0\\xbf\\xd0\\xbd \\xd0\\xb2\\xd1\\x82 \\xd1\\x81\\xd1\\x80 \\xd1\\x87\\xd1\\x82 \\xd0\\xbf\\xd1\\x82 \\xd1\\x81\\xd0\\xb1 \\xd0\\xbd\\xd0\\xb4      \\xd0\\xbf\\xd0\\xbd \\xd0\\xb2\\xd1\\x82 \\xd1\\x81\\xd1\\x80 \\xd1\\x87\\xd1\\x82 \\xd0\\xbf\\xd1\\x82 \\xd1\\x81\\xd0\\xb1 \\xd0\\xbd\\xd0\\xb4      \\xd0\\xbf\\xd0\\xbd \\xd0\\xb2\\xd1\\x82 \\xd1\\x81\\xd1\\x80 \\xd1\\x87\\xd1\\x82 \\xd0\\xbf\\xd1\\x82 \\xd1\\x81\\xd0\\xb1 \\xd0\\xbd\\xd0\\xb4\\n    1  2  3  4  5  6                1  2  3  4                         1\\n 7  8  9 10 11 12 13       5  6  7  8  9 10 11       2  3  4  5  6  7  8\\n14 15 16 17 18 19 20      12 13 14 15 16 17 18       9 10 11 12 13 14 15\\n21 22 23 24 25 26 27      19 20 21 22 23 24 25      16 17 18 19 20 21 22\\n28 29 30                  26 27 28 29 30 31         23 24 25 26 27 28 29\\n                                                    30\\n\\n       \\xd0\\xbb\\xd0\\xb8\\xd0\\xbf\\xd0\\xbd\\xd1\\x8f                     \\xd1\\x81\\xd0\\xb5\\xd1\\x80\\xd0\\xbf\\xd0\\xbd\\xd1\\x8f                   \\xd0\\xb2\\xd0\\xb5\\xd1\\x80\\xd0\\xb5\\xd1\\x81\\xd0\\xbd\\xd1\\x8f\\n\\xd0\\xbf\\xd0\\xbd \\xd0\\xb2\\xd1\\x82 \\xd1\\x81\\xd1\\x80 \\xd1\\x87\\xd1\\x82 \\xd0\\xbf\\xd1\\x82 \\xd1\\x81\\xd0\\xb1 \\xd0\\xbd\\xd0\\xb4      \\xd0\\xbf\\xd0\\xbd \\xd0\\xb2\\xd1\\x82 \\xd1\\x81\\xd1\\x80 \\xd1\\x87\\xd1\\x82 \\xd0\\xbf\\xd1\\x82 \\xd1\\x81\\xd0\\xb1 \\xd0\\xbd\\xd0\\xb4      \\xd0\\xbf\\xd0\\xbd \\xd0\\xb2\\xd1\\x82 \\xd1\\x81\\xd1\\x80 \\xd1\\x87\\xd1\\x82 \\xd0\\xbf\\xd1\\x82 \\xd1\\x81\\xd0\\xb1 \\xd0\\xbd\\xd0\\xb4\\n    1  2  3  4  5  6                   1  2  3       1  2  3  4  5  6  7\\n 7  8  9 10 11 12 13       4  5  6  7  8  9 10       8  9 10 11 12 13 14\\n14 15 16 17 18 19 20      11 12 13 14 15 16 17      15 16 17 18 19 20 21\\n21 22 23 24 25 26 27      18 19 20 21 22 23 24      22 23 24 25 26 27 28\\n28 29 30 31               25 26 27 28 29 30 31      29 30\\n\\n       \\xd0\\xb6\\xd0\\xbe\\xd0\\xb2\\xd1\\x82\\xd0\\xbd\\xd1\\x8f                  \\xd0\\xbb\\xd0\\xb8\\xd1\\x81\\xd1\\x82\\xd0\\xbe\\xd0\\xbf\\xd0\\xb0\\xd0\\xb4\\xd0\\xb0                   \\xd0\\xb3\\xd1\\x80\\xd1\\x83\\xd0\\xb4\\xd0\\xbd\\xd1\\x8f\\n\\xd0\\xbf\\xd0\\xbd \\xd0\\xb2\\xd1\\x82 \\xd1\\x81\\xd1\\x80 \\xd1\\x87\\xd1\\x82 \\xd0\\xbf\\xd1\\x82 \\xd1\\x81\\xd0\\xb1 \\xd0\\xbd\\xd0\\xb4      \\xd0\\xbf\\xd0\\xbd \\xd0\\xb2\\xd1\\x82 \\xd1\\x81\\xd1\\x80 \\xd1\\x87\\xd1\\x82 \\xd0\\xbf\\xd1\\x82 \\xd1\\x81\\xd0\\xb1 \\xd0\\xbd\\xd0\\xb4      \\xd0\\xbf\\xd0\\xbd \\xd0\\xb2\\xd1\\x82 \\xd1\\x81\\xd1\\x80 \\xd1\\x87\\xd1\\x82 \\xd0\\xbf\\xd1\\x82 \\xd1\\x81\\xd0\\xb1 \\xd0\\xbd\\xd0\\xb4\\n       1  2  3  4  5                      1  2       1  2  3  4  5  6  7\\n 6  7  8  9 10 11 12       3  4  5  6  7  8  9       8  9 10 11 12 13 14\\n13 14 15 16 17 18 19      10 11 12 13 14 15 16      15 16 17 18 19 20 21\\n20 21 22 23 24 25 26      17 18 19 20 21 22 23      22 23 24 25 26 27 28\\n27 28 29 30 31            24 25 26 27 28 29 30      29 30 31\\n\'\n\n======================================================================\nFAIL: test_output_month (test.test_calendar.CommandLineTestCase.test_output_month)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File ""/home/serhiy/py/cpython/Lib/test/test_calendar.py"", line 1028, in test_output_month\n    self.assertEqual(output, conv(result_2004_01_text))\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: b\'     \\xd1\\x81\\xd1\\x96\\xd1\\x87\\xd0\\xbd\\xd1\\x8f[230 chars]31\\n\' != b\'    January 2004\\nMo Tu We Th Fr Sa Su\\n     [98 chars]31\\n\'\n\n======================================================================\nFAIL: test_output_year (test.test_calendar.CommandLineTestCase.test_output_year)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File ""/home/serhiy/py/cpython/Lib/test/test_calendar.py"", line 1023, in test_output_year\n    self.assertEqual(output, conv(result_2004_text))\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: b\'   [40 chars]      \\xd1\\x81\\xd1\\x96\\xd1\\x87\\xd0\\xbd\\xd1\\x8f[3724 chars]31\\n\' != b\'   [40 chars]     January                   February       [2023 chars]31\\n\'\n\n----------------------------------------------------------------------', '======================================================================\nFAIL: test_run_module_with_args (test.test_pdb.PdbTestCase.test_run_module_with_args)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File ""/home/serhiy/py/cpython/Lib/test/test_pdb.py"", line 3696, in test_run_module_with_args\n    self.assertIn(""December"", stdout)\n    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^\nAssertionError: \'December\' not found in \'> /home/serhiy/py/cpython/Lib/calendar.py(1)<module>()\\n-> """"""Calendar printing functions\\n(Pdb) (Pdb)                                    1\\n\\n       січня                     лютого                   березня\\nпн вт ср чт пт сб нд      пн вт ср чт пт сб нд      пн вт ср чт пт сб нд\\n 1  2  3  4  5  6  7                1  2  3  4                1  2  3  4\\n 8  9 10 11 12 13 14       5  6  7  8  9 10 11       5  6  7  8  9 10 11\\n15 16 17 18 19 20 21      12 13 14 15 16 17 18      12 13 14 15 16 17 18\\n22 23 24 25 26 27 28      19 20 21 22 23 24 25      19 20 21 22 23 24 25\\n29 30 31                  26 27 28                  26 27 28 29 30 31\\n\\n       квітня                    травня                    червня\\nпн вт ср чт пт сб нд      пн вт ср чт пт сб нд      пн вт ср чт пт сб нд\\n                   1          1  2  3  4  5  6                   1  2  3\\n 2  3  4  5  6  7  8       7  8  9 10 11 12 13       4  5  6  7  8  9 10\\n 9 10 11 12 13 14 15      14 15 16 17 18 19 20      11 12 13 14 15 16 17\\n16 17 18 19 20 21 22      21 22 23 24 25 26 27      18 19 20 21 22 23 24\\n23 24 25 26 27 28 29      28 29 30 31               25 26 27 28 29 30\\n30\\n\\n       липня                     серпня                   вересня\\nпн вт ср чт пт сб нд      пн вт ср чт пт сб нд      пн вт ср чт пт сб нд\\n                   1             1  2  3  4  5                      1  2\\n 2  3  4  5  6  7  8       6  7  8  9 10 11 12       3  4  5  6  7  8  9\\n 9 10 11 12 13 14 15      13 14 15 16 17 18 19      10 11 12 13 14 15 16\\n16 17 18 19 20 21 22      20 21 22 23 24 25 26      17 18 19 20 21 22 23\\n23 24 25 26 27 28 29      27 28 29 30 31            24 25 26 27 28 29 30\\n30 31\\n\\n       жовтня                  листопада                   грудня\\nпн вт ср чт пт сб нд      пн вт ср чт пт сб нд      пн вт ср чт пт сб нд\\n 1  2  3  4  5  6  7                1  2  3  4                      1  2\\n 8  9 10 11 12 13 14       5  6  7  8  9 10 11       3  4  5  6  7  8  9\\n15 16 17 18 19 20 21      12 13 14 15 16 17 18      10 11 12 13 14 15 16\\n22 23 24 25 26 27 28      19 20 21 22 23 24 25      17 18 19 20 21 22 23\\n29 30 31                  26 27 28 29 30            24 25 26 27 28 29 30\\n                                                    31\\nThe program finished and will be restarted\\n> /home/serhiy/py/cpython/Lib/calendar.py(1)<module>()\\n-> """"""Calendar printing functions\\n(Pdb)                                    1\\n\\n       січня                     лютого                   березня\\nпн вт ср чт пт сб нд      пн вт ср чт пт сб нд      пн вт ср чт пт сб нд\\n 1  2  3  4  5  6  7                1  2  3  4                1  2  3  4\\n 8  9 10 11 12 13 14       5  6  7  8  9 10 11       5  6  7  8  9 10 11\\n15 16 17 18 19 20 21      12 13 14 15 16 17 18      12 13 14 15 16 17 18\\n22 23 24 25 26 27 28      19 20 21 22 23 24 25      19 20 21 22 23 24 25\\n29 30 31                  26 27 28                  26 27 28 29 30 31\\n\\n       квітня                    травня                    червня\\nпн вт ср чт пт сб нд      пн вт ср чт пт сб нд      пн вт ср чт пт сб нд\\n                   1          1  2  3  4  5  6                   1  2  3\\n 2  3  4  5  6  7  8       7  8  9 10 11 12 13       4  5  6  7  8  9 10\\n 9 10 11 12 13 14 15      14 15 16 17 18 19 20      11 12 13 14 15 16 17\\n16 17 18 19 20 21 22      21 22 23 24 25 26 27      18 19 20 21 22 23 24\\n23 24 25 26 27 28 29      28 29 30 31               25 26 27 28 29 30\\n30\\n\\n       липня                     серпня                   вересня\\nпн вт ср чт пт сб нд      пн вт ср чт пт сб нд      пн вт ср чт пт сб нд\\n                   1             1  2  3  4  5                      1  2\\n 2  3  4  5  6  7  8       6  7  8  9 10 11 12       3  4  5  6  7  8  9\\n 9 10 11 12 13 14 15      13 14 15 16 17 18 19      10 11 12 13 14 15 16\\n16 17 18 19 20 21 22      20 21 22 23 24 25 26      17 18 19 20 21 22 23\\n23 24 25 26 27 28 29      27 28 29 30 31            24 25 26 27 28 29 30\\n30 31\\n\\n       жовтня                  листопада                   грудня\\nпн вт ср чт пт сб нд      пн вт ср чт пт сб нд      пн вт ср чт пт сб нд\\n 1  2  3  4  5  6  7                1  2  3  4                      1  2\\n 8  9 10 11 12 13 14       5  6  7  8  9 10 11       3  4  5  6  7  8  9\\n15 16 17 18 19 20 21      12 13 14 15 16 17 18      10 11 12 13 14 15 16\\n22 23 24 25 26 27 28      19 20 21 22 23 24 25      17 18 19 20 21 22 23\\n29 30 31                  26 27 28 29 30            24 25 26 27 28 29 30\\n                                                    31\\nThe program finished and will be restarted\\n> /home/serhiy/py/cpython/Lib/calendar.py(1)<module>()\\n-> """"""Calendar printing functions\\n(Pdb) \\n\'\n\n----------------------------------------------------------------------']","Thanks for the report. Specifically caused by PR https://github.com/python/cpython/pull/129625.
+
+Before, we'd get the month/day names in English, despite the env var:
+
+```console
+❯ LANG=uk_UA.UTF-8 python3.13 -m calendar 2025 2
+   February 2025
+Mo Tu We Th Fr Sa Su
+                1  2
+ 3  4  5  6  7  8  9
+10 11 12 13 14 15 16
+17 18 19 20 21 22 23
+24 25 26 27 28
+```
+
+It's because `options.locale` is not set (via `--locale`), so we used `cal = TextCalendar()`.
+
+`TextCalendar` is a subclass of the base `Calendar` class.
+
+Now, we get this:
+
+```console
+❯ LANG=uk_UA.UTF-8 ./python.exe -m calendar 2025 2
+    лютого 2025
+пн вт ср чт пт сб нд
+                1  2
+ 3  4  5  6  7  8  9
+10 11 12 13 14 15 16
+17 18 19 20 21 22 23
+24 25 26 27 28
+```
+
+This is because `options.locale` is still not set, we use the new `cal = _CLIDemoCalendar(highlight_day=today)`.
+
+However, `_CLIDemoCalendar` is a subclass of `LocaleTextCalendar` (itself a subclass of `TextCalendar`).
+
+Before, we only used `LocaleTextCalendar` when `options.locale` is set.
+
+But now `LocaleTextCalendar` sets the locale from the env var, and we get local month/day names.
+","['❯ LANG=uk_UA.UTF-8 python3.13 -m calendar 2025 2\n   February 2025\nMo Tu We Th Fr Sa Su\n                1  2\n 3  4  5  6  7  8  9\n10 11 12 13 14 15 16\n17 18 19 20 21 22 23\n24 25 26 27 28', '❯ LANG=uk_UA.UTF-8 ./python.exe -m calendar 2025 2\n    лютого 2025\nпн вт ср чт пт сб нд\n                1  2\n 3  4  5  6  7  8  9\n10 11 12 13 14 15 16\n17 18 19 20 21 22 23\n24 25 26 27 28']",['python'],github,https://github.com/python/cpython/issues/130665,{'repo': 'python/cpython'}
+"Add `sys.runtime_library`
+
+# Feature or enhancement
+
+### Proposal:
+
+It would be useful to expose the runtime library path, if any, as a `sys` module attribute.
+
+This is already implemented for `getpath`, we can easily make this information also available in `sys`.
+
+https://github.com/python/cpython/blob/10ee2d9d3bcde27c75f179214ad41c00e4852a7a/Modules/getpath.c#L805-L829
+
+I'm proposing `sys`, as I think that's what makes the most logical sense, but people are not too keen on it, we could add it to `sysconfig` instead.
+
+### Has this already been discussed elsewhere?
+
+No response given
+
+### Links to previous discussion of this feature:
+
+_No response_",[],"When Python is built as a shared library, the path to that library.
+
+```console
+$ ldd `which python3`
+        linux-vdso.so.1 (0x00007ffc3ddbe000)
+        libpython3.12.so.1.0 => /lib64/libpython3.12.so.1.0 (0x00007fe292720000)  # This path
+        libc.so.6 => /lib64/libc.so.6 (0x00007fe29252f000)
+        libm.so.6 => /lib64/libm.so.6 (0x00007fe29244b000)
+        /lib64/ld-linux-x86-64.so.2 (0x00007fe292d06000)
+```
+
+It's the value provided for the `library` variable when running https://github.com/python/cpython/blob/main/Modules/getpath.py
+
+It's very much a CPython implementation detail though, since even *CPython* doesn't define it when statically linked. (The same is also true of `sys.dllhandle`, but that ship has already sailed).
+
+Checking what `setuptools` does, the current incantation to get that info would be:
+
+```console
+$ python3 -c ""from sysconfig import get_config_var as gcv; import os.path; print(os.path.join(gcv('base'), gcv('platlibdir'), gcv('LDLIBRARY')))""
+/usr/lib64/libpython3.12.so
+```","['$ ldd `which python3`\n        linux-vdso.so.1 (0x00007ffc3ddbe000)\n        libpython3.12.so.1.0 => /lib64/libpython3.12.so.1.0 (0x00007fe292720000)  # This path\n        libc.so.6 => /lib64/libc.so.6 (0x00007fe29252f000)\n        libm.so.6 => /lib64/libm.so.6 (0x00007fe29244b000)\n        /lib64/ld-linux-x86-64.so.2 (0x00007fe292d06000)', '$ python3 -c ""from sysconfig import get_config_var as gcv; import os.path; print(os.path.join(gcv(\'base\'), gcv(\'platlibdir\'), gcv(\'LDLIBRARY\')))""\n/usr/lib64/libpython3.12.so']",['python'],github,https://github.com/python/cpython/issues/129492,{'repo': 'python/cpython'}
+"Possibly unnumbered list missing in Doc/c-api/function.rst
+
+# Documentation
+
+PyFunction_WatchEvent at c-api/function.rst has in the source file what seems to be a unnumbered list, but the built documentation has everything in a single line. Should it be formatted as a unnumbered list instead?
+
+https://github.com/python/cpython/blob/798f8d3ea9f54ee80a684bff74f67ee7d99e35c2/Doc/c-api/function.rst?plain=1#L146-L155
+
+![Image](https://github.com/user-attachments/assets/269319f3-d469-427d-8a8c-3609f6cf38cb)
+
+<!-- gh-linked-prs -->
+### Linked PRs
+* gh-130174
+* gh-130175
+* gh-130176
+<!-- /gh-linked-prs -->
+",[],Thanks @StanFromIreland and @sobolevn !,[],['python'],github,https://github.com/python/cpython/issues/130169,{'repo': 'python/cpython'}
+"[Windows] test_wmi: `test_wmi_query_error` test is flaky
+
+# Bug report
+
+Seen in https://github.com/python/cpython/actions/runs/13606431591/job/38038447105?pr=130724 on both the default and free threading builds:
+
+```
+======================================================================
+FAIL: test_wmi_query_error (test.test_wmi.WmiTests.test_wmi_query_error)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File ""D:\a\cpython\cpython\Lib\test\test_wmi.py"", line 50, in test_wmi_query_error
+    self.fail(""Expected OSError"")
+    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+AssertionError: Expected OSError
+----------------------------------------------------------------------
+```
+
+```
+======================================================================
+FAIL: test_wmi_query_repeated_error (test.test_wmi.WmiTests.test_wmi_query_repeated_error)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File ""D:\a\cpython\cpython\Lib\test\test_wmi.py"", line 54, in test_wmi_query_repeated_error
+    self.test_wmi_query_error()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File ""D:\a\cpython\cpython\Lib\test\test_wmi.py"", line 50, in test_wmi_query_error
+    self.fail(""Expected OSError"")
+    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+AssertionError: Expected OSError
+----------------------------------------------------------------------
+```
+
+```
+======================================================================
+ERROR: test_wmi_query_repeated (test.test_wmi.WmiTests.test_wmi_query_repeated)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File ""D:\a\cpython\cpython\Lib\test\test_wmi.py"", line 40, in test_wmi_query_repeated
+    self.test_wmi_query_os_version()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File ""D:\a\cpython\cpython\Lib\test\test_wmi.py"", line 28, in test_wmi_query_os_version
+    r = wmi_exec_query(""SELECT Version FROM Win32_OperatingSystem"").split(""\0"")
+        ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""D:\a\cpython\cpython\Lib\test\test_wmi.py"", line 23, in wmi_exec_query
+    return _wmi.exec_query(query)
+           ~~~~~~~~~~~~~~~^^^^^^^
+TimeoutError: [WinError 258] The wait operation timed out
+----------------------------------------------------------------------
+Ran 8 tests in 45.543s
+FAILED (errors=1, skipped=1)
+```
+
+In these cases the tests succeeded when retried.
+
+<!-- gh-linked-prs -->
+### Linked PRs
+* gh-130832
+* gh-130839
+* gh-130840
+<!-- /gh-linked-prs -->
+","['======================================================================\nFAIL: test_wmi_query_error (test.test_wmi.WmiTests.test_wmi_query_error)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File ""D:\\a\\cpython\\cpython\\Lib\\test\\test_wmi.py"", line 50, in test_wmi_query_error\n    self.fail(""Expected OSError"")\n    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^\nAssertionError: Expected OSError\n----------------------------------------------------------------------', '======================================================================\nFAIL: test_wmi_query_repeated_error (test.test_wmi.WmiTests.test_wmi_query_repeated_error)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File ""D:\\a\\cpython\\cpython\\Lib\\test\\test_wmi.py"", line 54, in test_wmi_query_repeated_error\n    self.test_wmi_query_error()\n    ~~~~~~~~~~~~~~~~~~~~~~~~~^^\n  File ""D:\\a\\cpython\\cpython\\Lib\\test\\test_wmi.py"", line 50, in test_wmi_query_error\n    self.fail(""Expected OSError"")\n    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^\nAssertionError: Expected OSError\n----------------------------------------------------------------------', '======================================================================\nERROR: test_wmi_query_repeated (test.test_wmi.WmiTests.test_wmi_query_repeated)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File ""D:\\a\\cpython\\cpython\\Lib\\test\\test_wmi.py"", line 40, in test_wmi_query_repeated\n    self.test_wmi_query_os_version()\n    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^\n  File ""D:\\a\\cpython\\cpython\\Lib\\test\\test_wmi.py"", line 28, in test_wmi_query_os_version\n    r = wmi_exec_query(""SELECT Version FROM Win32_OperatingSystem"").split(""\\0"")\n        ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File ""D:\\a\\cpython\\cpython\\Lib\\test\\test_wmi.py"", line 23, in wmi_exec_query\n    return _wmi.exec_query(query)\n           ~~~~~~~~~~~~~~~^^^^^^^\nTimeoutError: [WinError 258] The wait operation timed out\n----------------------------------------------------------------------\nRan 8 tests in 45.543s\nFAILED (errors=1, skipped=1)']","I think the invalid handle error (0x80070006, which is GetLastError()==6) is going to be a race condition with the timeout, probably on one of the events. Deciding which thread is responsible to close the events is tricky, though _in theory_ we should be able close them immediately after setting them as the threads have already been awoken (though haven't yet run any more code).
+
+In any case, the place where we use it (in `platform`) handles all `OSError` and falls back onto other code, so it isn't going to affect users apart from those who use the internal API.
+
+I can only assume the second one is a partially-written buffer? It's splitting on a null separator and checking the total length of the result, but I bet if it pre-filtered to only non-empty entries then it'd be fine. Again, the real code will only return from valid entries, so users won't notice this in practice (unless it's truncated actual data, but then, it'll be a one-off in their logs, assuming they're following the `platform` module instructions).",[],['python'],github,https://github.com/python/cpython/issues/130727,{'repo': 'python/cpython'}
+"`test_sys.SysModuleTest.get_allocated_blocks` test precondition intermittently fails on iOS
+
+# Bug report
+
+### Bug description:
+
+#130007 introduced a change to the handling of C stack limits. This change intermittently causes the `test_sys.SysModuleTest.get_allocated_blocks()` test to fail:
+```
+======================================================================
+FAIL: test_getallocatedblocks (test.test_sys.SysModuleTest.test_getallocatedblocks)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File ""/Users/buildbot/Library/Developer/XCTestDevices/AFB8404B-0B3C-4CD4-862A-BBCE48F86959/data/Containers/Bundle/Application/91D9D3A2-F680-47B8-AC8F-A68603BDDACC/iOSTestbed.app/python/lib/python3.14/test/test_sys.py"", line 1104, in test_getallocatedblocks
+    self.assertLess(a, sys.gettotalrefcount())
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 548518 not less than 476363
+----------------------------------------------------------------------
+```
+The exact values vary, but they're usually within ~500 or so. 
+
+On the test re-run, the values are different:
+```
+AssertionError: 592958 not less than 518066
+```
+(again, varying between test runs by ~500 or so).
+
+@markshannon commented on the original PR:
+> `sys.gettotalrefcount()` is the total refcount per interpreter, but `sys.getallocatedblocks()` seems to be the total number of allocated blocks per process. If multiple interpreters were involved, I could see this test failing. Otherwise, it is puzzling.
+>
+> This PR does no refcounting, allocation or deallocation. My guess is that this PR is exposing an already existing miscounting of references when a recursion error occurs. Just a guess though.
+
+The problem doesn't appear to be an issue with running the test suite as a single process - Android isn't affected in CI, I can't reproduce the issue on my own macOS machine running a single-process run locally.
+
+However, I also can't reliably reproduce the problem locally on iOS. Running the fully test suite locally, this test passes reliably.
+
+### CPython versions tested on:
+
+CPython main branch
+
+### Operating systems tested on:
+
+Other
+
+<!-- gh-linked-prs -->
+### Linked PRs
+* gh-130385
+<!-- /gh-linked-prs -->
+","['======================================================================\nFAIL: test_getallocatedblocks (test.test_sys.SysModuleTest.test_getallocatedblocks)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File ""/Users/buildbot/Library/Developer/XCTestDevices/AFB8404B-0B3C-4CD4-862A-BBCE48F86959/data/Containers/Bundle/Application/91D9D3A2-F680-47B8-AC8F-A68603BDDACC/iOSTestbed.app/python/lib/python3.14/test/test_sys.py"", line 1104, in test_getallocatedblocks\n    self.assertLess(a, sys.gettotalrefcount())\n    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: 548518 not less than 476363\n----------------------------------------------------------------------', 'AssertionError: 592958 not less than 518066']","While I can't tell why this test is failing only for iOS in CI, the precondition is incorrect, as the number of allocated blocks is per-process and the reference count is per interpreter.
+
+The comment in C function `sys_getallocatedblocks_impl` says ""It might make sense to return the count for just the current interpreter."" We should do that.",[],['python'],github,https://github.com/python/cpython/issues/130384,{'repo': 'python/cpython'}
+"`_py_abc` Python implementation of `abc` is not thread-safe
+
+# Bug report
+
+The update to the invalidation counter is not thread-safe and can lose updates in some Python implementations:
+
+Failures seen on:
+
+* Python 3.14t
+* Python 3.9
+* pypy3.10
+* pypy3.11
+
+But not on Python 3.10-3.14 with GIL due to limited GIL switch opportunities.
+
+https://github.com/python/cpython/blob/05e89c34bd8389f87bd6c9462d5a06ef9e1a65ab/Lib/_py_abc.py#L54-L70
+
+For example, consider the following repro, adapted from [`test_abc.test_registration_basics`](https://github.com/python/cpython/blob/05e89c34bd8389f87bd6c9462d5a06ef9e1a65ab/Lib/test/test_abc.py#L273):
+
+```python
+import _py_abc as abc # Use Python implementation of ABCs!!
+import threading
+import os
+import sys
+
+sys.setswitchinterval(1e-6)
+
+N = 5
+
+def run(b):
+    b.wait()
+
+    class A(metaclass=abc.ABCMeta):
+        pass
+    A.register(int)
+    if not isinstance(42, A):
+        print(""Oops!"")
+        os._exit(1)
+
+def main():
+    for _ in range(10000):
+        threads = []
+        b = threading.Barrier(N)
+        for _ in range(N):
+            t = threading.Thread(target=run, args=(b,))
+            threads.append(t)
+            t.start()
+        for t in threads:
+            t.join()
+
+
+if __name__ == ""__main__"":
+    main()
+```
+
+
+
+<!-- gh-linked-prs -->
+### Linked PRs
+* gh-130131
+<!-- /gh-linked-prs -->
+","['import _py_abc as abc # Use Python implementation of ABCs!!\nimport threading\nimport os\nimport sys\n\nsys.setswitchinterval(1e-6)\n\nN = 5\n\ndef run(b):\n    b.wait()\n\n    class A(metaclass=abc.ABCMeta):\n        pass\n    A.register(int)\n    if not isinstance(42, A):\n        print(""Oops!"")\n        os._exit(1)\n\ndef main():\n    for _ in range(10000):\n        threads = []\n        b = threading.Barrier(N)\n        for _ in range(N):\n            t = threading.Thread(target=run, args=(b,))\n            threads.append(t)\n            t.start()\n        for t in threads:\n            t.join()\n\n\nif __name__ == ""__main__"":\n    main()']","Not sure if this is relevant: https://github.com/python/cpython/actions/runs/13335219139/job/37248893358?pr=129175 (I don't know if the test is testing the Python or the C implementation).
+
+EDIT: I think this is the reproducer you had. But now we caught it in the CI",[],['python'],github,https://github.com/python/cpython/issues/130095,{'repo': 'python/cpython'}
+"REPL exits with traceback when str(sys.ps1) raises
+
+# Bug report
+
+### Bug description:
+
+Subject says it all. This is on the latest HEAD of main.
+
+```python
+~/cpython$ g pull
+Already up to date.
+~/cpython$ make
+Checked 112 modules (34 built-in, 78 shared, 0 n/a on macosx-14.6-x86_64, 0 disabled, 0 missing, 0 failed on import)
+./python.exe -E ./Tools/build/generate-build-details.py `cat pybuilddir.txt`/build-details.json
+~/cpython$ ./python.exe 
+Python 3.14.0a5+ (heads/main:ab11c097052, Feb 28 2025, 08:56:47) [Clang 16.0.0 (clang-1600.0.26.6)] on darwin
+Type ""help"", ""copyright"", ""credits"" or ""license"" for more information.
+>>> import sys
+>>> class C:
+...     def __str__(self): 1/0
+...     
+>>> sys.ps1 = C()
+Traceback (most recent call last):
+  File ""<frozen runpy>"", line 198, in _run_module_as_main
+  File ""<frozen runpy>"", line 88, in _run_code
+  File ""/Users/guido/cpython/Lib/_pyrepl/__main__.py"", line 6, in <module>
+    __pyrepl_interactive_console()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File ""/Users/guido/cpython/Lib/_pyrepl/main.py"", line 59, in interactive_console
+    run_multiline_interactive_console(console)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File ""/Users/guido/cpython/Lib/_pyrepl/simple_interact.py"", line 143, in run_multiline_interactive_console
+    statement = multiline_input(more_lines, ps1, ps2)
+  File ""/Users/guido/cpython/Lib/_pyrepl/readline.py"", line 389, in multiline_input
+    return reader.readline()
+           ~~~~~~~~~~~~~~~^^
+  File ""/Users/guido/cpython/Lib/_pyrepl/reader.py"", line 796, in readline
+    self.prepare()
+    ~~~~~~~~~~~~^^
+  File ""/Users/guido/cpython/Lib/_pyrepl/historical_reader.py"", line 306, in prepare
+    super().prepare()
+    ~~~~~~~~~~~~~~~^^
+  File ""/Users/guido/cpython/Lib/_pyrepl/reader.py"", line 643, in prepare
+    self.calc_screen()
+    ~~~~~~~~~~~~~~~~^^
+  File ""/Users/guido/cpython/Lib/_pyrepl/completing_reader.py"", line 261, in calc_screen
+    screen = super().calc_screen()
+  File ""/Users/guido/cpython/Lib/_pyrepl/reader.py"", line 371, in calc_screen
+    prompt = self.get_prompt(ln, ll >= pos >= 0)
+  File ""/Users/guido/cpython/Lib/_pyrepl/historical_reader.py"", line 326, in get_prompt
+    return super().get_prompt(lineno, cursor_on_line)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/Users/guido/cpython/Lib/_pyrepl/reader.py"", line 552, in get_prompt
+    prompt = f""{ANSIColors.BOLD_MAGENTA}{prompt}{ANSIColors.RESET}""
+                                        ^^^^^^^^
+  File ""<python-input-1>"", line 2, in __str__
+    def __str__(self): 1/0
+                       ~^~
+ZeroDivisionError: division by zero
+~/cpython$ 
+```
+
+Probably @pablogsal should look into this.
+
+### CPython versions tested on:
+
+CPython main branch
+
+### Operating systems tested on:
+
+macOS
+
+<!-- gh-linked-prs -->
+### Linked PRs
+* gh-131110
+<!-- /gh-linked-prs -->
+","['~/cpython$ g pull\nAlready up to date.\n~/cpython$ make\nChecked 112 modules (34 built-in, 78 shared, 0 n/a on macosx-14.6-x86_64, 0 disabled, 0 missing, 0 failed on import)\n./python.exe -E ./Tools/build/generate-build-details.py `cat pybuilddir.txt`/build-details.json\n~/cpython$ ./python.exe \nPython 3.14.0a5+ (heads/main:ab11c097052, Feb 28 2025, 08:56:47) [Clang 16.0.0 (clang-1600.0.26.6)] on darwin\nType ""help"", ""copyright"", ""credits"" or ""license"" for more information.\n>>> import sys\n>>> class C:\n...     def __str__(self): 1/0\n...     \n>>> sys.ps1 = C()\nTraceback (most recent call last):\n  File ""<frozen runpy>"", line 198, in _run_module_as_main\n  File ""<frozen runpy>"", line 88, in _run_code\n  File ""/Users/guido/cpython/Lib/_pyrepl/__main__.py"", line 6, in <module>\n    __pyrepl_interactive_console()\n    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^\n  File ""/Users/guido/cpython/Lib/_pyrepl/main.py"", line 59, in interactive_console\n    run_multiline_interactive_console(console)\n    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^\n  File ""/Users/guido/cpython/Lib/_pyrepl/simple_interact.py"", line 143, in run_multiline_interactive_console\n    statement = multiline_input(more_lines, ps1, ps2)\n  File ""/Users/guido/cpython/Lib/_pyrepl/readline.py"", line 389, in multiline_input\n    return reader.readline()\n           ~~~~~~~~~~~~~~~^^\n  File ""/Users/guido/cpython/Lib/_pyrepl/reader.py"", line 796, in readline\n    self.prepare()\n    ~~~~~~~~~~~~^^\n  File ""/Users/guido/cpython/Lib/_pyrepl/historical_reader.py"", line 306, in prepare\n    super().prepare()\n    ~~~~~~~~~~~~~~~^^\n  File ""/Users/guido/cpython/Lib/_pyrepl/reader.py"", line 643, in prepare\n    self.calc_screen()\n    ~~~~~~~~~~~~~~~~^^\n  File ""/Users/guido/cpython/Lib/_pyrepl/completing_reader.py"", line 261, in calc_screen\n    screen = super().calc_screen()\n  File ""/Users/guido/cpython/Lib/_pyrepl/reader.py"", line 371, in calc_screen\n    prompt = self.get_prompt(ln, ll >= pos >= 0)\n  File ""/Users/guido/cpython/Lib/_pyrepl/historical_reader.py"", line 326, in get_prompt\n    return super().get_prompt(lineno, cursor_on_line)\n           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^\n  File ""/Users/guido/cpython/Lib/_pyrepl/reader.py"", line 552, in get_prompt\n    prompt = f""{ANSIColors.BOLD_MAGENTA}{prompt}{ANSIColors.RESET}""\n                                        ^^^^^^^^\n  File ""<python-input-1>"", line 2, in __str__\n    def __str__(self): 1/0\n                       ~^~\nZeroDivisionError: division by zero\n~/cpython$']","Easy fix is 
+```
+git diff
+diff --git a/Lib/_pyrepl/reader.py b/Lib/_pyrepl/reader.py
+index 1252847e02b..6d41802bce0 100644
+--- a/Lib/_pyrepl/reader.py
++++ b/Lib/_pyrepl/reader.py
+@@ -548,6 +548,11 @@ def get_prompt(self, lineno: int, cursor_on_line: bool) -> str:
+         else:
+             prompt = self.ps1
+
++        try:
++            prompt = str(prompt)
++        except:
++            prompt = "">>> ""
++
+         if self.can_colorize:
+             prompt = f""{ANSIColors.BOLD_MAGENTA}{prompt}{ANSIColors.RESET}""
+         return prompt
+```
+But maybe we should handle unrecoverable exceptions like MemoryError, SystemExit and stop REPL?","['git diff\ndiff --git a/Lib/_pyrepl/reader.py b/Lib/_pyrepl/reader.py\nindex 1252847e02b..6d41802bce0 100644\n--- a/Lib/_pyrepl/reader.py\n+++ b/Lib/_pyrepl/reader.py\n@@ -548,6 +548,11 @@ def get_prompt(self, lineno: int, cursor_on_line: bool) -> str:\n         else:\n             prompt = self.ps1\n\n+        try:\n+            prompt = str(prompt)\n+        except:\n+            prompt = "">>> ""\n+\n         if self.can_colorize:\n             prompt = f""{ANSIColors.BOLD_MAGENTA}{prompt}{ANSIColors.RESET}""\n         return prompt']",['python'],github,https://github.com/python/cpython/issues/130698,{'repo': 'python/cpython'}
+"Improve the frozenset.is(sub|super)set docstrings
+
+# Documentation
+
+RE: Documentation provided by built-in function help()
+
+While reviewing built-in methods in detail I made note of:
+
+- ""help(frozenset)"" issubset and issuperset methods both return bool type
+
+<details>
+<summary>Other comments that were not issues</summary>
+
+> See https://github.com/python/cpython/issues/129622#issuecomment-2633394435.
+
+- ""help(slice)"" third parameter typo
+- ""help(range)"" third parameter typo
+- ""help(float)"" quizzical hex method example
+- ""help(bool)"" is bit_length method also for absolute value of self?
+- ""help(bool)"" is_integer appears duck-like compatible with int (TypeError with float)
+- ""help(bool)"" from_bytes appears to return a bool from byte array
+
+</details>
+
+Regards,
+'EntryLevelJobSeeker'
+
+
+<!-- gh-linked-prs -->
+### Linked PRs
+* gh-129637
+<!-- /gh-linked-prs -->
+",[],"The comments are clearer if one tries the given commands.  My response for each argument.
+
+`slice` and `range`: no typo.  OP likely misunderstands that `[, step]` means 'optional.
+
+`float`: the help response incorporates docstrings; OP likely does not understand `p` in float 'hex'.  Must read doc to understand.  Docstrings are reminders, not complete documentation.
+
+`frozenset.issubset`:  ""Report whether another set contains this set.""  `.issuperset`: has similar docstring.  These are very unusual docstrings.  All others for frozenset say ""Return ..."", as is standard.  OP is suggesting new docstring, something like ""Return True if *self* is a subset of *other*, else False.  Similarly for `issuperset`.  I agree.
+
+`bool.bit_length`: Docstring, inherited from 'int' uses `37` as an example, which is not applicable to `bool`.  (Nor is question about absolute value.  But (-37).bit_length() is 6, as for 37.)  A customized docstring for bool.bit_length would require a customized function which seems a pain.  Users should notice that bool subclasses int and then ignore example.
+
+`bool.is_integer`: Inherited int docstring is ""Returns True. Exists for duck type compatibility with float.is_integer.""  The second sentence makes more sense as an explanation of why ints have an 'is_integer'.  float.is_integer works; (1.0).is_integer() returns True and (1.1).is_integer is False.  No type error.
+
+`bool.from_bytes`: this is *not* int.from_bytes.  The docstring, which likely copies the int.from_bytes docstring, says ""Return the integer ..."", which is not wrong in that bools, like ints, are integers.  It is proper that the subclass return a subclass instance.
+
+To me (EDIT), the only valid issue is the frozenset docstrings.  A new title might be ""Improve the frozenset.is(sub|super)set docstrings""
+
+",[],['python'],github,https://github.com/python/cpython/issues/129622,{'repo': 'python/cpython'}
+"Turtle - rotate head when shape is set to image
+
+# Feature or enhancement
+
+### Proposal:
+
+I found turtle module to be a great way to introduce my kid to programming. I spotted that he is especially enjoying some interactive scripts, that react to keys or clicking. My problem is that currently when head shape is set to an image, it's not getting rotated which is quite a limitation when it comes to achieving some interesting effects while keeping the code simple.
+
+Would you consider adding an option to rotate turtle head shape when it's set to an image to the library?
+
+Sample code could work like this:
+
+```python
+import turtle
+
+sc = turtle.Screen()
+sc.addshape(""./car.png"", rotate_image_shape=True)
+
+t = turtle.Turtle()
+t.shape(""./car.png"")
+
+def handle_click(x,y):
+    t.setheading(t.towards(x,y))
+    t.goto(x,y)
+
+sc.onclick(handle_click)
+
+turtle.mainloop()
+```
+so unless you explicitly say that you want to rotate image shape, it would work as it used to.
+
+I did some research and implemented sample solution here:
+https://github.com/python/cpython/compare/main...kbialowas:cpython:tilt-turtle-transformation
+
+### Has this already been discussed elsewhere?
+
+This is a minor feature, which does not need previous discussion elsewhere
+
+### Links to previous discussion of this feature:
+
+https://discuss.python.org/t/turtle-make-it-possible-to-tilt-image-shape/81890/2
+
+<!-- gh-linked-prs -->
+### Linked PRs
+* gh-130855
+<!-- /gh-linked-prs -->
+","['import turtle\n\nsc = turtle.Screen()\nsc.addshape(""./car.png"", rotate_image_shape=True)\n\nt = turtle.Turtle()\nt.shape(""./car.png"")\n\ndef handle_click(x,y):\n    t.setheading(t.towards(x,y))\n    t.goto(x,y)\n\nsc.onclick(handle_click)\n\nturtle.mainloop()']",If it works submit a pr if you want,[],['python'],github,https://github.com/python/cpython/issues/130715,{'repo': 'python/cpython'}
+"print(..., end='') is corrupting output in Python 3.13.1 REPL (PowerShell)
+
+I'm experiencing a strange issue in Python 3.13.1 when using the print(..., end="""") function inside the interactive REPL. The first item in my list gets corrupted or disappears.
+**Run the following code:**
+tea_variety = [""Black"", ""Green"", ""Oolong"", ""White""]
+for tea in tea_variety:
+    print(tea, end=""-"")
+
+**Expected output:**
+Black-Green-Oolong-White-
+
+**Actual output (Bug):**
+k-Green-Oolong-White-
+
+**Additional Observations:**
+
+**The first letter of the first word seems to disappear or get corrupted.**
+Using """".join(tea_variety) works correctly.
+Running this in a .py script works correctly.
+It only happens in PowerShell’s Python REPL.
+Tested on Windows 11, Python 3.13.1.
+
+**System Information:**
+
+**OS:** Windows 11
+**Python Version:** 3.13.1 (64-bit)
+**Terminal:** PowerShell
+Bug happens only in REPL.",[],"Unable to reproduce on linux on 3.13/main branch.
+
+@ambv ",[],['python'],github,https://github.com/python/cpython/issues/130766,{'repo': 'python/cpython'}
+"blake2module.c needs to be compiled with libhacl SIMD flags
+
+# Bug report
+
+### Bug description:
+
+`blake2module.c` may include `_hacl/Hacl_Hash_Blake2b_Simd256.h` and/or `_hacl/Hacl_Hash_Blake2s_Simd128.h`, and thus needs to compile with `LIBHACL_SIMD128_FLAGS` and/or `LIBHACL_SIMD256_FLAGS`, or you get an error like this if the compiler doesn't enable those SIMD features by default:
+```
+In file included from ./Modules/blake2module.c:139:
+In file included from ./Modules/_hacl/Hacl_Hash_Blake2b_Simd256.h:42:
+In file included from ./Modules/_hacl/libintvector.h:28:
+/Library/Developer/CommandLineTools/usr/bin/../lib/clang/7.0.2/include/smmintrin.h:28:2: error: ""SSE4.1 instruction set not enabled""
+```
+I would create a PR but unfortunately I can't figure out where this needs to be added.
+
+### CPython versions tested on:
+
+3.14
+
+### Operating systems tested on:
+
+macOS
+
+<!-- gh-linked-prs -->
+### Linked PRs
+* gh-130332
+* gh-130447
+* gh-130483
+* gh-130960
+<!-- /gh-linked-prs -->
+","['In file included from ./Modules/blake2module.c:139:\nIn file included from ./Modules/_hacl/Hacl_Hash_Blake2b_Simd256.h:42:\nIn file included from ./Modules/_hacl/libintvector.h:28:\n/Library/Developer/CommandLineTools/usr/bin/../lib/clang/7.0.2/include/smmintrin.h:28:2: error: ""SSE4.1 instruction set not enabled""']","Aren't we setting them in `configure`? In addition we have:
+
+```c
+// Small mismatch between the variable names Python defines as part of configure
+// at the ones HACL* expects to be set in order to enable those headers.
+#define HACL_CAN_COMPILE_VEC128 HACL_CAN_COMPILE_SIMD128
+#define HACL_CAN_COMPILE_VEC256 HACL_CAN_COMPILE_SIMD256
+
+#include ""_hacl/Hacl_Hash_Blake2b.h""
+#include ""_hacl/Hacl_Hash_Blake2s.h""
+#if HACL_CAN_COMPILE_SIMD256
+#include ""_hacl/Hacl_Hash_Blake2b_Simd256.h""
+#endif
+#if HACL_CAN_COMPILE_SIMD128
+#include ""_hacl/Hacl_Hash_Blake2s_Simd128.h""
+#endif
+```
+
+So, the headers shouldn't even be included if `HACL_*` are not defined","['// Small mismatch between the variable names Python defines as part of configure\n// at the ones HACL* expects to be set in order to enable those headers.\n#define HACL_CAN_COMPILE_VEC128 HACL_CAN_COMPILE_SIMD128\n#define HACL_CAN_COMPILE_VEC256 HACL_CAN_COMPILE_SIMD256\n\n#include ""_hacl/Hacl_Hash_Blake2b.h""\n#include ""_hacl/Hacl_Hash_Blake2s.h""\n#if HACL_CAN_COMPILE_SIMD256\n#include ""_hacl/Hacl_Hash_Blake2b_Simd256.h""\n#endif\n#if HACL_CAN_COMPILE_SIMD128\n#include ""_hacl/Hacl_Hash_Blake2s_Simd128.h""\n#endif']",['python'],github,https://github.com/python/cpython/issues/130213,{'repo': 'python/cpython'}
+"Support  context manager protocol by contextvars.Token
+
+# Feature or enhancement
+
+### Proposal:
+
+Sometimes, mostly in tests, I write something like
+
+```python
+from contextvars import ContextVar
+var = ContextVar('var')
+
+def test_a():
+    token = var.set('new val')
+    do_stuff()
+    var.reset(token)
+```
+
+It looks a little cumbersome, the support for `with var:` would be awesome:
+```
+def test_b():
+    with var.set('new val'):
+        do_stuff()
+```
+
+### Has this already been discussed elsewhere?
+
+This is a minor feature, which does not need previous discussion elsewhere
+
+### Links to previous discussion of this feature:
+
+_No response_
+
+<!-- gh-linked-prs -->
+### Linked PRs
+* gh-129888
+<!-- /gh-linked-prs -->
+","[""from contextvars import ContextVar\nvar = ContextVar('var')\n\ndef test_a():\n    token = var.set('new val')\n    do_stuff()\n    var.reset(token)"", ""def test_b():\n    with var.set('new val'):\n        do_stuff()""]",#129888 provides a simple patch for the proposed functionality.,[],['python'],github,https://github.com/python/cpython/issues/129889,{'repo': 'python/cpython'}
+"Support non-sequence iterables in the `ExceptionGroup` API, or document the design decision
+
+# Feature or enhancement
+
+### Proposal:
+
+Currently, the `ExceptionGroup` API only supports _sequences_ of exceptions to its second parameter `excs`.
+This ticket suggests _either_:
+- additively changing the API to support non-sequence iterables as inputs as well.
+
+or
+- documenting why only sequences are supported.
+
+Currently, this Python code would work:
+
+```python
+ExceptionGroup(""list"", [ValueError(), AttributeError()])  # OK
+
+ExceptionGroup(""tuple"", (ValueError(), AttributeError()))  # OK
+
+class Niche:
+    def __getitem__(self, i):
+        if i == 0:
+            return ValueError()
+        if i == 1:
+            return AttributeError()
+        raise StopIteration
+
+ExceptionGroup(""niche"", Niche())  # OK
+```
+
+> [!note]
+> AFAIK, `ExceptionGroup` objects do not store the sequence passed to them, _unless_ it's a tuple object (excluding tuple subclasses). They export a new tuple (created from the passed-in sequence) or passed-in tuple [via `.exceptions`](https://docs.python.org/3/library/exceptions.html#BaseExceptionGroup.exceptions).
+> Quick illustration:
+> ```py
+> assert ExceptionGroup("""", excs := [ValueError()]).exceptions is not excs  # OK
+> assert ExceptionGroup("""", excs := (ValueError(),)).exceptions is excs  # OK
+> assert ExceptionGroup("""", excs := type("""", (tuple,), {})([ValueError(),])).exceptions is not excs  # OK
+> ```
+
+This is a minimal example of a use case I would desire, which is not currently supported:
+
+```py
+def cb1():
+    raise ValueError
+
+def cb2():
+    raise AttributeError
+
+errors = {}
+callbacks = {""module1"": cb1, ""module2"": cb2}
+for mod, cb in callbacks.items():
+    try:
+        cb()
+    except Exception as exc:
+        errors[mod] = exc
+
+if errors:
+    raise ExceptionGroup(f""got errors in {', '.join(errors)}"", errors.values())
+```
+
+> [!important]
+> **While this _can_ be simply worked around by converting the values' view into a sequence, the question is more fundamental: _why_?**
+
+There are some [other variants of this on GitHub](https://github.com/search?q=%2FExceptionGroup%5C%28.*%2C+%28list%7Ctuple%29%5C%28%2F&type=code), too (including my humble one).
+
+It was an intentional decision to only support sequences, justifying the very first part of the constructor test:
+https://github.com/python/cpython/blob/1bccd6c34f82f8373c320792323bfd7f7a328bc7/Lib/test/test_exception_group.py#L39-L42
+
+Before writing this issue, I did a research in some places that seemed like they could explain why only sequences made a cut. Namely, I:
+- read the [docs of built-in exceptions](https://docs.python.org/3/library/exceptions.html#exception-groups),
+- [checked the PEP](https://peps.python.org/pep-0654),
+- skimmed through [the relevant PR](https://github.com/python/cpython/pull/28569),
+- read the discussions in [python/exceptiongroups](https://github.com/python/exceptiongroups),
+- searched the issue tracker.
+
+I didn't have the time to read them very in depth, so I might have overlooked something; I only found this thread relevant:
+- https://github.com/python/exceptiongroups/pull/13#issuecomment-754375503
+
+Which leads me to think that supporting `Iterable` was [initially planned](https://github.com/python/exceptiongroups/issues/6#issue-730576441) (the author meant `Iterable[Exception]` instead of `Iterable[ExceptionGroup]`), but then implicitly ignored for the sake of predicted use cases only being with sequences (lists/tuples).
+Please note that the considerations about variadic constructor of `BaseExceptionGroup` are not relevant to this ticket.
+
+Before writing this, I also reached out to @ZeroIntensity and @Eclips4 to discuss the topic.
+
+@Eclips4 confirmed that he saw no hard requirement for the exception sequence to be a sequence specifically, and applying this simple patch
+
+```diff
+diff --git a/Objects/exceptions.c b/Objects/exceptions.c
+index 154cde93168..f97eb33953f 100644
+--- a/Objects/exceptions.c
++++ b/Objects/exceptions.c
+@@ -871,7 +871,8 @@ BaseExceptionGroup_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
+         return NULL;
+     }
+
+-    if (!PySequence_Check(exceptions)) {
++    PyTypeObject *t = Py_TYPE(exceptions);
++    if (t->tp_iter == NULL) {
+         PyErr_SetString(
+             PyExc_TypeError,
+             ""second argument (exceptions) must be a sequence"");
+```
+
+[only causes `test_bad_EG_construction__bad_excs_sequence` to fail](https://pastebin.com/rg3CTLHi).
+
+CC @iritkatriel @gvanrossum @1st1
+
+
+### Has this already been discussed elsewhere?
+
+This is a minor feature, which does not need previous discussion elsewhere
+
+### Links to previous discussion of this feature:
+
+_No response_","['ExceptionGroup(""list"", [ValueError(), AttributeError()])  # OK\n\nExceptionGroup(""tuple"", (ValueError(), AttributeError()))  # OK\n\nclass Niche:\n    def __getitem__(self, i):\n        if i == 0:\n            return ValueError()\n        if i == 1:\n            return AttributeError()\n        raise StopIteration\n\nExceptionGroup(""niche"", Niche())  # OK', '> assert ExceptionGroup("""", excs := [ValueError()]).exceptions is not excs  # OK\n> assert ExceptionGroup("""", excs := (ValueError(),)).exceptions is excs  # OK\n> assert ExceptionGroup("""", excs := type("""", (tuple,), {})([ValueError(),])).exceptions is not excs  # OK\n>', 'def cb1():\n    raise ValueError\n\ndef cb2():\n    raise AttributeError\n\nerrors = {}\ncallbacks = {""module1"": cb1, ""module2"": cb2}\nfor mod, cb in callbacks.items():\n    try:\n        cb()\n    except Exception as exc:\n        errors[mod] = exc\n\nif errors:\n    raise ExceptionGroup(f""got errors in {\', \'.join(errors)}"", errors.values())', 'diff --git a/Objects/exceptions.c b/Objects/exceptions.c\nindex 154cde93168..f97eb33953f 100644\n--- a/Objects/exceptions.c\n+++ b/Objects/exceptions.c\n@@ -871,7 +871,8 @@ BaseExceptionGroup_new(PyTypeObject *type, PyObject *args, PyObject *kwds)\n         return NULL;\n     }\n\n-    if (!PySequence_Check(exceptions)) {\n+    PyTypeObject *t = Py_TYPE(exceptions);\n+    if (t->tp_iter == NULL) {\n         PyErr_SetString(\n             PyExc_TypeError,\n             ""second argument (exceptions) must be a sequence"");']","
+The reality is that we have a process that we need to follow when we make changes to builtins, and this includes specifying the change in a PEP and putting the proposal under quite a bit of scrutiny. Had you pointed to a discrepancy between the implementation and the PEP, we would have fixed it as a bug. Since the implementation matches the PEP in this case, this is a feature request involving a change to a builtin type, and the burden of motivating the change there. This feature would require a language spec change (impacting other python implementations too).  One thing we would need to decide is whether the language spec should require that all iterables are supported, or merely allow it.
+
+I noticed the code snippet you posted, but it looked more like ""here is some code that would work if you add the feature"", rather than an actual problem that came up in real life programming. Sorry I jumped to that conclusion, but now I'm curious -is someone really building a dict of exceptions and then creating an exception group, and then ... doing what with the dict?
+
+",[],['python'],github,https://github.com/python/cpython/issues/129867,{'repo': 'python/cpython'}
+"Deprecation of locale.getdefaultlocale breaks POSIX compatibility on Windows platform
+
+# Bug report
+
+### Bug description:
+
+Follow-up to #90817.
+
+In summary, without `getdetfaultlocale`, tools that rely on POSIX locales cannot reliably get the same information from `getlocale` or `setlocale` on Windows.
+
+For example, Linux will return something like 'en_AU'. But on Windows, `getlocale` will return something like 'English_Australia'.
+
+### CPython versions tested on:
+
+3.12, 3.13
+
+### Operating systems tested on:
+
+Windows, Linux",[],"It's as I described above and in https://github.com/python/cpython/issues/90817#issuecomment-2692584204.
+
+```
+Python 3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)] on win32
+Type ""help"", ""copyright"", ""credits"" or ""license()"" for more information.
+import locale
+locale.getlocale()
+('English_Australia', '1252')
+locale.setlocale(locale.LC_CTYPE)
+'English_Australia.1252'
+locale.getdefaultlocale()
+
+Warning (from warnings module):
+  File ""<pyshell#3>"", line 1
+DeprecationWarning: 'locale.getdefaultlocale' is deprecated and slated for removal in Python 3.15. Use setlocale(), getencoding() and getlocale() instead.
+('en_AU', 'cp1252')
+
+```
+
+@shineworld reported something similar in https://github.com/python/cpython/issues/90817#issuecomment-2694773075
+
+@Elvish-Hunter reports the same in https://github.com/wesnoth/wesnoth/issues/9972#issuecomment-2692643050","['Python 3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)] on win32\nType ""help"", ""copyright"", ""credits"" or ""license()"" for more information.\nimport locale\nlocale.getlocale()\n(\'English_Australia\', \'1252\')\nlocale.setlocale(locale.LC_CTYPE)\n\'English_Australia.1252\'\nlocale.getdefaultlocale()\n\nWarning (from warnings module):\n  File ""<pyshell#3>"", line 1\nDeprecationWarning: \'locale.getdefaultlocale\' is deprecated and slated for removal in Python 3.15. Use setlocale(), getencoding() and getlocale() instead.\n(\'en_AU\', \'cp1252\')']",['python'],github,https://github.com/python/cpython/issues/130796,{'repo': 'python/cpython'}
