@@ -183,4 +183,4 @@ This metric, used as an objective function, guides model cloning, aiming to obta
 
 ---
 
-#Francesco Bulla
+#Dott.Francesco Bulla & Stephanie Ewelu. 
