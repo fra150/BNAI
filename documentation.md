@@ -1,7 +1,7 @@
 # BNAI Project Documentation
 
 ## Project Overview
-The BNAI (Behavioral Neural AI) project is a system that analyzes and generates behavioral parameters for AI models. It employs a neural network architecture to learn and generate BNAI profiles that characterize AI model behavior.
+The BNAI (Brain (Bulla)Neural AI) project is a system that analyzes and generates behavioral parameters for AI models. It employs a neural network architecture to learn and generate BNAI profiles that characterize AI model behavior.
 
 ## Project Structure
 ```
